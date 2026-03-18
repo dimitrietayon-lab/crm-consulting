@@ -1,0 +1,11 @@
+Datum,Mitarbeiter,Projekt,Phase,Beschreibung,Stunden,Abrechenbar
+2026-03-04,Anna Mueller,Risk Management Framework Design,,recherche,5,Ja
+2026-03-04,Anna Mueller,Risk Management Framework Design,,plannung,9,Ja
+2026-03-05,Admin User,Digital Strategy Roadmap,test,test,5,Ja
+2026-03-05,Anna Mueller,Digital Strategy Roadmap,test,test,5.5,Ja
+2026-03-06,Sandra Hoffmann,Digital Strategy Roadmap,analyse,test,5.78,Ja
+2026-03-06,Sandra Hoffmann,Digital Strategy Roadmap,test,,7.5,Ja
+2026-03-06,Sandra Hoffmann,Risk Management Framework Design,test,,8,Ja
+2026-03-09,Admin User,IFRS 17 Implementation Support,,test,4,Ja
+2026-03-09,Admin User,Digital Strategy Roadmap,Analyse,,2,Ja
+2026-03-09,Admin User,Basel IV Readiness Assessment,Implementierung,,2,Ja

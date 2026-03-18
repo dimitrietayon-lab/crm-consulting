@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find C:\\\\innolab\\\\crm-consulting\\\\frontend\\\\app\\\\\\(protected\\):*)",
+      "Bash(dir C:\\\\innolab\\\\crm-consulting\\\\backend\\\\src\\\\routes:*)",
+      "Bash(wc:*)",
+      "Bash(ls:*)",
+      "Bash(powershell:*)",
+      "Bash(head:*)",
+      "Bash(npx prisma:*)",
+      "Bash(node:*)",
+      "Bash(cmd:*)",
+      "Bash(del:*)"
+    ]
+  }
+}

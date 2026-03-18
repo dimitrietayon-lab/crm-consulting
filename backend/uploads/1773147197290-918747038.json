@@ -1,0 +1,245 @@
+{
+  "envId": "HIS",
+  "ver": "0003",
+  "seq": "0000787",
+  "penvId": "BHO",
+  "envType": "ENV_VER",
+  "envState": "PUBLIC",
+  "dbcon": "DBCON",
+  "descr": "Basic Usecase HIST",
+  "isleaf": "X",
+  "environmentField": [
+    {
+      "field": "AMOUNT_SOURCE",
+      "fieldType": "KYF",
+      "fieldSource": "ENVF",
+      "ddicDataType": "DEC",
+      "dataLength": "10 ",
+      "lowercase": "-",
+      "bwDataType": "DEC",
+      "bwWithMd": "-",
+      "bwWithHi": "-",
+      "ddicDte": "Y820HIS0003AMOUNT_SOURCE",
+      "hanaDataType": "DECIMAL",
+      "descr": "Source amount"
+    },
+    {
+      "field": "AMOUNT_BETWEEN1",
+      "fieldType": "KYF",
+      "fieldSource": "ENVF",
+      "ddicDataType": "DEC",
+      "dataLength": "10 ",
+      "lowercase": "-",
+      "bwDataType": "DEC",
+      "bwWithMd": "-",
+      "bwWithHi": "-",
+      "ddicDte": "Y820HIS0003AMOUNT_BETWEEN1",
+      "hanaDataType": "DECIMAL",
+      "descr": "Feldbeschreibung FLD_001"
+    },
+    {
+      "field": "AMOUNT_AGGREGATED",
+      "fieldType": "KYF",
+      "fieldSource": "ENVF",
+      "ddicDataType": "DEC",
+      "dataLength": "10 ",
+      "lowercase": "-",
+      "bwDataType": "DEC",
+      "bwWithMd": "-",
+      "bwWithHi": "-",
+      "ddicDte": "Y820HIS0003AMOUNT_AGGREGATED",
+      "hanaDataType": "DECIMAL",
+      "descr": "aggregated amount"
+    },
+    {
+      "field": "Y_AMOUNT",
+      "fieldType": "KYF",
+      "fieldSource": "ENVF",
+      "ddicDataType": "DEC",
+      "dataLength": "10 ",
+      "lowercase": "-",
+      "bwDataType": "DEC",
+      "bwWithMd": "-",
+      "bwWithHi": "-",
+      "ddicDte": "Y820HIS0003Y_AMOUNT",
+      "hanaDataType": "DECIMAL",
+      "descr": "final amount"
+    },
+    {
+      "field": "MY_NAME",
+      "fieldType": "CHA",
+      "fieldSource": "ENVF",
+      "ddicDataType": "CHAR",
+      "dataLength": "20 ",
+      "lowercase": "-",
+      "bwDataType": "CHAR",
+      "bwWithMd": "-",
+      "bwWithHi": "-",
+      "hanaDataType": "NVARCHAR",
+      "descr": "my name"
+    },
+    {
+      "field": "_FIELD",
+      "fieldType": "CHA",
+      "fieldSource": "ENV",
+      "ddicDataType": "CHAR",
+      "dataLength": "30 ",
+      "ddicDte": "/NXI/P1_DTE_FIELD",
+      "hanaDataType": "NVARCHAR"
+    },
+    {
+      "field": "_ROW",
+      "fieldType": "CHA",
+      "fieldSource": "ENV",
+      "ddicDataType": "INT8",
+      "dataLength": "30 ",
+      "ddicDte": "/NXI/P1_DTE_ROW",
+      "hanaDataType": "BIGINT"
+    },
+    {
+      "field": "FS_PER_MSG_TEXT_",
+      "fieldType": "CHA",
+      "fieldSource": "ENV",
+      "ddicDataType": "CHAR",
+      "dataLength": "5000 ",
+      "ddicDte": "/NXI/P1_DTE_MSG_TEXT",
+      "hanaDataType": "NVARCHAR"
+    },
+    {
+      "field": "FS_PER_RULE_ID_",
+      "fieldType": "CHA",
+      "fieldSource": "ENV",
+      "ddicDataType": "CHAR",
+      "dataLength": "40 ",
+      "ddicDte": "/NXI/P1_DTE_RULE_ID",
+      "hanaDataType": "NVARCHAR"
+    },
+    {
+      "field": "FS_PER_FORMULA_",
+      "fieldType": "CHA",
+      "fieldSource": "ENV",
+      "ddicDataType": "CHAR",
+      "dataLength": "5000 ",
+      "ddicDte": "/NXI/P1_DTE_FORMULA",
+      "hanaDataType": "NVARCHAR"
+    },
+    {
+      "field": "FS_PER_CHECK_ID_",
+      "fieldType": "CHA",
+      "fieldSource": "ENV",
+      "ddicDataType": "CHAR",
+      "dataLength": "40 ",
+      "ddicDte": "/NXI/P1_DTE_CHECK_ID",
+      "hanaDataType": "NVARCHAR"
+    }
+  ],
+  "businessFunction": {
+    "fId": "HIS",
+    "fType": "CU",
+    "descr": "Basic Usecase HIST",
+    "expanded": "X",
+    "businessFunction": [
+      {
+        "fId": "13665",
+        "fType": "MT",
+        "descr": "MT - Credit Data",
+        "mtSource": "ENV",
+        "modelTableField": [
+          {
+            "field": "MY_NAME",
+            "descr": "my name",
+            "srcField": "MY_NAME",
+            "srcFieldDescr": "my name"
+          },
+          {
+            "field": "AMOUNT_SOURCE",
+            "descr": "Source amount",
+            "srcField": "AMOUNT_SOURCE",
+            "srcFieldDescr": "Source amount"
+          }
+        ]
+      },
+      {
+        "fId": "13666",
+        "fType": "JO",
+        "descr": "JO - New amounts",
+        "rules": {
+          "ruleId": "R0001",
+          "jorType": "FROM",
+          "inputDescr": "Regelbeschreibung R0001",
+          "inputFid": "13665",
+          "inputFields": {
+            "field": "AMOUNT_BETWEEN1",
+            "formula": "AMOUNT_SOURCE"
+          }
+        },
+        "inputComplexSelection": { },
+        "actionFields": { "low": "AMOUNT_BETWEEN1" }
+      },
+      {
+        "fId": "13668",
+        "fType": "JO",
+        "descr": "JO - aggr Amount",
+        "rules": {
+          "ruleId": "R0001",
+          "jorType": "FROM",
+          "inputDescr": "Regelbeschreibung R0001",
+          "inputFid": "13666",
+          "inputFields": [
+            {
+              "field": "MY_NAME",
+              "group": "GROUP"
+            },
+            {
+              "field": "AMOUNT_AGGREGATED",
+              "formula": "SUM(AMOUNT_BETWEEN1)"
+            }
+          ]
+        },
+        "inputComplexSelection": { },
+        "actionFields": [
+          { "low": "MY_NAME" },
+          { "low": "AMOUNT_AGGREGATED" }
+        ]
+      },
+      {
+        "fId": "13669",
+        "fType": "WR",
+        "descr": "WR - writer",
+        "outputFid": "13671",
+        "inputFid": "13668",
+        "outputActions": [
+          { "field": "MY_NAME" },
+          {
+            "field": "Y_AMOUNT",
+            "formula": "AMOUNT_AGGREGATED"
+          }
+        ],
+        "actionFields": [
+          { "low": "MY_NAME" },
+          { "low": "Y_AMOUNT" }
+        ]
+      },
+      {
+        "fId": "13671",
+        "fType": "MT",
+        "descr": "MT - res",
+        "mtSource": "ENV",
+        "modelTableField": [
+          {
+            "field": "MY_NAME",
+            "descr": "my name",
+            "srcField": "MY_NAME",
+            "srcFieldDescr": "my name"
+          },
+          {
+            "field": "Y_AMOUNT",
+            "descr": "final amount",
+            "srcField": "Y_AMOUNT",
+            "srcFieldDescr": "final amount"
+          }
+        ]
+      }
+    ]
+  }
+}

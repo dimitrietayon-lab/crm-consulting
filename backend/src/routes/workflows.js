@@ -118,6 +118,24 @@ router.post('/', async (req, res) => {
   }
 });
 
+// ─── GET /api/workflows/:id ────────────────────────────────────────────────────
+router.get('/:id', async (req, res) => {
+  try {
+    const workflow = await prisma.workflow.findUnique({
+      where: { id: req.params.id },
+      include: {
+        createdBy: { select: { id: true, name: true } },
+        _count: { select: { runs: true } },
+        runs: { orderBy: { startedAt: 'desc' }, take: 5, select: { status: true, startedAt: true } },
+      },
+    });
+    if (!workflow) return res.status(404).json({ error: 'Workflow nicht gefunden' });
+    res.json(workflow);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── PUT /api/workflows/:id ────────────────────────────────────────────────────
 router.put('/:id', async (req, res) => {
   try {

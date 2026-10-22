@@ -243,9 +243,10 @@ model Deal {
   notes         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  contacts   DealContact[]
-  activities Activity[]
-  tasks      Task[]
+  contacts        DealContact[]
+  activities      Activity[]
+  tasks           Task[]
+  aiOpportunities AiOpportunity[]
 }
 
 model DealContact {
@@ -301,7 +302,8 @@ model ServiceCatalog {
   fixedFee    Float?
   unit        String   @default("day")
   createdAt   DateTime @default(now())
-  lineItems ProposalLineItem[]
+  lineItems       ProposalLineItem[]
+  aiOpportunities AiOpportunity[]
 }
 
 model Contract {
@@ -546,16 +548,22 @@ model ComplianceItem {
 // ─── Nice-to-Have Models ──────────────────────────────────────────────────────
 
 model AiOpportunity {
-  id          String   @id @default(cuid())
-  accountId   String
-  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  suggestion  String
-  reasoning   String?
-  confidence  Float?
-  category    String?
-  status      String   @default("new")
-  generatedAt DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  accountId      String
+  account        Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  serviceId      String?
+  service        ServiceCatalog? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  suggestion     String
+  reasoning      String?
+  confidence     Float?
+  scoreBreakdown Json?
+  category       String?
+  sources        Json?
+  dealId         String?  @unique
+  deal           Deal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  status         String   @default("new")
+  generatedAt    DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model MonitoringKeyword {

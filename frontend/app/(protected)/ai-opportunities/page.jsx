@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
 import {
   Brain, RefreshCw, ThumbsUp, EyeOff, ChevronDown, ChevronUp, Sparkles,
   FileText, X, CheckCircle, Target, Lightbulb,
-  Users, TrendingUp, Shield, ListChecks, Printer
+  Users, TrendingUp, Shield, ListChecks, Printer, ExternalLink, Briefcase, AlertTriangle
 } from 'lucide-react'
 
 const CATEGORY_LABELS = {
@@ -23,21 +24,106 @@ const CATEGORY_COLORS = {
   renewal: 'bg-amber-100 text-amber-800',
 }
 
+const TRIGGER_LABELS = {
+  gap: 'White-Space',
+  news: 'Nachrichten',
+  renewal: 'Vertragsende',
+  nps: 'NPS',
+  peer: 'Peers',
+  timing: 'Timing',
+}
+
 const STATUS_COLORS = {
   new: 'bg-gray-100 text-gray-600',
   interesting: 'bg-green-100 text-green-700',
   ignored: 'bg-red-50 text-red-500',
 }
 
-function ConfidenceBar({ value }) {
+const ROLE_LABELS = {
+  topic: 'Fachbeleg',
+  timing: 'Anlass — kein Fachbeleg für den Service',
+}
+
+function EvidenceBlock({ opp }) {
+  const crm = opp.scoreBreakdown?.crmEvidence || []
+  const sources = Array.isArray(opp.sources) ? opp.sources.filter((s) => s?.url) : []
+  const newsFit = opp.scoreBreakdown?.newsFit
+  if (!crm.length && !sources.length && !newsFit) return null
+
+  return (
+    <div className="mt-3 space-y-2">
+      {newsFit === 'none' && (
+        <p className="flex items-start gap-1.5 text-[11px] text-amber-800 bg-amber-50 rounded px-2 py-1.5">
+          <AlertTriangle size={12} className="mt-0.5 flex-shrink-0" />
+          Keine themenpassende öffentliche Quelle. Der Vorschlag beruht auf CRM-Belegen, nicht auf diesem Nachrichtentitel.
+        </p>
+      )}
+      {crm.length > 0 && (
+        <div>
+          <p className="text-[10px] uppercase tracking-wide text-gray-400 font-medium mb-1">CRM-Belege</p>
+          <ul className="space-y-1">
+            {crm.map((item, i) => (
+              <li key={i} className="text-xs text-gray-600 leading-snug pl-2 border-l-2 border-slate-200">
+                {item.text}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {sources.length > 0 && (
+        <div>
+          <p className="text-[10px] uppercase tracking-wide text-gray-400 font-medium mb-1">Quellen mit Beleg</p>
+          <div className="space-y-2">
+            {sources.map((s) => (
+              <div key={s.url} className="text-xs">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${s.role === 'topic' ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}`}>
+                    {ROLE_LABELS[s.role] || 'Quelle'}
+                  </span>
+                  <a
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-violet-600 hover:underline inline-flex items-center gap-1 min-w-0"
+                  >
+                    <ExternalLink size={11} className="flex-shrink-0" />
+                    <span className="truncate">{s.title || s.source || s.url}</span>
+                  </a>
+                </div>
+                {s.quote && (
+                  <p className="mt-0.5 text-gray-500 italic leading-snug">„{s.quote}“</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ConfidenceBar({ value, breakdown }) {
   const pct = Math.round((value || 0) * 100)
   const color = pct >= 75 ? 'bg-green-500' : pct >= 50 ? 'bg-amber-400' : 'bg-gray-300'
+  const trigger = breakdown?.trigger
+  const w = breakdown?.weights || { gap: 0.4, news: 0.3, timing: 0.2, peer: 0.1 }
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-        <div className={`h-full ${color} rounded-full`} style={{ width: `${pct}%` }} />
+    <div>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+          <div className={`h-full ${color} rounded-full`} style={{ width: `${pct}%` }} />
+        </div>
+        <span className="text-xs text-gray-500 w-8">{pct}%</span>
       </div>
-      <span className="text-xs text-gray-500 w-8">{pct}%</span>
+      {breakdown && (
+        <p className="text-[10px] text-gray-400 mt-1">
+          Score{trigger ? ` · ${TRIGGER_LABELS[trigger] || trigger}` : ''}:
+          {' '}Lücke {Math.round((breakdown.gap || 0) * w.gap * 100)}
+          {' · '}News {Math.round((breakdown.news || 0) * w.news * 100)}
+          {' · '}Timing {Math.round((breakdown.timing || 0) * w.timing * 100)}
+          {' · '}Peers {Math.round((breakdown.peer || 0) * w.peer * 100)}
+        </p>
+      )}
     </div>
   )
 }
@@ -56,8 +142,10 @@ function ReportSection({ icon: Icon, title, children, className = '' }) {
 
 function exportReport(report, opp, accountName) {
   const catLabel = CATEGORY_LABELS[opp.category] || opp.category
+  const serviceName = opp.service?.name || report.service?.name
   const confidence = Math.round((opp.confidence || 0) * 100)
   const today = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' })
+  const sourceList = Array.isArray(report.sources) ? report.sources : (Array.isArray(opp.sources) ? opp.sources : [])
 
   const section = (title, content) => content ? `
     <div class="section">
@@ -65,10 +153,17 @@ function exportReport(report, opp, accountName) {
       <p>${content}</p>
     </div>` : ''
 
+  const crmItems = opp.scoreBreakdown?.crmEvidence || []
+  const crmHtml = crmItems.length ? `
+    <div class="section">
+      <h3>CRM-Belege</h3>
+      <ol>${crmItems.map((c) => `<li>${c.text}</li>`).join('')}</ol>
+    </div>` : ''
+
   const steps = report.nextSteps?.length ? `
     <div class="section">
       <h3>Nächste Schritte</h3>
-      <ol>${report.nextSteps.map(s => `<li>${s}</li>`).join('')}</ol>
+      <ol>${report.nextSteps.map((s) => `<li>${s}</li>`).join('')}</ol>
     </div>` : ''
 
   const html = `<!DOCTYPE html>
@@ -101,7 +196,8 @@ function exportReport(report, opp, accountName) {
 <div class="header">
   <div class="meta">
     <span class="badge">${catLabel}</span>
-    <span class="conf">Konfidenz: ${confidence}%</span>
+    ${serviceName ? `<span class="badge">${serviceName}</span>` : ''}
+    <span class="conf">Score: ${confidence}%</span>
   </div>
   <h1>${report.title || opp.suggestion}</h1>
   <p class="account">${accountName}</p>
@@ -117,6 +213,12 @@ ${section('Ansprachestrategie', report.approach)}
 ${steps}
 ${section('Erwarteter Mehrwert', report.value)}
 ${section('Risiken & Einwände', report.risks)}
+${crmHtml}
+${sourceList.length ? `
+    <div class="section">
+      <h3>Quellen mit Beleg</h3>
+      <ol>${sourceList.map((s) => `<li><strong>${s.role === 'timing' ? 'Anlass' : 'Fachbeleg'}:</strong> ${s.title || s.url}${s.quote ? ` — „${s.quote}“` : ''}${s.url ? ` (${s.url})` : ''}</li>`).join('')}</ol>
+    </div>` : ''}
 
 <div class="footer">
   <span>CRM Consulting – Vertriebsbericht</span>
@@ -185,8 +287,16 @@ function ReportModal({ opp, accountName, onClose }) {
                   {CATEGORY_LABELS[opp.category] || opp.category}
                 </span>
                 <span className="text-xs text-gray-500">
-                  Konfidenz: <strong>{Math.round((opp.confidence || 0) * 100)}%</strong>
+                  Score: <strong>{Math.round((opp.confidence || 0) * 100)}%</strong>
+                  {opp.scoreBreakdown?.trigger && (
+                    <> · {TRIGGER_LABELS[opp.scoreBreakdown.trigger] || opp.scoreBreakdown.trigger}</>
+                  )}
                 </span>
+                {opp.service?.name && (
+                  <span className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-700">
+                    {opp.service.name}
+                  </span>
+                )}
               </div>
 
               {/* Summary */}
@@ -253,6 +363,8 @@ function ReportModal({ opp, accountName, onClose }) {
                   <p className="text-sm text-gray-600 leading-relaxed">{report.risks}</p>
                 </ReportSection>
               )}
+
+              <EvidenceBlock opp={{ ...opp, sources: report.sources || opp.sources, scoreBreakdown: report.scoreBreakdown || opp.scoreBreakdown }} />
             </>
           ) : null}
         </div>
@@ -283,6 +395,7 @@ function AccountOpportunities({ account }) {
   const [opps, setOpps] = useState(null)
   const [expanded, setExpanded] = useState(false)
   const [generating, setGenerating] = useState(false)
+  const [creatingId, setCreatingId] = useState(null)
   const [reportOpp, setReportOpp] = useState(null)
 
   async function generate() {
@@ -315,6 +428,19 @@ function AccountOpportunities({ account }) {
       setOpps((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)))
     } catch {
       toast.error('Fehler beim Aktualisieren')
+    }
+  }
+
+  async function createDeal(opp) {
+    setCreatingId(opp.id)
+    try {
+      const data = await api.post(`/ai-opportunities/${opp.id}/create-deal`)
+      setOpps((prev) => prev.map((o) => (o.id === opp.id ? { ...o, ...data.opportunity } : o)))
+      toast.success(data.alreadyExisted ? 'Deal existiert bereits' : 'Deal in der Pipeline angelegt')
+    } catch (err) {
+      toast.error(err.message || 'Deal konnte nicht angelegt werden')
+    } finally {
+      setCreatingId(null)
     }
   }
 
@@ -363,7 +489,7 @@ function AccountOpportunities({ account }) {
             ) : (
               <Sparkles size={12} />
             )}
-            {generating ? 'Recherchiere & Analysiere...' : 'Analysieren'}
+            {generating ? 'Analysiere Katalog & News...' : 'Analysieren'}
           </button>
         </div>
 
@@ -388,6 +514,11 @@ function AccountOpportunities({ account }) {
                               {CATEGORY_LABELS[opp.category] || opp.category}
                             </span>
                           )}
+                          {opp.service?.name && (
+                            <span className="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">
+                              {opp.service.name}
+                            </span>
+                          )}
                           <span className={`text-xs px-2 py-0.5 rounded ${STATUS_COLORS[opp.status]}`}>
                             {opp.status === 'new' ? 'Neu' : opp.status === 'interesting' ? 'Interessant' : 'Ignoriert'}
                           </span>
@@ -398,9 +529,10 @@ function AccountOpportunities({ account }) {
                         )}
                         {opp.confidence != null && (
                           <div className="mt-2">
-                            <ConfidenceBar value={opp.confidence} />
+                            <ConfidenceBar value={opp.confidence} breakdown={opp.scoreBreakdown} />
                           </div>
                         )}
+                        <EvidenceBlock opp={opp} />
                       </div>
                       <div className="flex gap-1 flex-shrink-0">
                         <button
@@ -410,6 +542,28 @@ function AccountOpportunities({ account }) {
                         >
                           <FileText size={14} />
                         </button>
+                        {opp.dealId ? (
+                          <Link
+                            href={`/pipeline/${opp.dealId}`}
+                            className="p-1.5 rounded hover:bg-blue-50 text-blue-600"
+                            title="Deal öffnen"
+                          >
+                            <Briefcase size={14} />
+                          </Link>
+                        ) : (
+                          <button
+                            onClick={() => createDeal(opp)}
+                            disabled={creatingId === opp.id || opp.status === 'ignored'}
+                            className="p-1.5 rounded hover:bg-blue-50 text-blue-600 disabled:opacity-40"
+                            title="Als Deal anlegen"
+                          >
+                            {creatingId === opp.id ? (
+                              <RefreshCw size={14} className="animate-spin" />
+                            ) : (
+                              <Briefcase size={14} />
+                            )}
+                          </button>
+                        )}
                         {opp.status !== 'interesting' && (
                           <button
                             onClick={() => updateStatus(opp.id, 'interesting')}
@@ -468,7 +622,7 @@ export default function AiOpportunitiesPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">KI-Opportunity-Erkennung</h1>
-          <p className="text-sm text-gray-500">KI analysiert Account-Daten und erkennt Cross-Sell- & Upselling-Potenziale</p>
+          <p className="text-sm text-gray-500">Nur fachlich passende Quellen mit Zitat — CRM-Belege sind getrennt sichtbar</p>
         </div>
       </div>
 

@@ -40,6 +40,8 @@ const PAGE_TITLES = {
 }
 
 function getPageTitle(pathname) {
+  if (pathname === '/workflows/new') return 'Neuer Workflow'
+  if (/^\/workflows\/[^/]+\/edit$/.test(pathname)) return 'Workflow bearbeiten'
   if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname]
   const base = '/' + pathname.split('/').filter(Boolean)[0]
   return PAGE_TITLES[base] || 'CRM'

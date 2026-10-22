@@ -69,10 +69,14 @@ if (!fs.existsSync(uploadPath)) {
   console.log(`Created upload directory: ${uploadPath}`);
 }
 
-// Middleware
+const corsOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000,http://localhost:3001')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean)
+
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: corsOrigins.length === 1 ? corsOrigins[0] : corsOrigins,
     credentials: true,
   })
 );

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BAFA-Tracking — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; display: flex; height: 100vh; overflow: hidden; }
+
+/* Sidebar */
+.sidebar { width: 240px; background: #111111; color: #94a3b8; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+.brand { padding: 20px 16px 16px; border-bottom: 1px solid #1e293b; }
+.brand-name { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+.brand-sub { font-size: 11px; color: #F26722; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
+.sidebar-nav { padding: 12px 8px; flex: 1; }
+.nav-group { margin-bottom: 8px; }
+.nav-group-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; color: #475569; padding: 6px 8px 4px; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; color: #94a3b8; text-decoration: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .15s; }
+.nav-item:hover { background: #1e293b; color: #e2e8f0; }
+.nav-item.active { background: #1e3a5f; color: #60a5fa; }
+.nav-item .icon { font-size: 15px; }
+
+/* Layout */
+.main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.page-title { font-size: 16px; font-weight: 600; color: #111111; }
+.topbar-right { display: flex; gap: 8px; }
+main { flex: 1; overflow-y: auto; padding: 24px; }
+
+/* Btn */
+.btn { padding: 7px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+.btn-primary { background: #F26722; color: #fff; }
+.btn-ghost { background: transparent; color: #64748b; border: 1px solid #e2e8f0; }
+.btn-ghost:hover { background: #f8fafc; }
+
+/* Info banner */
+.info-banner { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; gap: 12px; align-items: flex-start; }
+.info-banner-icon { font-size: 18px; flex-shrink: 0; }
+.info-banner-title { font-size: 13px; font-weight: 600; color: #1d4ed8; margin-bottom: 3px; }
+.info-banner-text { font-size: 12px; color: #3b82f6; line-height: 1.4; }
+
+/* KPI row */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+.kpi-card { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; padding: 16px 18px; }
+.kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: #64748b; margin-bottom: 6px; }
+.kpi-value { font-size: 22px; font-weight: 700; color: #111111; }
+.kpi-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+.kpi-sub.green { color: #16a34a; }
+
+/* Table */
+.table-card { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 22px; }
+.table-header { padding: 14px 18px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
+.table-title { font-size: 13px; font-weight: 700; color: #111111; }
+.filter-row { display: flex; gap: 8px; }
+.filter-select { padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; background: #fff; outline: none; }
+table { width: 100%; border-collapse: collapse; }
+thead th { padding: 9px 14px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; color: #64748b; border-bottom: 1px solid #f1f5f9; background: #f8fafc; text-align: left; }
+tbody td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid #f8fafc; vertical-align: top; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #f8fafc; }
+.company-name { font-weight: 600; color: #111111; }
+.company-seg { font-size: 11px; color: #94a3b8; }
+
+/* BAFA status badges */
+.bafa-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.bafa-pruefen { background: #f1f5f9; color: #475569; }
+.bafa-beantragen { background: #fef3c7; color: #d97706; }
+.bafa-beantragt { background: #dbeafe; color: #1d4ed8; }
+.bafa-bewilligt { background: #dcfce7; color: #16a34a; }
+.bafa-abgerechnet { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+.bafa-abgelehnt { background: #fee2e2; color: #dc2626; }
+.bafa-na { background: #f8fafc; color: #94a3b8; }
+
+/* Checklist */
+.doc-checklist { display: flex; flex-direction: column; gap: 3px; }
+.doc-item { display: flex; align-items: center; gap: 5px; font-size: 11px; }
+.doc-item.ok { color: #16a34a; }
+.doc-item.missing { color: #dc2626; }
+.doc-item.pending { color: #d97706; }
+
+/* Subsidy amount */
+.subsidy { font-weight: 700; color: #F26722; }
+.subsidy-base { font-size: 11px; color: #94a3b8; }
+
+/* Summary panel */
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px; }
+.summary-card { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; padding: 18px; }
+.summary-title { font-size: 13px; font-weight: 700; color: #111111; margin-bottom: 12px; }
+.summary-item { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
+.summary-item:last-child { margin-bottom: 0; padding-top: 8px; border-top: 1px solid #f1f5f9; font-weight: 700; }
+.progress-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 12px; color: #374151; }
+.prog-track { height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 4px; background: #F26722; }
+.prog-fill.green { background: #16a34a; }
+.prog-fill.yellow { background: #d97706; }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="bafa"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="page-title">BAFA-Tracking</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost">Bericht exportieren</button>
+      <button class="btn btn-primary">+ Antrag erfassen</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Date-order warning -->
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;gap:12px;align-items:flex-start">
+      <div style="font-size:20px;flex-shrink:0">⚠️</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#d97706;margin-bottom:3px">3 Kunden haben Beratungsbeginn VOR BAFA-Antragsdatum — BAFA-Förderung gefährdet!</div>
+        <div style="font-size:12px;color:#92400e;line-height:1.5">
+          Der BAFA-Antrag muss <strong>vor Beratungsbeginn</strong> gestellt sein. Bei diesen Kunden besteht das Risiko, dass die Förderung abgelehnt wird.
+          Bitte umgehend mit dem jeweiligen Berater klären. Betroffene Einträge sind in der Tabelle mit ⚠️ markiert.
+        </div>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="info-banner">
+      <div class="info-banner-icon">💡</div>
+      <div>
+        <div class="info-banner-title">BAFA-Förderung: Digitalisierung und Innovationsmanagement</div>
+        <div class="info-banner-text">Das KI-Readiness Assessment ist förderfähig im Rahmen der BAFA-Beratungsförderung für KMU. Bis zu 80 % der Beratungskosten sind förderfähig, max. € 3.500 Zuschuss. Antragstellung vor Beratungsbeginn erforderlich.</div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">BAFA-fähige Kunden</div>
+        <div class="kpi-value">31</div>
+        <div class="kpi-sub">von 47 Zielkunden</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Anträge gestellt</div>
+        <div class="kpi-value">18</div>
+        <div class="kpi-sub green">davon 11 bewilligt</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Fördervolumen gesichert</div>
+        <div class="kpi-value">€ 38.500</div>
+        <div class="kpi-sub green">↑ Ziel: € 30.000</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Abgerechnet</div>
+        <div class="kpi-value">€ 24.850</div>
+        <div class="kpi-sub">7 Kunden abgerechnet</div>
+      </div>
+    </div>
+
+    <!-- Progress summary -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-title">Antrags-Pipeline</div>
+        <div class="progress-row">
+          <div class="progress-label"><span>Bewilligt (11)</span><span style="color:#16a34a">61 %</span></div>
+          <div class="prog-track"><div class="prog-fill green" style="width:61%"></div></div>
+        </div>
+        <div class="progress-row">
+          <div class="progress-label"><span>Beantragt (4)</span><span style="color:#1d4ed8">22 %</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:22%"></div></div>
+        </div>
+        <div class="progress-row">
+          <div class="progress-label"><span>Beantragen (3)</span><span style="color:#d97706">17 %</span></div>
+          <div class="prog-track"><div class="prog-fill yellow" style="width:17%"></div></div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-title">Finanzübersicht</div>
+        <div class="summary-item"><span>Mögliches Fördervolumen</span><span>€ 54.250</span></div>
+        <div class="summary-item"><span>Bewilligtes Volumen</span><span style="color:#16a34a">€ 38.500</span></div>
+        <div class="summary-item"><span>Ausstehend (4 Anträge)</span><span style="color:#1d4ed8">€ 14.000</span></div>
+        <div class="summary-item"><span>Abgerechnet</span><span style="color:#F26722">€ 24.850</span></div>
+        <div class="summary-item"><span>Ausstehende Abrechnung</span><span>€ 13.650</span></div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">Zielkunden BAFA-Status</div>
+        <div class="filter-row">
+          <select class="filter-select">
+            <option>Alle Status</option>
+            <option>Prüfen</option>
+            <option>Beantragen</option>
+            <option>Beantragt</option>
+            <option>Bewilligt</option>
+            <option>Abgerechnet</option>
+          </select>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Unternehmen</th>
+            <th>Paket / Kosten</th>
+            <th>BAFA-Status</th>
+            <th>Antragsdatum</th>
+            <th>Erstgespräch</th>
+            <th>Förderung</th>
+            <th>Dokumente</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="company-name">MedTech Innovations AG</div><div class="company-seg">Enterprise</div></td>
+            <td><div>Premium · € 14.990</div></td>
+            <td><span class="bafa-abgerechnet">✓ Abgerechnet</span></td>
+            <td>01.09.2026</td>
+            <td style="font-size:12px;color:#16a34a">05.09.2026 ✓</td>
+            <td><div class="subsidy">€ 3.500</div><div class="subsidy-base">max. Förderung</div></td>
+            <td>
+              <div class="doc-checklist">
+                <div class="doc-item ok">✓ Antrag eingereicht</div>
+                <div class="doc-item ok">✓ Bewilligungsbescheid</div>
+                <div class="doc-item ok">✓ Verwendungsnachweis</div>
+              </div>
+            </td>
+            <td><button class="btn btn-ghost" style="font-size:12px;padding:4px 8px">Details</button></td>
+          </tr>
+          <tr>
+            <td><div class="company-name">Dr. Weber Praxisnetz</div><div class="company-seg">KMU</div></td>
+            <td><div>Basis · € 5.990</div></td>
+            <td><span class="bafa-bewilligt">✓ Bewilligt</span></td>
+            <td>10.09.2026</td>
+            <td style="font-size:12px;color:#16a34a">18.09.2026 ✓</td>
+            <td><div class="subsidy">€ 2.996</div><div class="subsidy-base">80 % von € 3.745</div></td>
+            <td>
+              <div class="doc-checklist">
+                <div class="doc-item ok">✓ Antrag eingereicht</div>
+                <div class="doc-item ok">✓ Bewilligungsbescheid</div>
+                <div class="doc-item pending">⏳ Verwendungsnachweis</div>
+              </div>
+            </td>
+            <td><button class="btn btn-ghost" style="font-size:12px;padding:4px 8px">Details</button></td>
+          </tr>
+          <tr style="background:#fffbeb">
+            <td>
+              <div class="company-name">Autohaus Schneider GmbH</div>
+              <div class="company-seg">KMU</div>
+            </td>
+            <td><div>Standard · € 9.990</div></td>
+            <td>
+              <span class="bafa-beantragt">Beantragt</span>
+              <span title="BAFA-Antrag muss VOR Beratungsbeginn gestellt sein!" style="margin-left:5px;cursor:help;font-size:14px">⚠️</span>
+            </td>
+            <td>15.10.2026</td>
+            <td style="font-size:12px;color:#dc2626;font-weight:600" title="BAFA-Antrag muss VOR Beratungsbeginn gestellt sein!">10.10.2026 ⚠️</td>
+            <td><div class="subsidy">€ 3.500</div><div class="subsidy-base">ausstehend</div></td>
+            <td>
+              <div class="doc-checklist">
+                <div class="doc-item ok">✓ Antrag eingereicht</div>
+                <div class="doc-item missing">✗ Bewilligungsbescheid</div>
+                <div class="doc-item missing">✗ Verwendungsnachweis</div>
+              </div>
+            </td>
+            <td><button class="btn btn-ghost" style="font-size:12px;padding:4px 8px">Details</button></td>
+          </tr>
+          <tr>
+            <td><div class="company-name">Bäckerei Müller &amp; Söhne</div><div class="company-seg">KMU</div></td>
+            <td><div>Basis · € 5.990</div></td>
+            <td><span class="bafa-beantragen">Beantragen</span></td>
+            <td>—</td>
+            <td style="font-size:12px;color:#94a3b8">—</td>
+            <td><div class="subsidy">€ 2.996</div><div class="subsidy-base">geplant</div></td>
+            <td>
+              <div class="doc-checklist">
+                <div class="doc-item missing">✗ Antrag eingereicht</div>
+                <div class="doc-item missing">✗ Bewilligungsbescheid</div>
+                <div class="doc-item missing">✗ Verwendungsnachweis</div>
+              </div>
+            </td>
+            <td><button class="btn btn-primary" style="font-size:12px;padding:4px 8px">Antrag stellen</button></td>
+          </tr>
+          <tr style="background:#fffbeb">
+            <td>
+              <div class="company-name">Stahlbau Fischer GmbH</div>
+              <div class="company-seg">Mittelstand</div>
+            </td>
+            <td><div>Premium · € 14.990</div></td>
+            <td>
+              <span class="bafa-pruefen">Prüfen</span>
+              <span title="BAFA-Antrag muss VOR Beratungsbeginn gestellt sein!" style="margin-left:5px;cursor:help;font-size:14px">⚠️</span>
+            </td>
+            <td>—</td>
+            <td style="font-size:12px;color:#dc2626;font-weight:600" title="BAFA-Antrag muss VOR Beratungsbeginn gestellt sein!">05.10.2026 ⚠️</td>
+            <td><div class="subsidy">€ 3.500</div><div class="subsidy-base">zu prüfen</div></td>
+            <td>
+              <div class="doc-checklist">
+                <div class="doc-item missing">✗ Antrag eingereicht</div>
+                <div class="doc-item missing">✗ Bewilligungsbescheid</div>
+                <div class="doc-item missing">✗ Verwendungsnachweis</div>
+              </div>
+            </td>
+            <td><button class="btn btn-ghost" style="font-size:12px;padding:4px 8px">Prüfen</button></td>
+          </tr>
+          <tr>
+            <td><div class="company-name">Consulting Braun AG</div><div class="company-seg">KMU</div></td>
+            <td><div>Standard · € 9.990</div></td>
+            <td><span class="bafa-na">Nicht förderfähig</span></td>
+            <td>—</td>
+            <td style="font-size:12px;color:#94a3b8">—</td>
+            <td style="color:#94a3b8">—</td>
+            <td style="color:#94a3b8;font-size:12px">Beratungsunternehmen</td>
+            <td></td>
+          </tr>
+          <!-- Third warning row -->
+          <tr style="background:#fff1f2">
+            <td>
+              <div class="company-name">Logistik Riedel KG</div>
+              <div class="company-seg">Mittelstand</div>
+            </td>
+            <td><div>Premium · € 14.990</div></td>
+            <td>
+              <span class="bafa-beantragt">Beantragt</span>
+              <span title="BAFA-Antrag muss VOR Beratungsbeginn gestellt sein!" style="margin-left:5px;cursor:help;font-size:14px">⚠️</span>
+            </td>
+            <td>20.10.2026</td>
+            <td style="font-size:12px;color:#dc2626;font-weight:600" title="BAFA-Antrag muss VOR Beratungsbeginn gestellt sein!">12.10.2026 ⚠️</td>
+            <td><div class="subsidy">€ 3.500</div><div class="subsidy-base">gefährdet</div></td>
+            <td>
+              <div class="doc-checklist">
+                <div class="doc-item ok">✓ Antrag eingereicht</div>
+                <div class="doc-item missing">✗ Bewilligungsbescheid</div>
+                <div class="doc-item missing">✗ Verwendungsnachweis</div>
+              </div>
+            </td>
+            <td><button class="btn btn-ghost" style="font-size:12px;padding:4px 8px;color:#dc2626;border-color:#fca5a5">Klären!</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+<script src="mockup-sprint-nav.js"></script>
+</body>

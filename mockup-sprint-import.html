@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Listen-Import — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; display: flex; height: 100vh; overflow: hidden; }
+
+/* Sidebar */
+.sidebar { width: 240px; background: #111111; color: #94a3b8; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+.brand { padding: 20px 16px 16px; border-bottom: 1px solid #1e293b; }
+.brand-name { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+.brand-sub { font-size: 11px; color: #F26722; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
+.sidebar-nav { padding: 12px 8px; flex: 1; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; color: #94a3b8; text-decoration: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .15s; }
+.nav-item:hover { background: #1e293b; color: #e2e8f0; }
+.nav-item.active { background: #1e3a5f; color: #60a5fa; }
+
+/* Layout */
+.main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.breadcrumb a { color: #64748b; text-decoration: none; }
+.breadcrumb a:hover { color: #F26722; }
+.breadcrumb-sep { color: #cbd5e1; }
+.breadcrumb-current { color: #111111; font-weight: 600; }
+.topbar-actions { display: flex; gap: 8px; }
+main { flex: 1; overflow-y: auto; padding: 24px; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; text-decoration: none; font-family: inherit; }
+.btn-primary { background: #F26722; color: #fff; border-color: #D4540A; }
+.btn-primary:hover { background: #D4540A; }
+.btn-ghost { background: #fff; color: #374151; border-color: #e2e8f0; }
+.btn-ghost:hover { background: #f8fafc; }
+
+/* Stepper */
+.stepper { display: flex; gap: 0; background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 24px; flex-shrink: 0; }
+.step { display: flex; align-items: center; gap: 8px; padding: 12px 18px 12px 0; font-size: 12px; color: #94a3b8; font-weight: 500; }
+.step + .step { padding-left: 18px; border-left: 1px solid #f1f5f9; }
+.step-dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: #f1f5f9; color: #94a3b8; flex-shrink: 0; }
+.step.done .step-dot { background: #dcfce7; color: #15803d; }
+.step.active { color: #111111; font-weight: 600; }
+.step.active .step-dot { background: #F26722; color: #fff; }
+
+/* Cards */
+.grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.card { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 18px; overflow: hidden; }
+.card-header { padding: 14px 18px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-size: 14px; font-weight: 700; color: #111111; }
+.card-desc { font-size: 12px; color: #64748b; margin-top: 2px; }
+.card-body { padding: 18px; }
+
+/* Callout */
+.callout { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 16px; margin-bottom: 18px; display: flex; gap: 10px; align-items: flex-start; }
+.callout-icon { font-size: 18px; }
+.callout-text { font-size: 12px; color: #1e40af; line-height: 1.5; }
+
+/* Form */
+label { font-size: 12px; font-weight: 600; color: #374151; display: block; margin-bottom: 4px; }
+select, input[type=text] { width: 100%; padding: 8px 11px; border: 1px solid #e2e8f0; border-radius: 7px; font-size: 13px; font-family: inherit; background: #fff; outline: none; }
+select:focus, input:focus { border-color: #F26722; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+
+/* Dropzone */
+.dropzone { border: 2px dashed #cbd5e1; border-radius: 9px; padding: 22px; text-align: center; color: #64748b; font-size: 13px; background: #f8fafc; margin-top: 6px; }
+.dropzone strong { color: #F26722; }
+.file-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; padding: 10px 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 13px; }
+.file-name { font-weight: 600; color: #166534; }
+.file-meta { color: #15803d; font-size: 12px; }
+
+/* Check rows */
+.check-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f8fafc; font-size: 13px; }
+.check-row:last-child { border-bottom: none; }
+.check-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.check-icon.ok { background: #dcfce7; color: #15803d; }
+.check-icon.warn { background: #fef3c7; color: #b45309; }
+.check-icon.info { background: #e0e7ff; color: #4338ca; }
+.check-main { flex: 1; }
+.check-sub { font-size: 11px; color: #94a3b8; }
+label.check-sub { font-weight: 400; margin-bottom: 0; }
+.check-count { font-size: 13px; font-weight: 700; color: #111111; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; }
+thead th { padding: 8px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #64748b; border-bottom: 1px solid #e2e8f0; background: #f8fafc; text-align: left; }
+tbody td { padding: 9px 12px; font-size: 12.5px; border-bottom: 1px solid #f8fafc; color: #334155; }
+tbody tr:last-child td { border-bottom: none; }
+
+/* Summary */
+.sum-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.sum-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #f8fafc; }
+.sum-value { font-size: 22px; font-weight: 800; color: #111111; line-height: 1; }
+.sum-label { font-size: 11px; color: #64748b; margin-top: 4px; }
+.sum-box.ok { background: #f0fdf4; border-color: #bbf7d0; }
+.sum-box.ok .sum-value { color: #15803d; }
+.sum-box.warn { background: #fffbeb; border-color: #fde68a; }
+.sum-box.warn .sum-value { color: #b45309; }
+.note { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; font-size: 12px; color: #475569; line-height: 1.6; }
+.note strong { color: #111111; }
+.actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="import"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <a href="mockup-sprint-kanban.html">Zielkunden</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="mockup-sprint-zielkunden-liste.html">Listenansicht</a>
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current">Listen-Import</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost">⬇ CSV-Vorlage</button>
+      <a href="mockup-sprint-zielkunden-liste.html" class="btn btn-ghost">Abbrechen</a>
+    </div>
+  </header>
+
+  <div class="stepper">
+    <div class="step done"><span class="step-dot">✓</span>Quelle &amp; Datei</div>
+    <div class="step done"><span class="step-dot">✓</span>Sperrliste</div>
+    <div class="step done"><span class="step-dot">✓</span>Dubletten</div>
+    <div class="step active"><span class="step-dot">4</span>Feld-Mapping</div>
+    <div class="step"><span class="step-dot">5</span>Import</div>
+  </div>
+
+  <main>
+    <div class="callout">
+      <span class="callout-icon">💡</span>
+      <div class="callout-text">
+        <strong>Vor dem Import:</strong> Jede Zeile wird gegen die Sperrliste und den bestehenden Bestand geprüft. WZ-Codes werden automatisch Branche und Priorität zugeordnet. E-Mail-Adressen werden nur übernommen, wenn eine Einwilligung dokumentiert ist.
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">1 · Quelle &amp; Datei</div>
+              <div class="card-desc">Woher stammt die Liste und welche Datei wird eingelesen?</div>
+            </div>
+            <span class="badge" style="background:#dcfce7;color:#15803d;">Geprüft</span>
+          </div>
+          <div class="card-body">
+            <div class="form-row">
+              <div>
+                <label>Quelle</label>
+                <select>
+                  <option selected>Unternehmensregister</option>
+                  <option>BaFin-Unternehmensdatenbank</option>
+                  <option>VDMA-Mitgliederliste</option>
+                  <option>ZVEI-Mitgliederliste</option>
+                  <option>Eigene Recherche (CSV)</option>
+                </select>
+              </div>
+              <div>
+                <label>Stand der Liste</label>
+                <input type="text" value="18.10.2026">
+              </div>
+            </div>
+            <label>Datei</label>
+            <div class="dropzone">CSV hier ablegen oder <strong>Datei auswählen</strong> · max. 5.000 Zeilen</div>
+            <div class="file-row">
+              <div>
+                <div class="file-name">zielkunden_hessen_q4_2026.csv</div>
+                <div class="file-meta">52 Zeilen · 18 KB · UTF-8 · Semikolon</div>
+              </div>
+              <span class="badge" style="background:#dcfce7;color:#15803d;">Format OK</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">2 · Sperrlisten-Abgleich</div>
+            <a href="mockup-sprint-sperrliste.html" class="card-desc" style="color:#F26722;text-decoration:none;">Sperrliste öffnen →</a>
+          </div>
+          <div class="card-body">
+            <div class="check-row">
+              <div class="check-icon ok">✓</div>
+              <div class="check-main">Keine Treffer<label class="check-sub">49 Unternehmen ohne Sperrvermerk</label></div>
+              <div class="check-count">49</div>
+            </div>
+            <div class="check-row">
+              <div class="check-icon warn">⚠</div>
+              <div class="check-main">Auf Sperrliste<label class="check-sub">Autohaus Schneider, Logistik Riedel, Bäckerei Müller — werden übersprungen</label></div>
+              <div class="check-count">3</div>
+            </div>
+            <div class="check-row">
+              <div class="check-icon info">i</div>
+              <div class="check-main">Widersprüche / Löschfristen<label class="check-sub">Keine offenen Widersprüche in dieser Liste</label></div>
+              <div class="check-count">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">3 · Dublettenprüfung</div>
+            <div class="card-desc">2 exakte und 4 ähnliche Treffer</div>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table>
+              <thead>
+                <tr><th>Zeile</th><th>Unternehmen</th><th>Treffer im CRM</th><th>Ähnlichkeit</th><th>Aktion</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>7</td><td>Münchener Rück AG</td><td>Münchener Rückversicherungs-Gesellschaft AG</td><td>Exakt</td><td><select style="padding:4px 8px;font-size:12px;"><option>Zusammenführen</option><option>Überspringen</option><option>Neu anlegen</option></select></td></tr>
+                <tr><td>14</td><td>Bosch Rexroth AG</td><td>Bosch Rexroth</td><td>Exakt</td><td><select style="padding:4px 8px;font-size:12px;"><option>Zusammenführen</option><option>Überspringen</option><option>Neu anlegen</option></select></td></tr>
+                <tr><td>22</td><td>Siemens Financial Services</td><td>Siemens AG · Financial Services</td><td>Hoch</td><td><select style="padding:4px 8px;font-size:12px;"><option>Neu anlegen</option><option>Zusammenführen</option><option>Überspringen</option></select></td></tr>
+                <tr><td>31</td><td>Stahlbau Fischer GmbH</td><td>Stahlbau Fischer</td><td>Hoch</td><td><select style="padding:4px 8px;font-size:12px;"><option>Zusammenführen</option><option>Überspringen</option><option>Neu anlegen</option></select></td></tr>
+                <tr><td>38</td><td>Dr. Weber Praxisnetz</td><td>Praxisnetz Dr. Weber MVZ</td><td>Mittel</td><td><select style="padding:4px 8px;font-size:12px;"><option>Neu anlegen</option><option>Zusammenführen</option><option>Überspringen</option></select></td></tr>
+                <tr><td>44</td><td>MedTech Innovations AG</td><td>MedTech Innovation GmbH</td><td>Mittel</td><td><select style="padding:4px 8px;font-size:12px;"><option>Überspringen</option><option>Neu anlegen</option></select></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">4 · Feld-Mapping &amp; WZ-Zuordnung</div>
+            <div class="card-desc">CSV-Spalten auf CRM-Felder abbilden</div>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table>
+              <thead>
+                <tr><th>CSV-Spalte</th><th>CRM-Feld</th><th>Beispiel</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Name</td><td>Unternehmen</td><td>MedTech Innovations AG</td></tr>
+                <tr><td>Straße</td><td>Straße &amp; Hausnummer</td><td>Hauptstraße 12</td></tr>
+                <tr><td>PLZ</td><td>Postleitzahl</td><td>68161</td></tr>
+                <tr><td>Ort</td><td>Ort</td><td>Mannheim</td></tr>
+                <tr><td>Bundesland</td><td>Bundesland</td><td>Baden-Württemberg</td></tr>
+                <tr><td>Mitarbeitende</td><td>Mitarbeiterzahl</td><td>142</td></tr>
+                <tr><td>WZ</td><td>Branche + Priorität</td><td>28.29 · Maschinenbau &amp; Elektro · P1</td></tr>
+                <tr><td>Ansprechpartner</td><td>Kontakt</td><td>Maria Wagner</td></tr>
+                <tr><td>Quelle</td><td>Herkunft des Kontakts</td><td>Recherche</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Import-Zusammenfassung</div>
+          </div>
+          <div class="card-body">
+            <div class="sum-grid">
+              <div class="sum-box"><div class="sum-value">52</div><div class="sum-label">Zeilen erkannt</div></div>
+              <div class="sum-box warn"><div class="sum-value">3</div><div class="sum-label">gesperrt</div></div>
+              <div class="sum-box warn"><div class="sum-value">6</div><div class="sum-label">Dubletten</div></div>
+              <div class="sum-box ok"><div class="sum-value">43</div><div class="sum-label">neu anlegen</div></div>
+            </div>
+
+            <div class="note" style="margin-bottom:12px;">
+              <strong>WZ-Zuordnung:</strong> 12 WZ-Codes erkannt. Branche und Priorität werden automatisch gesetzt; 2 Codes sind unbekannt und bleiben auf Priorität 3.
+              <div style="margin-top:6px;"><a href="mockup-sprint-planung.html" style="color:#F26722;text-decoration:none;font-weight:600;">WZ-Zuordnung prüfen →</a></div>
+            </div>
+
+            <div class="check-row" style="border-top:1px solid #f8fafc;">
+              <div class="check-icon ok">✓</div>
+              <div class="check-main">Nach Priorität sortieren<label class="check-sub">P1 zuerst, danach P2, P3</label></div>
+            </div>
+            <div class="check-row">
+              <div class="check-icon ok">✓</div>
+              <div class="check-main">Größe prüfen und Datum setzen<label class="check-sub">MA-Zahl aus Register, Prüfdatum = heute</label></div>
+            </div>
+            <div class="check-row">
+              <div class="check-icon info">i</div>
+              <div class="check-main">E-Mail nur mit Einwilligung<label class="check-sub">Spalte „E-Mail erlaubt“ bleibt leer</label></div>
+            </div>
+
+            <div class="actions">
+              <a href="mockup-sprint-zielkunden-liste.html" class="btn btn-ghost">Abbrechen</a>
+              <button class="btn btn-primary">43 Zielkunden importieren</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="mockup-sprint-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Einstellungen — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; display: flex; height: 100vh; overflow: hidden; }
+
+/* Sidebar */
+.sidebar { width: 240px; background: #111111; color: #94a3b8; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+.brand { padding: 20px 16px 16px; border-bottom: 1px solid #1e293b; }
+.brand-name { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+.brand-sub { font-size: 11px; color: #F26722; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
+.sidebar-nav { padding: 12px 8px; flex: 1; }
+.nav-group { margin-bottom: 8px; }
+.nav-group-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; color: #475569; padding: 6px 8px 4px; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; color: #94a3b8; text-decoration: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .15s; }
+.nav-item:hover { background: #1e293b; color: #e2e8f0; }
+.nav-item.active { background: #1e3a5f; color: #60a5fa; }
+.nav-item .icon { font-size: 15px; }
+
+/* Layout */
+.main-wrapper { display: flex; flex: 1; overflow: hidden; }
+.content-area { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 24px; height: 56px; display: flex; align-items: center; flex-shrink: 0; }
+.page-title { font-size: 16px; font-weight: 600; color: #111111; }
+main { flex: 1; overflow-y: auto; display: flex; gap: 0; }
+
+/* Settings layout */
+.settings-nav { width: 200px; flex-shrink: 0; padding: 20px 12px; border-right: 1px solid #e2e8f0; background: #fff; }
+a.s-nav-item { text-decoration: none; }
+.s-nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; font-size: 13px; color: #64748b; cursor: pointer; margin-bottom: 2px; }
+.s-nav-item:hover { background: #f1f5f9; color: #111111; }
+.s-nav-item.active { background: #ede9fe; color: #F26722; font-weight: 600; }
+.settings-content { flex: 1; overflow-y: auto; padding: 24px; }
+.settings-panel { display: none; }
+.settings-panel.active { display: block; }
+
+/* Cards */
+.settings-card { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+.card-header { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.card-title { font-size: 14px; font-weight: 700; color: #111111; }
+.card-desc { font-size: 12px; color: #64748b; margin-top: 2px; }
+.card-body { padding: 18px 20px; }
+
+/* Form elements */
+.form-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+.form-row:last-child { margin-bottom: 0; }
+.form-row-inline { display: flex; gap: 12px; align-items: flex-end; }
+.form-row-inline .form-row { flex: 1; margin-bottom: 0; }
+label { font-size: 12px; font-weight: 500; color: #374151; }
+input[type=text], input[type=date], input[type=number], select, textarea {
+  padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; font-family: inherit; outline: none; }
+input:focus, select:focus { border-color: #F26722; }
+input.invalid { border-color: #dc2626; background: #fef2f2; }
+.field-desc { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+/* Check boxes (computed results) */
+.check-box { margin-top: 14px; padding: 12px 14px; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 12px; line-height: 1.55; color: #475569; }
+.check-box strong { color: #111111; }
+.check-box.ok { border-color: #bbf7d0; background: #f0fdf4; color: #166534; }
+.check-box.ok strong { color: #166534; }
+.check-box.warn { border-color: #fde68a; background: #fffbeb; color: #92400e; }
+.check-box.warn strong { color: #92400e; }
+.check-box.err { border-color: #fca5a5; background: #fef2f2; color: #b91c1c; }
+.check-box.err strong { color: #b91c1c; }
+
+/* Toggle */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f8fafc; }
+.toggle-row:last-child { border-bottom: none; }
+.toggle-label { font-size: 13px; font-weight: 500; color: #111111; }
+.toggle-desc { font-size: 12px; color: #64748b; margin-top: 2px; }
+.toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-track { position: absolute; inset: 0; background: #e2e8f0; border-radius: 10px; cursor: pointer; }
+.toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.toggle input:checked + .toggle-track { background: #F26722; }
+.toggle input:checked + .toggle-track .toggle-thumb { transform: translateX(16px); }
+
+/* Tables */
+.pkg-table { width: 100%; border-collapse: collapse; }
+.pkg-table th { padding: 8px 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; color: #64748b; border-bottom: 1px solid #f1f5f9; text-align: left; }
+.pkg-table td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #f8fafc; }
+.pkg-table tr:last-child td { border-bottom: none; }
+.pkg-price { font-weight: 700; color: #111111; }
+.pkg-color { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.edit-link { color: #F26722; font-size: 12px; cursor: pointer; text-decoration: none; }
+.edit-link:hover { text-decoration: underline; }
+.status-toggle, .bafa-toggle { cursor: pointer; font-size: 12px; font-weight: 600; }
+.sum-line { padding: 12px 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #64748b; display: flex; gap: 18px; flex-wrap: wrap; }
+.sum-line strong { color: #111111; }
+
+/* Segments */
+.seg-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.seg-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border: 1px solid #e2e8f0; border-radius: 20px; font-size: 12px; font-weight: 500; color: #374151; cursor: pointer; }
+.seg-chip.active { border-color: #F26722; background: #f0f0ff; color: #F26722; }
+.seg-chip.out { opacity: .55; }
+.seg-chip .chip-remove { color: #94a3b8; font-size: 14px; line-height: 1; }
+
+/* Btns */
+.btn { padding: 7px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+.btn[disabled] { opacity: .45; cursor: default; }
+.btn-primary { background: #F26722; color: #fff; }
+.btn-primary:hover { background: #D4540A; }
+.btn-ghost { background: transparent; color: #64748b; border: 1px solid #e2e8f0; }
+.btn-ghost:hover { background: #f8fafc; }
+.btn-danger { background: #fff; color: #dc2626; border: 1px solid #fca5a5; }
+.btn-danger:hover { background: #fee2e2; }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="einstellungen"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <div class="content-area">
+    <header class="topbar">
+      <span class="page-title">Einstellungen</span>
+    </header>
+
+    <main>
+      <!-- Left settings nav -->
+      <div class="settings-nav">
+        <a class="s-nav-item active" href="#sec-sprint" data-panel="sec-sprint">🚀 Sprint-Info</a>
+        <a class="s-nav-item" href="#sec-pakete" data-panel="sec-pakete">📦 Pakete &amp; Preise</a>
+        <a class="s-nav-item" href="#sec-segmente" data-panel="sec-segmente">🏷️ Branchen</a>
+        <a class="s-nav-item" href="mockup-sprint-team.html">👤 Team</a>
+        <a class="s-nav-item" href="mockup-sprint-planung.html">⚡ Kapazität</a>
+        <a class="s-nav-item" href="#sec-benachrichtigungen" data-panel="sec-benachrichtigungen">🔔 Benachrichtigungen</a>
+        <a class="s-nav-item" href="#sec-bafa" data-panel="sec-bafa">💶 BAFA</a>
+        <a class="s-nav-item" href="#sec-linkedin" data-panel="sec-linkedin">💬 LinkedIn &amp; Outreach</a>
+        <a class="s-nav-item" href="#sec-gefahrenzone" data-panel="sec-gefahrenzone" style="margin-top:24px;color:#dc2626">⚠️ Gefahrenzone</a>
+      </div>
+
+      <div class="settings-content">
+
+        <!-- 1. Sprint info -->
+        <div class="settings-card settings-panel active" id="sec-sprint">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Sprint-Informationen</div>
+              <div class="card-desc">Grundlegende Daten und Ziele des KI-Readiness Sprint</div>
+            </div>
+            <button class="btn btn-ghost" data-save disabled>Speichern</button>
+          </div>
+          <div class="card-body">
+            <div class="form-row-inline">
+              <div class="form-row">
+                <label>Sprint-Name</label>
+                <input type="text" value="KI-Readiness Sprint Q4/2026">
+              </div>
+              <div class="form-row">
+                <label>Sprint-Nummer</label>
+                <input type="text" value="SP-2026-04">
+              </div>
+            </div>
+            <div class="form-row-inline">
+              <div class="form-row">
+                <label>Startdatum</label>
+                <input type="date" id="sprint-start" value="2026-10-01">
+              </div>
+              <div class="form-row">
+                <label>Enddatum</label>
+                <input type="date" id="sprint-end" value="2026-12-31">
+              </div>
+            </div>
+            <div class="form-row">
+              <label>Beschreibung</label>
+              <textarea style="min-height:60px">Vertriebssprint zur Gewinnung von Erstkunden für das KI-Readiness Assessment-Angebot. Fokus auf KMU und Mittelstand in NRW und Bayern.</textarea>
+            </div>
+            <div class="form-row-inline">
+              <div class="form-row">
+                <label>Ziel: neue Zielkunden</label>
+                <input type="number" id="goal-targets" value="60">
+              </div>
+              <div class="form-row">
+                <label>Ziel: gewonnene Kunden</label>
+                <input type="number" id="goal-wins" value="15">
+              </div>
+              <div class="form-row">
+                <label>Umsatzziel</label>
+                <input type="text" id="revenue-goal" value="€ 180.000">
+              </div>
+            </div>
+            <div class="check-box" id="sprint-check"></div>
+          </div>
+        </div>
+
+        <!-- 2. Packages -->
+        <div class="settings-card settings-panel" id="sec-pakete">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Pakete &amp; Preise</div>
+              <div class="card-desc">Angebotspakete im Sprint — Status und BAFA-Fähigkeit per Klick änderbar</div>
+            </div>
+            <button class="btn btn-primary" data-action="add-package">+ Paket hinzufügen</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="pkg-table" id="paket-table">
+              <thead>
+                <tr>
+                  <th>Paket</th>
+                  <th>Beschreibung</th>
+                  <th>Preis</th>
+                  <th>BAFA-fähig</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="paket-body">
+                <tr data-price="5990" data-active="1" data-bafa="1">
+                  <td><span class="pkg-color" style="background:#64748b"></span> <strong>Basis</strong></td>
+                  <td style="color:#64748b;font-size:12px">KI-Assessment Light, 1 Use Case</td>
+                  <td class="pkg-price">€ 5.990</td>
+                  <td><span class="bafa-toggle">✅ Ja</span></td>
+                  <td><span class="status-toggle" style="color:#16a34a">Aktiv</span></td>
+                  <td><a href="#" class="edit-link">Bearbeiten</a></td>
+                </tr>
+                <tr data-price="9990" data-active="1" data-bafa="1">
+                  <td><span class="pkg-color" style="background:#F26722"></span> <strong>Standard</strong></td>
+                  <td style="color:#64748b;font-size:12px">KI-Assessment, 3 Use Cases, Roadmap</td>
+                  <td class="pkg-price">€ 9.990</td>
+                  <td><span class="bafa-toggle">✅ Ja</span></td>
+                  <td><span class="status-toggle" style="color:#16a34a">Aktiv</span></td>
+                  <td><a href="#" class="edit-link">Bearbeiten</a></td>
+                </tr>
+                <tr data-price="14990" data-active="1" data-bafa="1">
+                  <td><span class="pkg-color" style="background:#d97706"></span> <strong>Premium</strong></td>
+                  <td style="color:#64748b;font-size:12px">Full Assessment, 5+ Use Cases, PoC</td>
+                  <td class="pkg-price">€ 14.990</td>
+                  <td><span class="bafa-toggle">✅ Ja</span></td>
+                  <td><span class="status-toggle" style="color:#16a34a">Aktiv</span></td>
+                  <td><a href="#" class="edit-link">Bearbeiten</a></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="sum-line" id="paket-summary"></div>
+          </div>
+        </div>
+
+        <!-- 3. Branchen -->
+        <div class="settings-card settings-panel" id="sec-segmente">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Zielgruppen-Branchen</div>
+              <div class="card-desc">Branchen und Unternehmensgrößen für diesen Sprint</div>
+            </div>
+            <button class="btn btn-ghost" data-save disabled>Speichern</button>
+          </div>
+          <div class="card-body">
+            <div class="form-row">
+              <label>Aktive Branchen</label>
+              <div class="seg-chips" style="margin-top:6px" id="branch-chips">
+                <div class="seg-chip active" data-branch>Banken <span class="chip-remove">×</span></div>
+                <div class="seg-chip active" data-branch>Versicherungen &amp; Finanzvermittler <span class="chip-remove">×</span></div>
+                <div class="seg-chip active" data-branch>Handel &amp; Logistik <span class="chip-remove">×</span></div>
+                <div class="seg-chip active" data-branch>Gesundheit &amp; Soziales <span class="chip-remove">×</span></div>
+                <div class="seg-chip" data-branch>IT &amp; Telekommunikation</div>
+                <div class="seg-chip" data-branch>Maschinenbau &amp; Elektro</div>
+                <div class="seg-chip" id="chip-add">+ Branche hinzufügen</div>
+              </div>
+              <div class="field-desc" id="seg-count"></div>
+            </div>
+            <div class="form-row" style="margin-top:16px">
+              <label>Unternehmensgrößen</label>
+              <div class="seg-chips" style="margin-top:6px" id="size-chips">
+                <div class="seg-chip active" data-size>KMU (10–250 MA) <span class="chip-remove">×</span></div>
+                <div class="seg-chip active" data-size>Mittelstand (250–1.000 MA) <span class="chip-remove">×</span></div>
+                <div class="seg-chip out" data-size="enterprise">Enterprise (1.000+ MA)</div>
+              </div>
+              <div class="field-desc">Enterprise liegt außerhalb des Sprint-Designs (Pakete bis 500 MA) und kann nicht aktiviert werden.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Notifications -->
+        <div class="settings-card settings-panel" id="sec-benachrichtigungen">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Benachrichtigungen</div>
+              <div class="card-desc">Wann du per E-Mail oder Slack informiert werden möchtest</div>
+            </div>
+            <button class="btn btn-ghost" data-save disabled>Speichern</button>
+          </div>
+          <div class="card-body">
+            <div class="toggle-row">
+              <div><div class="toggle-label">Angebot angenommen</div><div class="toggle-desc">E-Mail wenn ein Angebot angenommen wird</div></div>
+              <label class="toggle"><input type="checkbox" checked><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">Angebot abgelaufen</div><div class="toggle-desc">E-Mail wenn ein Angebot das Ablaufdatum erreicht</div></div>
+              <label class="toggle"><input type="checkbox" checked><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">Neue Zuweisung</div><div class="toggle-desc">Wenn dir ein Zielkunde zugewiesen wird</div></div>
+              <label class="toggle"><input type="checkbox" checked><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">Täglicher Report</div><div class="toggle-desc">Morgens eine Zusammenfassung der Sprint-Aktivitäten</div></div>
+              <label class="toggle"><input type="checkbox"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. BAFA -->
+        <div class="settings-card settings-panel" id="sec-bafa">
+          <div class="card-header">
+            <div>
+              <div class="card-title">BAFA-Förderung</div>
+              <div class="card-desc">Fördersatz und Obergrenze für die Angebotskalkulation</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <a class="btn btn-ghost" href="mockup-sprint-bafa.html">Zur BAFA-Übersicht →</a>
+              <button class="btn btn-ghost" data-save disabled>Speichern</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="form-row-inline">
+              <div class="form-row">
+                <label>Fördersatz (%)</label>
+                <input type="number" id="bafa-rate" value="50">
+              </div>
+              <div class="form-row">
+                <label>Max. Zuschuss je Antrag (€)</label>
+                <input type="number" id="bafa-cap" value="4000">
+              </div>
+              <div class="form-row">
+                <label>De-minimis-Status</label>
+                <select id="bafa-dem">
+                  <option value="ok">Unter 30.000 € (3 Jahre)</option>
+                  <option value="over">Überschritten</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="bafa-box" class="check-box"></div>
+
+            <div style="font-size:12px;font-weight:700;color:#374151;margin:18px 0 8px;text-transform:uppercase;letter-spacing:.5px">Förderung je aktivem, BAFA-fähigem Paket</div>
+            <table class="pkg-table">
+              <thead>
+                <tr>
+                  <th>Paket</th>
+                  <th>Preis</th>
+                  <th>Zuschuss</th>
+                  <th>Eigenanteil Kunde</th>
+                </tr>
+              </thead>
+              <tbody id="bafa-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 6. LinkedIn & Outreach -->
+        <div class="settings-card settings-panel" id="sec-linkedin">
+          <div class="card-header">
+            <div>
+              <div class="card-title">LinkedIn &amp; Outreach</div>
+              <div class="card-desc">Wochenkontingent, Verbindungs-Tracking und Outreach-Annahmen</div>
+            </div>
+            <button class="btn btn-ghost" data-save disabled>Speichern</button>
+          </div>
+          <div class="card-body">
+
+            <!-- Weekly quota -->
+            <div style="background:#FFF4ED;border:1px solid #FED7AA;border-radius:8px;padding:14px;margin-bottom:18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <div style="font-size:13px;font-weight:700;color:#111111">LinkedIn-Wochenkontingent</div>
+                <div style="font-size:13px;font-weight:700;color:#F26722" id="li-used"></div>
+              </div>
+              <div style="height:10px;background:#FED7AA;border-radius:5px;overflow:hidden;margin-bottom:6px">
+                <div id="li-bar" style="height:100%;width:0;background:#F26722;border-radius:5px;transition:width .3s"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:#64748b">
+                <span id="li-pct"></span>
+                <span id="li-left"></span>
+              </div>
+            </div>
+
+            <!-- Warning -->
+            <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:18px;display:flex;gap:8px">
+              <span>⚠️</span>
+              <div style="font-size:12px;color:#92400e"><strong>LinkedIn-Limit:</strong> LinkedIn begrenzt Verbindungsanfragen auf ca. 100–200 pro Woche (je nach Account-Typ und Alter). Bei Überschreitung droht temporäre Sperrung des Accounts.</div>
+            </div>
+
+            <!-- Configurable assumptions -->
+            <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">Konfigurierbare Annahmen (Kapazitätsplanung)</div>
+            <div class="form-row-inline">
+              <div class="form-row">
+                <label>Anfragen / Woche (Gesamt)</label>
+                <input type="number" id="li-quota" value="75">
+                <div class="field-desc">Wöchentliches Ziel für LinkedIn-Anfragen</div>
+              </div>
+              <div class="form-row">
+                <label>Anteil für Zielfirmen (%)</label>
+                <input type="number" id="li-share" value="50">
+                <div class="field-desc">Rest für allg. Netzwerkpflege</div>
+              </div>
+            </div>
+            <div class="form-row-inline">
+              <div class="form-row">
+                <label>Minuten pro Anfrage (Ø)</label>
+                <input type="number" id="li-min" value="10">
+              </div>
+              <div class="form-row">
+                <label>Anteil mit Anlass für Anruf (%)</label>
+                <input type="number" id="li-trig" value="40">
+                <div class="field-desc">Gefilterte Zielfirmen mit konkretem Anlass</div>
+              </div>
+            </div>
+            <div class="check-box" id="li-box"></div>
+
+            <!-- Connection tracking -->
+            <div style="font-size:12px;font-weight:700;color:#374151;margin:18px 0 10px;text-transform:uppercase;letter-spacing:.5px">Verbindungs-Tracking</div>
+            <table class="pkg-table">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Bedeutung</th>
+                  <th>Anzahl</th>
+                  <th>Nächste Aktion</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:10px;background:#dcfce7;color:#16a34a;font-size:11px;font-weight:600">✓ Vernetzt</span></td>
+                  <td style="font-size:12px;color:#64748b">LinkedIn-Verbindung angenommen</td>
+                  <td><strong>18</strong></td>
+                  <td style="font-size:12px;color:#374151">Anlass suchen → Anruf planen</td>
+                </tr>
+                <tr>
+                  <td><span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:10px;background:#fef3c7;color:#d97706;font-size:11px;font-weight:600">⏳ Anfrage ausstehend</span></td>
+                  <td style="font-size:12px;color:#64748b">Anfrage gesendet, noch keine Antwort</td>
+                  <td><strong>14</strong></td>
+                  <td style="font-size:12px;color:#374151">Nach 14 Tagen: Nachfassen oder zurückstellen</td>
+                </tr>
+                <tr>
+                  <td><span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:10px;background:#f1f5f9;color:#64748b;font-size:11px;font-weight:600">— Nicht gefunden</span></td>
+                  <td style="font-size:12px;color:#64748b">Kein LinkedIn-Profil oder Profil nicht auffindbar</td>
+                  <td><strong>7</strong></td>
+                  <td style="font-size:12px;color:#374151">Direktanruf ohne LinkedIn-Vernetzung</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div style="margin-top:14px">
+              <div class="toggle-row">
+                <div><div class="toggle-label">Automatischer Reminder nach 14 Tagen</div><div class="toggle-desc">Aufgabe erstellen wenn Anfrage unbeantwortet bleibt</div></div>
+                <label class="toggle"><input type="checkbox" checked><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+              </div>
+              <div class="toggle-row">
+                <div><div class="toggle-label">Wochenbericht LinkedIn-Nutzung</div><div class="toggle-desc">Montags Übersicht über Anfragen und Verbindungen</div></div>
+                <label class="toggle"><input type="checkbox"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Danger zone -->
+        <div class="settings-card settings-panel" id="sec-gefahrenzone" style="border-color:#fca5a5">
+          <div class="card-header" style="background:#fff5f5;border-radius:10px 10px 0 0">
+            <div>
+              <div class="card-title" style="color:#dc2626">Gefahrenzone</div>
+              <div class="card-desc">Irreversible Aktionen für diesen Sprint</div>
+            </div>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-size:13px;font-weight:500">Sprint archivieren</div><div style="font-size:12px;color:#64748b">Sprint schließen und schreibgeschützt machen</div></div>
+              <button class="btn btn-ghost" data-action="archive">Archivieren</button>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-size:13px;font-weight:500;color:#dc2626">Sprint löschen</div><div style="font-size:12px;color:#64748b">Alle Daten unwiderruflich löschen</div></div>
+              <button class="btn btn-danger" data-action="delete">Sprint löschen</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="settings-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:10px;width:420px;max-width:calc(100% - 32px);box-shadow:0 20px 50px rgba(0,0,0,.25)">
+    <div style="padding:16px 20px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center">
+      <div id="modal-title" style="font-size:14px;font-weight:700">Paket bearbeiten</div>
+      <span id="modal-close" style="cursor:pointer;color:#94a3b8;font-size:18px;line-height:1">×</span>
+    </div>
+    <div style="padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+      <div class="form-row" style="margin:0"><label>Paket</label><input type="text" id="pkg-name"></div>
+      <div class="form-row" style="margin:0"><label>Beschreibung</label><input type="text" id="pkg-desc"></div>
+      <div class="form-row" style="margin:0"><label>Preis</label><input type="text" id="pkg-price" placeholder="€ 0"></div>
+    </div>
+    <div style="padding:14px 20px;border-top:1px solid #f1f5f9;display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn btn-ghost" id="modal-cancel">Abbrechen</button>
+      <button class="btn btn-primary" id="modal-save">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  // ── Helpers ──────────────────────────────────────────────────
+  var toastEl = null;
+  function toast(msg) {
+    if (toastEl && toastEl.parentNode) toastEl.parentNode.removeChild(toastEl);
+    toastEl = document.createElement('div');
+    toastEl.textContent = msg;
+    toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:1100;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    document.body.appendChild(toastEl);
+    setTimeout(function () {
+      if (toastEl && toastEl.parentNode) toastEl.parentNode.removeChild(toastEl);
+      toastEl = null;
+    }, 1800);
+  }
+  function num(v) { var n = parseFloat(v); return isNaN(n) ? 0 : n; }
+  function euro(s) { return parseInt(String(s == null ? '' : s).replace(/[^\d]/g, ''), 10) || 0; }
+  function fmt(n) { return Number(n).toLocaleString('de-DE', { maximumFractionDigits: 1 }); }
+  function fmtEuro(n) { return '€ ' + Math.round(n).toLocaleString('de-DE'); }
+
+  // ── Panel navigation ─────────────────────────────────────────
+  var panelLinks = document.querySelectorAll('.s-nav-item[data-panel]');
+  panelLinks.forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      var id = link.getAttribute('data-panel');
+      document.querySelectorAll('.settings-panel').forEach(function (p) {
+        p.classList.toggle('active', p.id === id);
+      });
+      panelLinks.forEach(function (l) { l.classList.toggle('active', l === link); });
+    });
+  });
+
+  // ── Save buttons: enabled on first change ────────────────────
+  document.querySelectorAll('[data-save]').forEach(function (btn) {
+    var panel = btn.closest('.settings-panel');
+    if (panel) {
+      panel.addEventListener('input', function () { btn.disabled = false; });
+      panel.addEventListener('change', function () { btn.disabled = false; });
+      panel.addEventListener('click', function (e) {
+        if (e.target.classList && (e.target.classList.contains('seg-chip') || e.target.classList.contains('chip-remove') || e.target.classList.contains('status-toggle') || e.target.classList.contains('bafa-toggle'))) {
+          btn.disabled = false;
+        }
+      });
+    }
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (panel && panel.id === 'sec-sprint' && !sprintCalc()) {
+        toast('Enddatum muss nach dem Startdatum liegen');
+        return;
+      }
+      btn.disabled = true;
+      toast('Einstellungen gespeichert');
+    });
+  });
+
+  // ── Sprint: Zeitraum, Umsatz- und Kapazitätscheck ────────────
+  var sprintStart = document.getElementById('sprint-start');
+  var sprintEnd = document.getElementById('sprint-end');
+  var goalTargets = document.getElementById('goal-targets');
+  var goalWins = document.getElementById('goal-wins');
+  var revenueEl = document.getElementById('revenue-goal');
+  var liQuota = document.getElementById('li-quota');
+  var liShare = document.getElementById('li-share');
+  var liMin = document.getElementById('li-min');
+  var liTrig = document.getElementById('li-trig');
+  var bafaRate = document.getElementById('bafa-rate');
+  var bafaCap = document.getElementById('bafa-cap');
+  var bafaDem = document.getElementById('bafa-dem');
+
+  function avgActivePrice() {
+    var rows = document.querySelectorAll('#paket-body tr');
+    var sum = 0, count = 0;
+    rows.forEach(function (tr) {
+      if (tr.dataset.active === '1') { sum += euro(tr.dataset.price); count++; }
+    });
+    return count ? sum / count : 0;
+  }
+
+  function sprintCalc() {
+    var startV = sprintStart.value, endV = sprintEnd.value;
+    var start = new Date(startV), end = new Date(endV);
+    var dateOk = !!startV && !!endV && end > start;
+    sprintStart.classList.toggle('invalid', !!startV && !!endV && !dateOk);
+    sprintEnd.classList.toggle('invalid', !!startV && !!endV && !dateOk);
+
+    var weeks = dateOk ? Math.max(1, Math.round((end - start) / 604800000)) : 0;
+    var targets = num(goalTargets.value);
+    var wins = num(goalWins.value);
+    var rev = euro(revenueEl.value);
+    var avg = avgActivePrice();
+    var dealsNeeded = avg > 0 ? Math.ceil(rev / avg) : 0;
+    var covered = Math.round(wins * avg);
+    var coverage = rev > 0 ? Math.round(covered / rev * 100) : 0;
+    var perWeek = weeks ? targets / weeks : 0;
+    var liTargets = num(liQuota.value) * num(liShare.value) / 100;
+
+    var box = document.getElementById('sprint-check');
+    if (!dateOk) {
+      box.className = 'check-box err';
+      box.innerHTML = '<strong>Zeitraum ungültig:</strong> Das Enddatum muss nach dem Startdatum liegen.';
+      return false;
+    }
+    var warn = coverage < 100 || (liTargets > 0 && perWeek > liTargets);
+    box.className = 'check-box ' + (warn ? 'warn' : 'ok');
+    box.innerHTML =
+      '<strong>Laufzeit:</strong> ' + weeks + ' Wochen. ' +
+      '<strong>Umsatz:</strong> ' + fmtEuro(rev) + ' ÷ Ø ' + fmtEuro(avg) + ' ≈ ' + dealsNeeded + ' Deals; ' +
+      wins + ' gewonnene Kunden decken ' + fmtEuro(covered) + ' (' + coverage + ' %). ' +
+      '<strong>Tempo:</strong> ' + fmt(targets) + ' neue Zielkunden = ' + fmt(perWeek) + '/Woche; ' +
+      'bei ' + fmt(liTargets) + ' Zielfirmen-Anfragen/Woche ' + (perWeek <= liTargets ? 'plausibel.' : 'zu hoch.');
+    return true;
+  }
+
+  // ── Packages ─────────────────────────────────────────────────
+  var modal = document.getElementById('settings-modal');
+  var mTitle = document.getElementById('modal-title');
+  var mName = document.getElementById('pkg-name');
+  var mDesc = document.getElementById('pkg-desc');
+  var mPrice = document.getElementById('pkg-price');
+  var editRow = null;
+
+  function bindRow(tr) {
+    tr.querySelector('.status-toggle').addEventListener('click', function () {
+      var on = tr.dataset.active === '1' ? '0' : '1';
+      tr.dataset.active = on;
+      this.textContent = on === '1' ? 'Aktiv' : 'Inaktiv';
+      this.style.color = on === '1' ? '#16a34a' : '#94a3b8';
+      updateAll();
+    });
+    tr.querySelector('.bafa-toggle').addEventListener('click', function () {
+      var on = tr.dataset.bafa === '1' ? '0' : '1';
+      tr.dataset.bafa = on;
+      this.textContent = on === '1' ? '✅ Ja' : '❌ Nein';
+      updateBafa();
+      sprintCalc();
+    });
+    tr.querySelector('.edit-link').addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      openModal(tr);
+    });
+  }
+  document.querySelectorAll('#paket-body tr').forEach(bindRow);
+
+  function openModal(row) {
+    editRow = row;
+    mTitle.textContent = row ? 'Paket bearbeiten' : 'Neues Paket';
+    if (row) {
+      mName.value = row.children[0].querySelector('strong').textContent;
+      mDesc.value = row.children[1].textContent;
+      mPrice.value = row.children[2].textContent;
+    } else {
+      mName.value = '';
+      mDesc.value = '';
+      mPrice.value = '';
+    }
+    modal.style.display = 'flex';
+    mName.focus();
+  }
+  function closeModal() {
+    modal.style.display = 'none';
+    editRow = null;
+  }
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  document.getElementById('modal-cancel').addEventListener('click', closeModal);
+  modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+  document.getElementById('modal-save').addEventListener('click', function (e) {
+    e.stopPropagation();
+    var name = mName.value.trim() || 'Neues Paket';
+    var desc = mDesc.value.trim();
+    var priceTxt = mPrice.value.trim() || '€ 0';
+    var priceNum = euro(priceTxt);
+    var priceLabel = fmtEuro(priceNum);
+
+    if (editRow) {
+      editRow.children[0].querySelector('strong').textContent = name;
+      editRow.children[1].textContent = desc;
+      editRow.children[2].textContent = priceLabel;
+      editRow.dataset.price = String(priceNum);
+      toast('Paket aktualisiert');
+    } else {
+      var tbody = document.getElementById('paket-body');
+      var tr = document.createElement('tr');
+      tr.dataset.price = String(priceNum);
+      tr.dataset.active = '0';
+      tr.dataset.bafa = '1';
+      tr.innerHTML = '<td><span class="pkg-color" style="background:#94a3b8"></span> <strong></strong></td>' +
+        '<td style="color:#64748b;font-size:12px"></td>' +
+        '<td class="pkg-price"></td>' +
+        '<td><span class="bafa-toggle">✅ Ja</span></td>' +
+        '<td><span class="status-toggle" style="color:#94a3b8">Inaktiv</span></td>' +
+        '<td><a href="#" class="edit-link">Bearbeiten</a></td>';
+      tr.children[0].querySelector('strong').textContent = name;
+      tr.children[1].textContent = desc;
+      tr.children[2].textContent = priceLabel;
+      bindRow(tr);
+      tbody.appendChild(tr);
+      toast('Paket als Entwurf angelegt');
+    }
+    closeModal();
+    updateAll();
+  });
+
+  document.querySelector('[data-action="add-package"]').addEventListener('click', function (e) {
+    e.stopPropagation();
+    openModal(null);
+  });
+
+  function updatePaketSummary() {
+    var rows = document.querySelectorAll('#paket-body tr');
+    var active = 0, sum = 0, eligible = 0;
+    rows.forEach(function (tr) {
+      if (tr.dataset.active === '1') {
+        active++;
+        sum += euro(tr.dataset.price);
+        if (tr.dataset.bafa === '1') eligible++;
+      }
+    });
+    var avg = active ? sum / active : 0;
+    var dem = bafaDem.value;
+    document.getElementById('paket-summary').innerHTML =
+      '<span>Aktive Pakete: <strong>' + active + ' von ' + rows.length + '</strong></span>' +
+      '<span>Ø Preis aktiv: <strong>' + fmtEuro(avg) + '</strong></span>' +
+      '<span>BAFA-fähig: <strong>' + eligible + '</strong></span>' +
+      '<span>Zuschuss je Antrag max.: <strong>' + (dem === 'over' ? '0 € (De-minimis überschritten)' : fmtEuro(num(bafaCap.value))) + '</strong></span>';
+  }
+
+  // ── BAFA ─────────────────────────────────────────────────────
+  function updateBafa() {
+    var rate = num(bafaRate.value) / 100;
+    var cap = num(bafaCap.value);
+    var dem = bafaDem.value;
+    var box = document.getElementById('bafa-box');
+    var tbody = document.getElementById('bafa-body');
+    tbody.innerHTML = '';
+    var total = 0, rows = 0;
+
+    document.querySelectorAll('#paket-body tr').forEach(function (tr) {
+      if (tr.dataset.active !== '1' || tr.dataset.bafa !== '1') return;
+      var name = tr.children[0].querySelector('strong').textContent;
+      var price = euro(tr.dataset.price);
+      var sub = dem === 'over' ? 0 : Math.min(price * rate, cap);
+      total += sub;
+      rows++;
+
+      var t = document.createElement('tr');
+      t.innerHTML = '<td><strong></strong></td><td class="pkg-price"></td><td></td><td></td>';
+      t.children[0].querySelector('strong').textContent = name;
+      t.children[1].textContent = fmtEuro(price);
+      t.children[2].textContent = fmtEuro(sub);
+      t.children[3].textContent = fmtEuro(price - sub);
+      tbody.appendChild(t);
+    });
+
+    if (dem === 'over') {
+      box.className = 'check-box err';
+      box.innerHTML = '<strong>Keine Förderung:</strong> De-minimis-Budget (30.000 € in 3 Jahren) ist überschritten — Angebote müssen ohne BAFA-Zuschuss kalkuliert werden.';
+    } else {
+      box.className = 'check-box ok';
+      box.innerHTML = '<strong>' + rows + ' förderfähige Pakete:</strong> Zuschuss ' + Math.round(rate * 100) + ' % der Beratungskosten, je Antrag höchstens ' + fmtEuro(cap) + '. Summe bei je einem Verkauf: ' + fmtEuro(total) + '.';
+    }
+    updatePaketSummary();
+  }
+
+  // ── LinkedIn: Kontingent und Zeitbedarf ──────────────────────
+  function liCalc() {
+    var quota = num(liQuota.value);
+    var share = num(liShare.value);
+    var mins = num(liMin.value);
+    var trig = num(liTrig.value);
+    var targets = quota * share / 100;
+    var hours = quota * mins / 60;
+    var calls = targets * trig / 100;
+    var used = 32;
+    var avail = 8.4;
+    var pct = quota > 0 ? Math.min(100, used / quota * 100) : 0;
+
+    document.getElementById('li-used').textContent = used + ' / ' + quota + ' Anfragen diese Woche';
+    document.getElementById('li-bar').style.width = pct + '%';
+    document.getElementById('li-pct').textContent = fmt(pct) + ' % genutzt (KW 43)';
+    document.getElementById('li-left').textContent = Math.max(0, quota - used) + ' Anfragen verbleibend';
+
+    var box = document.getElementById('li-box');
+    if (hours > avail) {
+      box.className = 'check-box warn';
+      box.innerHTML = '<strong>Über Kapazität:</strong> ' + fmt(quota) + ' Anfragen × ' + mins + ' min = ' + fmt(hours) + ' h/Woche; laut Rechenhilfe stehen 8,4 h/Woche zur Verfügung (395 h in 47 Wochen). Empfohlen: höchstens ' + Math.floor(avail * 60 / Math.max(1, mins)) + ' Anfragen/Woche.';
+    } else {
+      box.className = 'check-box ok';
+      box.innerHTML = '<strong>Im Budget:</strong> ' + fmt(quota) + ' Anfragen × ' + mins + ' min = ' + fmt(hours) + ' h/Woche von 8,4 h/Woche. Davon ' + fmt(targets) + ' an Zielfirmen und ' + fmt(calls) + ' Anrufe mit Anlass/Woche.';
+    }
+  }
+
+  function updateAll() {
+    liCalc();
+    sprintCalc();
+    updateBafa();
+  }
+
+  // ── Segments ─────────────────────────────────────────────────
+  function segCount() {
+    var active = document.querySelectorAll('#branch-chips .seg-chip.active[data-branch]').length;
+    var sizes = document.querySelectorAll('#size-chips .seg-chip.active').length;
+    document.getElementById('seg-count').textContent = active + ' Branchen aktiv · ' + sizes + ' Größenklassen';
+  }
+  function setupChip(chip) {
+    chip.addEventListener('click', function (e) {
+      if (chip.id === 'chip-add') {
+        var name = prompt('Neue Branche:');
+        if (name) {
+          var c = document.createElement('div');
+          c.className = 'seg-chip active';
+          c.setAttribute('data-branch', '');
+          c.textContent = name + ' ';
+          var rm = document.createElement('span');
+          rm.className = 'chip-remove';
+          rm.textContent = '×';
+          c.appendChild(rm);
+          chip.parentNode.insertBefore(c, chip);
+          setupChip(c);
+          segCount();
+        }
+        return;
+      }
+      if (chip.dataset.size === 'enterprise') {
+        toast('Enterprise (1.000+ MA) liegt außerhalb des Sprint-Designs');
+        return;
+      }
+      if (e.target.classList.contains('chip-remove')) {
+        chip.parentNode.removeChild(chip);
+        segCount();
+        return;
+      }
+      chip.classList.toggle('active');
+      segCount();
+    });
+  }
+  document.querySelectorAll('.seg-chip').forEach(setupChip);
+
+  // ── Danger zone ──────────────────────────────────────────────
+  document.querySelector('[data-action="archive"]').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('Demo: Sprint archiviert — schreibgeschützt');
+  });
+  var deleteBtn = document.querySelector('[data-action="delete"]');
+  var deleteArmed = false;
+  var deleteTimer = null;
+  deleteBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (!deleteArmed) {
+      deleteArmed = true;
+      deleteBtn.textContent = 'Wirklich löschen?';
+      toast('Zum Bestätigen erneut klicken');
+      deleteTimer = setTimeout(function () {
+        deleteArmed = false;
+        deleteBtn.textContent = 'Sprint löschen';
+      }, 3000);
+      return;
+    }
+    clearTimeout(deleteTimer);
+    deleteArmed = false;
+    deleteBtn.textContent = 'Sprint löschen';
+    toast('Demo: Sprint gelöscht');
+  });
+
+  // ── Input listeners ──────────────────────────────────────────
+  [sprintStart, sprintEnd, goalTargets, goalWins, revenueEl].forEach(function (el) {
+    el.addEventListener('input', sprintCalc);
+  });
+  [liQuota, liShare, liMin, liTrig].forEach(function (el) {
+    el.addEventListener('input', function () { liCalc(); sprintCalc(); });
+  });
+  [bafaRate, bafaCap].forEach(function (el) {
+    el.addEventListener('input', updateBafa);
+  });
+  bafaDem.addEventListener('change', updateBafa);
+
+  // ── Init ─────────────────────────────────────────────────────
+  updateAll();
+  segCount();
+})();
+</script>
+</body>
+</html>

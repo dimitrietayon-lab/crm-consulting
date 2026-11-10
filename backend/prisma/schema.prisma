@@ -54,6 +54,9 @@ model User {
   taskCollaborations TaskCollaborator[]
   salary            EmployeeSalary?
   payrollEntries    PayrollEntry[]
+  sprintAssignments   SprintAssignment[]
+  activitiesDone      Activity[]       @relation("ActivityDoneBy")
+  sprintHandovers     SprintHandover[] @relation("SprintHandoverEM")
 }
 
 model Account {
@@ -95,6 +98,7 @@ model Account {
   monitoringKeywords MonitoringKeyword[]
   newsItems          NewsItem[]
   invoices           Invoice[]
+  sprintTargets      SprintTarget[]
 }
 
 model Contact {
@@ -321,21 +325,31 @@ model Contract {
 }
 
 model Activity {
-  id          String   @id @default(cuid())
-  type        String
-  date        DateTime
-  duration    Int?
-  summary     String?
-  nextSteps   String?
-  accountId   String?
-  account     Account? @relation(fields: [accountId], references: [id])
-  dealId      String?
-  deal        Deal?    @relation(fields: [dealId], references: [id])
-  projectId   String?
-  project     Project? @relation(fields: [projectId], references: [id])
-  createdById String?
-  createdBy   User?    @relation(fields: [createdById], references: [id])
-  createdAt   DateTime @default(now())
+  id             String        @id @default(cuid())
+  type           String
+  date           DateTime
+  duration       Int?
+  summary        String?
+  nextSteps      String?
+  accountId      String?
+  account        Account?      @relation(fields: [accountId], references: [id])
+  dealId         String?
+  deal           Deal?         @relation(fields: [dealId], references: [id])
+  projectId      String?
+  project        Project?      @relation(fields: [projectId], references: [id])
+  sprintTargetId String?
+  sprintTarget   SprintTarget? @relation(fields: [sprintTargetId], references: [id])
+  createdById    String?
+  createdBy      User?         @relation(fields: [createdById], references: [id])
+  doneById       String?
+  doneBy         User?         @relation("ActivityDoneBy", fields: [doneById], references: [id])
+  sentiment      String?
+  phaseChange    String?
+  contactName    String?
+  followUpTaskId String?
+  outreachTemplateId String?
+  channel        String?
+  createdAt      DateTime      @default(now())
   participants ActivityParticipant[]
   tasks        Task[]
 }
@@ -1102,4 +1116,341 @@ model LlmConfig {
   isActive       Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+// ─── Sprint-Vertrieb ─────────────────────────────────────────────────────────
+
+model SprintTarget {
+  id                  String    @id @default(cuid())
+  companyName         String
+  location            String?
+  bundesland          String?
+  segment             String
+  priority            String    @default("1")
+  package             String?
+  numberOfEmployees   Int?
+  sizeCheckedAt       DateTime?
+  status              String    @default("offen")
+  contactSource       String?
+  ponturoRelationship String?
+  contactName         String?
+  contactTitle        String?
+  contactLinkedIn     String?
+  callAttempts        Int       @default(0)
+  callTrigger         String?
+  emailAllowed        Boolean?
+  handoverDate        DateTime?
+  firstMeetingDate    DateTime?
+  offerPackage        String?
+  offerValue          Float?
+  offerDate           DateTime?
+  bafaDate            DateTime?
+  bafaStatus          String?
+  bafaApprovedAmount  Float?
+  bafaSubmittedAt     DateTime?
+  bafaNotes           String?
+  contactEmail        String?
+  revenue             Float?
+  website             String?
+  wzCode              String?
+  street              String?
+  postalCode          String?
+  emailConsentAt      DateTime?
+  emailConsentSource  String?
+  emailConsentRevokedAt DateTime?
+  callConsentAt       DateTime?
+  callConsentSource   String?
+  privacyNoticeAt     DateTime?
+  privacyNoticeSource String?
+  selfTestScore       Int?
+  selfTestDate        DateTime?
+  selfTestLink        String?
+  decisionDate        DateTime?
+  nextStep            String?
+  nextStepDue         DateTime?
+  fundingAmount       Float?
+  offerValidUntil     DateTime?
+  result              String?
+  lossReason          String?
+  notes               String?
+  accountId           String?
+  account             Account?  @relation(fields: [accountId], references: [id])
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  assessments         SprintAssessment[]
+  activities          Activity[]
+  assignments         SprintAssignment[]
+  roleRequirements    SprintTargetRole[]
+  offers              SprintOffer[]
+  bafaDocuments       SprintBafaDocument[]
+  handover            SprintHandover?
+  contacts            SprintTargetContact[]
+}
+
+// Welche Rollen ein Paket benötigt und mit welchem Umfang (Anzahl Mitarbeiter)
+model SprintPackageRole {
+  id        String   @id @default(cuid())
+  package   String
+  role      String
+  headcount Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([package, role])
+}
+
+// Kundenspezifische Rollen (Default aus dem Paket, pro Kunde anpassbar)
+model SprintTargetRole {
+  id             String       @id @default(cuid())
+  sprintTargetId String
+  sprintTarget   SprintTarget @relation(fields: [sprintTargetId], references: [id], onDelete: Cascade)
+  role           String
+  headcount      Int          @default(1)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([sprintTargetId, role])
+  @@index([sprintTargetId])
+}
+
+model SprintAssignment {
+  id             String       @id @default(cuid())
+  sprintTargetId String
+  sprintTarget   SprintTarget @relation(fields: [sprintTargetId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String
+  createdAt      DateTime     @default(now())
+
+  @@unique([sprintTargetId, userId, role])
+  @@index([userId])
+  @@index([sprintTargetId])
+}
+
+model SprintBlocklist {
+  id             String   @id @default(cuid())
+  companyName    String
+  normalizedName String
+  reason         String?
+  contactName    String?
+  notes          String?
+  blockedAt      DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([normalizedName])
+}
+
+model SprintAssessment {
+  id               String       @id @default(cuid())
+  sprintTargetId   String
+  sprintTarget     SprintTarget @relation(fields: [sprintTargetId], references: [id], onDelete: Cascade)
+  version          Int          @default(1)
+  totalScore       Float?
+  dataAvailability Float?
+  techStack        Float?
+  processMaturity  Float?
+  aiCompetency     Float?
+  governance       Float?
+  strategy         Float?
+  findings         String?      @db.Text
+  recommendations  String?      @db.Text
+  generatedByAi    Boolean      @default(false)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  useCases         UseCaseCandidate[]
+}
+
+model UseCaseCandidate {
+  id             String           @id @default(cuid())
+  assessmentId   String
+  assessment     SprintAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  title          String
+  description    String?          @db.Text
+  priority       String           @default("medium")
+  type           String           @default("implementierung")
+  feasibility    String?
+  estimatedValue Float?
+  basis          String?
+  createdAt      DateTime         @default(now())
+}
+
+// ─── Angebote ────────────────────────────────────────────────────────────────
+
+model SprintOffer {
+  id             String            @id @default(cuid())
+  offerNumber    String            @unique
+  sprintTargetId String
+  sprintTarget   SprintTarget      @relation(fields: [sprintTargetId], references: [id], onDelete: Cascade)
+  package        String?
+  status         String            @default("draft")
+  value          Float             @default(0)
+  validUntil     DateTime?
+  sentAt         DateTime?
+  acceptedAt     DateTime?
+  rejectedAt     DateTime?
+  notes          String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  items          SprintOfferItem[]
+
+  @@index([sprintTargetId])
+}
+
+model SprintOfferItem {
+  id          String      @id @default(cuid())
+  offerId     String
+  offer       SprintOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  position    Int
+  description String
+  quantity    Float       @default(1)
+  unitPrice   Float       @default(0)
+  total       Float       @default(0)
+
+  @@index([offerId])
+}
+
+model SprintOfferSequence {
+  year       Int @id
+  lastNumber Int @default(0)
+}
+
+// ─── BAFA ────────────────────────────────────────────────────────────────────
+
+model SprintBafaDocument {
+  id             String       @id @default(cuid())
+  sprintTargetId String
+  sprintTarget   SprintTarget @relation(fields: [sprintTargetId], references: [id], onDelete: Cascade)
+  name           String
+  status         String       @default("offen")
+  fileUrl        String?
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([sprintTargetId])
+}
+
+// ─── Übergabe ────────────────────────────────────────────────────────────────
+
+model SprintHandover {
+  id                String       @id @default(cuid())
+  sprintTargetId    String       @unique
+  sprintTarget      SprintTarget @relation(fields: [sprintTargetId], references: [id], onDelete: Cascade)
+  checklist         Json?
+  kickoffDate       DateTime?
+  firstWorkshopDate DateTime?
+  format            String?
+  participants      String?
+  emUserId          String?
+  emUser            User?        @relation("SprintHandoverEM", fields: [emUserId], references: [id])
+  notes             String?
+  confirmedAt       DateTime?
+  confirmedBy       String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+// ─── Outreach-Vorlagen ───────────────────────────────────────────────────────
+
+model SprintOutreachTemplate {
+  id         String   @id @default(cuid())
+  name       String
+  channel    String   @default("E-Mail") // E-Mail | LinkedIn | Telefon
+  subject    String?
+  body       String   @db.Text
+  notes      String?
+  active     Boolean  @default(true)
+  usageCount Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([channel])
+}
+
+// ─── Sprint-Kontakte ─────────────────────────────────────────────────────────
+
+model SprintTargetContact {
+  id             String       @id @default(cuid())
+  sprintTargetId String
+  sprintTarget   SprintTarget @relation(fields: [sprintTargetId], references: [id], onDelete: Cascade)
+  name           String
+  role           String?
+  email          String?
+  phone          String?
+  linkedin       String?
+  isPrimary      Boolean      @default(false)
+  emailConsentAt DateTime?
+  callConsentAt  DateTime?
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([sprintTargetId])
+}
+
+// ─── Markt & Planung ─────────────────────────────────────────────────────────
+
+model SprintRegion {
+  id         String   @id @default(cuid())
+  bundesland String   @unique
+  priority   Int      @default(3)
+  note       String?
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model SprintWzMapping {
+  id        String   @id @default(cuid())
+  wzCode    String   @unique
+  segment   String
+  priority  Int      @default(3)
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SprintPackageInfo {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  label       String
+  price       Float    @default(0)
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SprintSegment {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─── Einstellungen (Singleton) ───────────────────────────────────────────────
+
+model SprintSetting {
+  id                String    @id @default("singleton")
+  linkedinQuota     Int       @default(75)
+  callsQuota        Int       @default(100)
+  hoursPerWeek      Float     @default(8.4)
+  offerValidityDays Int       @default(21)
+  targetFirms       Int       @default(878)
+  teamCapacity      Int       @default(10)
+  revenueTarget     Float     @default(500000)
+  sprintName        String    @default("KI-Readiness Sprint")
+  sprintStart       DateTime?
+  sprintEnd         DateTime?
+  packages          Json?
+  segments          Json?
+  notifications     Json?
+  bafaParams        Json?
+  linkedin          Json?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }

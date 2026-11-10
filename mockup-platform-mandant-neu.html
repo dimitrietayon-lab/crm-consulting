@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neuer Mandant — Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="mockup-platform.css">
+</head>
+<body>
+<aside class="sidebar pf-sidebar">
+  <div class="brand">
+    <div class="pf-brand-row">
+      <div class="brand-icon">🧩</div>
+      <div class="pf-brand-text">
+        <div class="brand-name">innolab CRM</div>
+        <div class="brand-sub">Plattform-Admin</div>
+      </div>
+    </div>
+  </div>
+  <nav class="sidebar-nav pf-sidebar-nav">
+    <div id="platform-nav" data-active="mandant-neu"></div>
+  </nav>
+  <div class="pf-sidebar-foot">
+    <div class="user-row">
+      <div class="user-avatar">DT</div>
+      <div>
+        <div class="user-name">D. Tayon</div>
+        <div class="user-role">Plattform-Admin</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-wrapper pf-main">
+  <header class="topbar pf-topbar">
+    <div>
+      <div class="page-title">Neuer Mandant</div>
+      <div class="pf-page-sub">Schritt 2 von 4 · Aktivität &amp; Module</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <a class="btn btn-ghost" href="mockup-platform-uebersicht.html">Abbrechen</a>
+    </div>
+  </header>
+
+  <main class="pf-content">
+    <!-- Stepper -->
+    <div class="pf-stepper">
+      <div class="pf-step done"><span class="pf-step-num">✓</span> Stammdaten</div>
+      <div class="pf-step active"><span class="pf-step-num">2</span> Aktivität &amp; Module</div>
+      <div class="pf-step"><span class="pf-step-num">3</span> Erster Administrator</div>
+      <div class="pf-step"><span class="pf-step-num">4</span> Prüfen &amp; Anlegen</div>
+    </div>
+
+    <div class="pf-grid-form">
+      <!-- Stammdaten -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Stammdaten</div>
+          <div class="pf-page-sub">Name, Adresse und fachlicher Fokus des Mandanten</div>
+        </div>
+        <div style="padding:18px">
+          <div style="margin-bottom:14px">
+            <label>Mandantenname</label>
+            <input type="text" value="My Next Lesson" style="width:100%">
+          </div>
+          <div style="margin-bottom:14px">
+            <label>Slug / Adresse</label>
+            <input type="text" value="my-next-lesson" style="width:100%">
+            <div class="pf-mono" style="margin-top:5px">my-next-lesson.innolab-crm.de</div>
+          </div>
+          <div style="margin-bottom:8px">
+            <label>Aktivität / Kerngeschäft</label>
+            <div class="pf-act-grid" style="margin-top:6px">
+              <div class="pf-act">
+                <div class="pf-act-icon">🏢</div>
+                <div class="pf-act-name">Beratung</div>
+                <div class="pf-act-desc">Consulting, Projekte, Time &amp; Billing</div>
+              </div>
+              <div class="pf-act">
+                <div class="pf-act-icon">🚀</div>
+                <div class="pf-act-name">KI-Readiness</div>
+                <div class="pf-act-desc">Sprint-Vertrieb, Outreach, Assessments</div>
+              </div>
+              <div class="pf-act selected">
+                <div class="pf-act-icon">💳</div>
+                <div class="pf-act-name">SaaS</div>
+                <div class="pf-act-desc">Abos, Trials, MRR &amp; Churn</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:14px">
+            <label>Beschreibung (optional)</label>
+            <textarea style="width:100%;min-height:64px" placeholder="Kurzbeschreibung des Kundenkreises …">SaaS-Produkt mit Self-Service-Signups, Trials und Abo-Modell.</textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module -->
+      <div class="card">
+        <div class="pf-module-head">
+          <div>
+            <div class="card-title">Module aktivieren</div>
+            <div class="pf-page-sub" style="margin-top:2px">Preset <strong style="color:#C2410C">SaaS</strong> angewendet</div>
+          </div>
+          <span class="card-link">Preset anpassen</span>
+        </div>
+
+        <div class="pf-module-group">
+          <div class="pf-module-group-label">CRM-Basis</div>
+          <div class="pf-module-row">
+            <div class="pf-module-label"><div class="pf-module-name">Accounts</div><div class="pf-module-desc">Firmen und Abo-Kunden</div></div>
+            <button class="pf-toggle on" aria-label="Accounts aktiv"></button>
+          </div>
+          <div class="pf-module-row">
+            <div class="pf-module-label"><div class="pf-module-name">Kontakte</div><div class="pf-module-desc">Nutzer, Entscheider und Historie</div></div>
+            <button class="pf-toggle on" aria-label="Kontakte aktiv"></button>
+          </div>
+          <div class="pf-module-row">
+            <div class="pf-module-label"><div class="pf-module-name">Aktivitäten</div><div class="pf-module-desc">Calls, E-Mails, Meetings</div></div>
+            <button class="pf-toggle on" aria-label="Aktivitäten aktiv"></button>
+          </div>
+        </div>
+
+        <div class="pf-module-group">
+          <div class="pf-module-group-label">Vertrieb</div>
+          <div class="pf-module-row">
+            <div class="pf-module-label"><div class="pf-module-name">Pipeline &amp; Trials</div><div class="pf-module-desc">Sign-ups, Trials, Conversion</div></div>
+            <button class="pf-toggle on" aria-label="Pipeline aktiv"></button>
+          </div>
+          <div class="pf-module-row">
+            <div class="pf-module-label"><div class="pf-module-name">Angebote</div><div class="pf-module-desc">Pläne, Rabatte, Upgrade-Pfade</div></div>
+            <button class="pf-toggle on" aria-label="Angebote aktiv"></button>
+          </div>
+        </div>
+
+        <div class="pf-module-group">
+          <div class="pf-module-group-label">Abos &amp; Umsatz</div>
+          <div class="pf-module-row">
+            <div class="pf-module-label"><div class="pf-module-name">Abonnements</div><div class="pf-module-desc">MRR, Laufzeiten, Kündigungen</div></div>
+            <button class="pf-toggle on" aria-label="Abonnements aktiv"></button>
+          </div>
+          <div class="pf-module-row">
+            <div class="pf-module-label"><div class="pf-module-name">Rechnungen</div><div class="pf-module-desc">Abrechnung und Zahlungsstatus</div></div>
+            <button class="pf-toggle on" aria-label="Rechnungen aktiv"></button>
+          </div>
+        </div>
+
+        <div class="pf-module-group">
+          <div class="pf-module-group-label">Customer Success</div>
+          <div class="pf-module-row">
+            <div class="pf-module-label"><div class="pf-module-name">Produktnutzung</div><div class="pf-module-desc">Aktive Nutzer, Feature-Adoption</div></div>
+            <button class="pf-toggle on" aria-label="Produktnutzung aktiv"></button>
+          </div>
+          <div class="pf-module-row">
+            <div class="pf-module-label"><div class="pf-module-name">Churn-Risiko</div><div class="pf-module-desc">Warnsignale und Rückgewinnung</div></div>
+            <button class="pf-toggle on" aria-label="Churn-Risiko aktiv"></button>
+          </div>
+        </div>
+
+        <div class="pf-module-group">
+          <div class="pf-module-group-label">Auswertung</div>
+          <div class="pf-module-row">
+            <div class="pf-module-label"><div class="pf-module-name">Reporting</div><div class="pf-module-desc">MRR/ARR, Churn, Conversion</div></div>
+            <button class="pf-toggle on" aria-label="Reporting aktiv"></button>
+          </div>
+        </div>
+
+        <div class="pf-actionbar" style="margin:0;border:0;border-top:1px solid #f1f5f9;box-shadow:none;border-radius:0">
+          <div class="pf-actionbar-left"><strong>10 von 10</strong> Modulen aktiv · aus Preset übernommen</div>
+          <span class="pf-badge pf-badge-lock">🔒 eigener Datenbestand</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="pf-actionbar">
+      <div class="pf-actionbar-left">10 Module · 4 Rollen · 1 Administrator werden angelegt</div>
+      <div style="display:flex;gap:8px">
+        <a class="btn btn-ghost" href="mockup-platform-uebersicht.html">Zurück</a>
+        <a class="btn btn-primary" href="mockup-platform-mandant.html">Weiter</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="mockup-sprint-nav.js"></script>
+</body>
+</html>

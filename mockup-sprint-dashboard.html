@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprint-Dashboard — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Page-local layout. Chrome, cards, buttons and icons come from mockup-sprint.css. */
+  * { margin: 0; padding: 0; }
+  body { display: flex; height: 100vh; overflow: hidden; }
+  .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  main { flex: 1; overflow-y: auto; padding: 24px; }
+  .page-sub { font-size: 11.5px; color: #94a3b8; margin-top: 2px; }
+  .top-actions { display: flex; gap: 8px; }
+
+  /* Banner */
+  .sprint-banner { padding: 22px 26px; margin-bottom: 20px; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 28px; }
+  .banner-body { flex: 1; min-width: 0; }
+  .banner-eyebrow { display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: rgba(255,255,255,.82); margin-bottom: 7px; }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 3px rgba(74,222,128,.22); }
+  .banner-title { font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+  .banner-sub { font-size: 12px; color: rgba(255,255,255,.78); margin-top: 3px; }
+  .banner-progress { margin-top: 16px; max-width: 540px; }
+  .banner-progress-labels { display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 500; color: rgba(255,255,255,.8); margin-bottom: 6px; }
+  .banner-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.22); overflow: hidden; }
+  .banner-fill { height: 100%; border-radius: 3px; background: #fff; transition: width .3s; }
+  .banner-stats { display: flex; gap: 10px; flex-shrink: 0; position: relative; z-index: 1; }
+  .banner-stat { min-width: 106px; padding: 12px 14px; border-radius: 9px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); text-align: center; }
+  .banner-stat-num { font-size: 23px; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
+  .banner-stat-label { font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,.75); margin-top: 6px; }
+  .banner-stat-note { font-size: 10px; color: rgba(255,255,255,.7); margin-top: 2px; }
+
+  /* KPI row */
+  .kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 18px; }
+  .kpi-card { display: block; padding: 13px 15px; text-decoration: none; color: inherit; }
+  .kpi-card .kpi-value { margin-top: 4px; }
+  .kpi-delta { font-size: 10.5px; color: #94a3b8; margin-top: 3px; }
+  .kpi-delta.up { color: #16a34a; }
+  .kpi-delta.warn { color: #d97706; }
+  .kpi-value.accent { color: #F26722; }
+
+  /* Grids */
+  .db-grid-2 { display: grid; grid-template-columns: 1fr 360px; gap: 16px; margin-bottom: 16px; align-items: start; }
+  .db-grid-3 { display: grid; grid-template-columns: 1.05fr 1.1fr .95fr; gap: 16px; align-items: start; }
+
+  /* Cards */
+  .card { overflow: hidden; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .card-title { display: inline-flex; align-items: center; gap: 7px; }
+  .card-meta { font-size: 11px; font-weight: 500; color: #94a3b8; white-space: nowrap; }
+
+  /* Funnel */
+  .funnel-body { padding: 12px 18px; }
+  .funnel-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+  .funnel-name { width: 150px; flex-shrink: 0; font-size: 11.5px; font-weight: 500; color: #374151; }
+  .funnel-bar-bg { flex: 1; height: 20px; }
+  .funnel-bar-fill { height: 100%; border-radius: 5px; display: flex; align-items: center; padding-left: 8px; min-width: 26px; transition: width .3s; }
+  .funnel-bar-fill b { font-size: 10.5px; font-weight: 700; color: #fff; }
+  .funnel-share { width: 40px; flex-shrink: 0; text-align: right; font-size: 10.5px; font-weight: 500; color: #94a3b8; }
+  .funnel-foot { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f1f5f9; font-size: 11px; color: #64748b; }
+  .funnel-foot b { color: #111111; }
+
+  /* Agenda */
+  .agenda-body { padding: 8px 18px; }
+  .agenda-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f8fafc; }
+  .agenda-item:last-child { border-bottom: none; }
+  .agenda-check { position: relative; width: 18px; height: 18px; margin-top: 1px; padding: 0; flex-shrink: 0; border-radius: 50%; border: 1.5px solid #cbd5e1; background: #fff; cursor: pointer; transition: border-color .12s, background .12s; }
+  .agenda-check:hover { border-color: #F26722; }
+  .agenda-check.done { background: #16a34a; border-color: #16a34a; }
+  .agenda-check.done::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; line-height: 1; }
+  .agenda-item.done .agenda-title { color: #94a3b8; text-decoration: line-through; }
+  .agenda-item.done .agenda-sub { color: #cbd5e1; }
+  .agenda-time { width: 40px; flex-shrink: 0; margin-top: 2px; font-size: 11.5px; color: #94a3b8; font-variant-numeric: tabular-nums; }
+  .agenda-content { flex: 1; min-width: 0; }
+  .agenda-title { font-size: 12.5px; font-weight: 600; color: #111111; }
+  .agenda-sub { font-size: 11.5px; color: #64748b; margin-top: 1px; }
+  .agenda-badge { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 10px; font-size: 9.5px; font-weight: 700; vertical-align: 1px; }
+  .ab-meeting { background: #ede9fe; color: #7c3aed; }
+  .ab-call { background: #dcfce7; color: #16a34a; }
+  .ab-email { background: #fef3c7; color: #d97706; }
+  .agenda-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 18px; border-top: 1px solid #f1f5f9; font-size: 11px; color: #94a3b8; }
+
+  /* Activity feed */
+  .feed-body { padding: 6px 18px; }
+  .feed-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f8fafc; }
+  .feed-item:last-child { border-bottom: none; }
+  .feed-icon { width: 24px; flex-shrink: 0; padding-top: 1px; text-align: center; font-size: 13px; }
+  .feed-body-text { flex: 1; min-width: 0; }
+  .feed-text { font-size: 12px; color: #374151; line-height: 1.4; }
+  .feed-text b { color: #111111; font-weight: 600; }
+  .feed-time { font-size: 10.5px; color: #94a3b8; margin-top: 2px; }
+
+  /* Capacity */
+  .cap-body { padding: 8px 18px; }
+  .cap-row { display: flex; align-items: center; gap: 9px; padding: 9px 0; border-bottom: 1px solid #f8fafc; }
+  .cap-row:last-child { border-bottom: none; }
+  .cap-avatar { width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; color: #fff; font-size: 10.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .cap-info { width: 100px; flex-shrink: 0; min-width: 0; }
+  .cap-name { font-size: 12px; font-weight: 600; color: #111111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cap-role { font-size: 9.5px; color: #94a3b8; text-transform: uppercase; letter-spacing: .04em; }
+  .cap-bar-bg { flex: 1; height: 8px; }
+  .cap-pct { width: 38px; flex-shrink: 0; text-align: right; font-size: 11.5px; font-weight: 700; }
+  .cap-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 11px 18px; border-top: 1px solid #f1f5f9; font-size: 11px; color: #64748b; }
+  .cap-foot b { color: #111111; }
+
+  /* Top targets */
+  .top-body { padding: 8px 18px; }
+  .top-row { display: flex; align-items: center; gap: 9px; padding: 8px 0; border-bottom: 1px solid #f8fafc; text-decoration: none; }
+  .top-row:last-child { border-bottom: none; }
+  .top-row:hover { background: #fafafa; }
+  .top-rank { width: 16px; flex-shrink: 0; font-size: 11px; font-weight: 700; color: #cbd5e1; }
+  .top-info { flex: 1; min-width: 0; }
+  .top-name { font-size: 12.5px; font-weight: 600; color: #111111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .top-sub { font-size: 10.5px; color: #94a3b8; margin-top: 1px; }
+  .top-status { flex-shrink: 0; padding: 2px 7px; border-radius: 10px; font-size: 9.5px; font-weight: 700; white-space: nowrap; }
+  .st-qualifizierung { background: #f3e8ff; color: #7e22ce; }
+  .st-angebot { background: #fef3c7; color: #d97706; }
+  .top-value { width: 48px; flex-shrink: 0; text-align: right; font-size: 12px; font-weight: 700; color: #16a34a; }
+
+  @media (max-width: 1320px) {
+    .kpi-row { grid-template-columns: repeat(3, 1fr); }
+    .db-grid-2 { grid-template-columns: 1fr; }
+    .db-grid-3 { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 980px) {
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .db-grid-3 { grid-template-columns: 1fr; }
+    .sprint-banner { flex-direction: column; align-items: flex-start; }
+    .banner-stats { width: 100%; }
+    .banner-stat { flex: 1; }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="dashboard"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div>
+      <div class="page-title">Sprint-Dashboard</div>
+      <div class="page-sub" id="page-sub">SP-2026-04 · Q4 2026 · 4 Consultants</div>
+    </div>
+    <div class="top-actions">
+      <a class="btn btn-ghost" href="mockup-sprint-reporting.html">📊 Bericht exportieren</a>
+      <a class="btn btn-primary" href="mockup-sprint-einstellungen.html">⚙️ Sprint-Einstellungen</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- Sprint banner -->
+    <section class="sprint-banner">
+      <div class="banner-body">
+        <div class="banner-eyebrow"><span class="live-dot"></span> Aktiver Sprint · SP-2026-04</div>
+        <div class="banner-title">KI-Readiness Sprint · Q4 2026</div>
+        <div class="banner-sub" id="banner-dates">01.10.2026 – 31.12.2026 · 47 Zielkunden · 4 Consultants</div>
+        <div class="banner-progress">
+          <div class="banner-progress-labels">
+            <span id="banner-week-label">Woche 4 von 13</span>
+            <span id="banner-progress-label">24 % der Sprint-Laufzeit</span>
+          </div>
+          <div class="banner-track"><div class="banner-fill" id="banner-fill" style="width:24%"></div></div>
+        </div>
+      </div>
+      <div class="banner-stats">
+        <div class="banner-stat">
+          <div class="banner-stat-num" id="banner-days">70</div>
+          <div class="banner-stat-label">Tage verbleibend</div>
+        </div>
+        <div class="banner-stat">
+          <div class="banner-stat-num" id="banner-customers">47</div>
+          <div class="banner-stat-label">Zielkunden im Sprint</div>
+        </div>
+        <div class="banner-stat">
+          <div class="banner-stat-num" id="banner-revenue">87 %</div>
+          <div class="banner-stat-label">Umsatzziel</div>
+          <div class="banner-stat-note" id="banner-revenue-note">€ 156k von € 180k</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <a class="kpi-card" href="mockup-sprint-kanban.html">
+        <div class="kpi-label">Zielkunden</div>
+        <div class="kpi-value" id="kpi-total">47</div>
+        <div class="kpi-delta" id="kpi-total-sub">9 offen · 38 in Bearbeitung</div>
+      </a>
+      <a class="kpi-card" href="mockup-sprint-kanban.html">
+        <div class="kpi-label">Im Gespräch</div>
+        <div class="kpi-value accent" id="kpi-talk">8</div>
+        <div class="kpi-delta up">↑ +2 diese Woche</div>
+      </a>
+      <a class="kpi-card" href="mockup-sprint-angebote-liste.html">
+        <div class="kpi-label">Angebote offen</div>
+        <div class="kpi-value" style="color:#d97706;" id="kpi-offer">5</div>
+        <div class="kpi-delta up">↑ +1 diese Woche</div>
+      </a>
+      <a class="kpi-card" href="mockup-sprint-reporting.html">
+        <div class="kpi-label">Gewonnen</div>
+        <div class="kpi-value" style="color:#16a34a;" id="kpi-won">6</div>
+        <div class="kpi-delta up">↑ +1 diese Woche</div>
+      </a>
+      <a class="kpi-card" href="mockup-sprint-angebote-liste.html">
+        <div class="kpi-label">Pipeline-Wert</div>
+        <div class="kpi-value accent">€ 420k</div>
+        <div class="kpi-delta" id="kpi-pipeline-sub">13 offene Vorgänge</div>
+      </a>
+      <a class="kpi-card" href="mockup-sprint-reporting.html">
+        <div class="kpi-label">Konversion</div>
+        <div class="kpi-value" id="kpi-conv">13 %</div>
+        <div class="kpi-delta" id="kpi-conv-sub">6 von 47 gewonnen</div>
+      </a>
+    </div>
+
+    <!-- Funnel + Agenda -->
+    <div class="db-grid-2">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📊 Pipeline-Funnel</span>
+          <a class="card-link" href="mockup-sprint-kanban.html">Kanban öffnen →</a>
+        </div>
+        <div class="funnel-body" id="funnel-rows"></div>
+        <div class="funnel-foot" id="funnel-foot"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📅 Tagesplan · <span id="agenda-date">23.10.2026</span></span>
+          <span class="card-meta" id="agenda-meta">2 von 5 erledigt</span>
+        </div>
+        <div class="agenda-body" id="agenda">
+          <div class="agenda-item" data-done="1">
+            <button class="agenda-check" type="button" aria-label="Als erledigt markieren"></button>
+            <span class="agenda-time">09:00</span>
+            <div class="agenda-content">
+              <div class="agenda-title">Team Stand-up <span class="agenda-badge ab-meeting">Meeting</span></div>
+              <div class="agenda-sub">Daily Sprint-Review · 15 Min.</div>
+            </div>
+          </div>
+          <div class="agenda-item" data-done="1">
+            <button class="agenda-check" type="button" aria-label="Als erledigt markieren"></button>
+            <span class="agenda-time">10:30</span>
+            <div class="agenda-content">
+              <div class="agenda-title">Münchener Rück AG <span class="agenda-badge ab-meeting">Meeting</span></div>
+              <div class="agenda-sub">Demo KI-Assessment Ergebnisse · K. Müller</div>
+            </div>
+          </div>
+          <div class="agenda-item" data-done="0">
+            <button class="agenda-check" type="button" aria-label="Als erledigt markieren"></button>
+            <span class="agenda-time">13:00</span>
+            <div class="agenda-content">
+              <div class="agenda-title">Bosch Rexroth <span class="agenda-badge ab-call">Anruf</span></div>
+              <div class="agenda-sub">Erstgespräch · T. Weber (Head of Digital)</div>
+            </div>
+          </div>
+          <div class="agenda-item" data-done="0">
+            <button class="agenda-check" type="button" aria-label="Als erledigt markieren"></button>
+            <span class="agenda-time">14:30</span>
+            <div class="agenda-content">
+              <div class="agenda-title">Follow-up senden <span class="agenda-badge ab-email">E-Mail</span></div>
+              <div class="agenda-sub">Siemens Financial · Angebot-Follow-up</div>
+            </div>
+          </div>
+          <div class="agenda-item" data-done="0">
+            <button class="agenda-check" type="button" aria-label="Als erledigt markieren"></button>
+            <span class="agenda-time">16:00</span>
+            <div class="agenda-content">
+              <div class="agenda-title">Gothaer Versicherung <span class="agenda-badge ab-call">Anruf</span></div>
+              <div class="agenda-sub">2. Anrufversuch · M. Klein</div>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-foot">
+          <span>Tagesplanung aus offenen Aktivitäten</span>
+          <a class="card-link" href="mockup-sprint-aktivitaet-loggen.html">Aktivität loggen →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Capacity + Feed + Top -->
+    <div class="db-grid-3">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">⚡ Team-Auslastung</span>
+          <a class="card-link" href="mockup-sprint-team.html">Team öffnen →</a>
+        </div>
+        <div class="cap-body">
+          <div class="cap-row">
+            <div class="cap-avatar" style="background:#F26722;">AM</div>
+            <div class="cap-info"><div class="cap-name">Anna Müller</div><div class="cap-role">Lead · 8 Zielkunden</div></div>
+            <div class="cap-bar-bg"><div class="cap-bar-fill" style="width:75%;background:#16a34a;"></div></div>
+            <span class="cap-pct" style="color:#16a34a;">75 %</span>
+          </div>
+          <div class="cap-row">
+            <div class="cap-avatar" style="background:#0891b2;">TB</div>
+            <div class="cap-info"><div class="cap-name">Thomas Braun</div><div class="cap-role">Senior · 6 Zielkunden</div></div>
+            <div class="cap-bar-bg"><div class="cap-bar-fill" style="width:92%;background:#d97706;"></div></div>
+            <span class="cap-pct" style="color:#d97706;">92 %</span>
+          </div>
+          <div class="cap-row">
+            <div class="cap-avatar" style="background:#16a34a;">LS</div>
+            <div class="cap-info"><div class="cap-name">Lea Schmidt</div><div class="cap-role">KI · 5 Zielkunden</div></div>
+            <div class="cap-bar-bg"><div class="cap-bar-fill" style="width:60%;background:#16a34a;"></div></div>
+            <span class="cap-pct" style="color:#16a34a;">60 %</span>
+          </div>
+          <div class="cap-row">
+            <div class="cap-avatar" style="background:#d97706;">MW</div>
+            <div class="cap-info"><div class="cap-name">Michael Weber</div><div class="cap-role">Vertrieb · 10 Zielkunden</div></div>
+            <div class="cap-bar-bg"><div class="cap-bar-fill" style="width:100%;background:#dc2626;"></div></div>
+            <span class="cap-pct" style="color:#dc2626;">110 %</span>
+          </div>
+        </div>
+        <div class="cap-foot">
+          <span>Ø <b>84 %</b> Auslastung</span>
+          <span>Engpass: <b>Michael Weber</b></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🔔 Letzte Aktivitäten</span>
+          <a class="card-link" href="mockup-sprint-aktivitaeten.html">Alle →</a>
+        </div>
+        <div class="feed-body">
+          <div class="feed-item">
+            <span class="feed-icon">🤝</span>
+            <div class="feed-body-text">
+              <div class="feed-text"><b>Meeting</b> mit Münchener Rück — Demo KI-Assessment</div>
+              <div class="feed-time">vor 2 Std. · Anna Müller</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <span class="feed-icon">📄</span>
+            <div class="feed-body-text">
+              <div class="feed-text"><b>Angebot versendet</b> an Siemens Financial · € 85.000</div>
+              <div class="feed-time">heute 09:15 · Thomas Braun</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <span class="feed-icon">✅</span>
+            <div class="feed-body-text">
+              <div class="feed-text"><b>Deal gewonnen</b> · Commerzbank AG · € 42.000</div>
+              <div class="feed-time">gestern 17:30 · Michael Weber</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <span class="feed-icon">🧠</span>
+            <div class="feed-body-text">
+              <div class="feed-text"><b>Assessment generiert</b> für DHL Supply Chain · Score 3,2</div>
+              <div class="feed-time">gestern 14:00 · Lea Schmidt</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <span class="feed-icon">📞</span>
+            <div class="feed-body-text">
+              <div class="feed-text"><b>Anruf</b> Bosch Rexroth — Erstgespräch → Termin vereinbart</div>
+              <div class="feed-time">gestern 11:20 · Anna Müller</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <span class="feed-icon">📧</span>
+            <div class="feed-body-text">
+              <div class="feed-text"><b>E-Mail</b> Follow-up an 6 Zielkunden (Branche Banken)</div>
+              <div class="feed-time">21.10. · Michael Weber</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">⭐ Top Zielkunden</span>
+          <a class="card-link" href="mockup-sprint-kanban.html">Kanban →</a>
+        </div>
+        <div class="top-body">
+          <a class="top-row" href="mockup-sprint-detail.html">
+            <span class="top-rank">#1</span>
+            <div class="top-info"><div class="top-name">Münchener Rück AG</div><div class="top-sub">Versicherungen &amp; Finanzvermittler · K. Müller</div></div>
+            <span class="top-status st-qualifizierung">Qualifizierungsgespräch</span>
+            <span class="top-value">€ 95k</span>
+          </a>
+          <a class="top-row" href="mockup-sprint-detail.html">
+            <span class="top-rank">#2</span>
+            <div class="top-info"><div class="top-name">BASF Digital GmbH</div><div class="top-sub">Übrige Industrie · Angebot offen</div></div>
+            <span class="top-status st-angebot">Angebot</span>
+            <span class="top-value">€ 120k</span>
+          </a>
+          <a class="top-row" href="mockup-sprint-detail.html">
+            <span class="top-rank">#3</span>
+            <div class="top-info"><div class="top-name">Siemens Financial</div><div class="top-sub">Banken · Angebot offen</div></div>
+            <span class="top-status st-angebot">Angebot</span>
+            <span class="top-value">€ 85k</span>
+          </a>
+          <a class="top-row" href="mockup-sprint-detail.html">
+            <span class="top-rank">#4</span>
+            <div class="top-info"><div class="top-name">DHL Supply Chain</div><div class="top-sub">Handel &amp; Logistik · Assessment</div></div>
+            <span class="top-status st-qualifizierung">Qualifizierungsgespräch</span>
+            <span class="top-value">€ 55k</span>
+          </a>
+          <a class="top-row" href="mockup-sprint-detail.html">
+            <span class="top-rank">#5</span>
+            <div class="top-info"><div class="top-name">Würth Gruppe</div><div class="top-sub">Handel &amp; Logistik · Qualifizierungsgespräch</div></div>
+            <span class="top-status st-qualifizierung">Qualifizierungsgespräch</span>
+            <span class="top-value">€ 45k</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  var DAY = 86400000;
+  var START = new Date(2026, 9, 1);   // 01.10.2026
+  var END = new Date(2026, 11, 31);   // 31.12.2026
+  var TOTAL_DAYS = Math.round((END - START) / DAY) + 1;
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var elapsed = Math.floor((today - START) / DAY) + 1;
+  elapsed = Math.max(1, Math.min(TOTAL_DAYS, elapsed));
+  var progress = Math.round(elapsed / TOTAL_DAYS * 100);
+  var daysLeft = TOTAL_DAYS - elapsed;
+  var week = Math.min(13, Math.max(1, Math.ceil(elapsed / 7)));
+
+  var STATUS = [
+    { key: 'offen', label: 'Offen', count: 9, color: '#94a3b8' },
+    { key: 'recherchiert', label: 'Recherchiert', count: 7, color: '#3b82f6' },
+    { key: 'vernetzt', label: 'Vernetzt', count: 5, color: '#6366f1' },
+    { key: 'kontaktiert', label: 'Kontaktiert', count: 4, color: '#8b5cf6' },
+    { key: 'qualifizierung', label: 'Qualifizierungsgespräch', count: 5, color: '#a855f7' },
+    { key: 'erstgespraech', label: 'Erstgespräch', count: 3, color: '#14b8a6' },
+    { key: 'angebot', label: 'Angebot', count: 5, color: '#d97706' },
+    { key: 'gewonnen', label: 'Gewonnen', count: 6, color: '#16a34a' },
+    { key: 'verlust', label: 'Verlust', count: 2, color: '#be123c' },
+    { key: 'kein', label: 'Kein Interesse', count: 1, color: '#dc2626' }
+  ];
+
+  var total = 0, by = {};
+  STATUS.forEach(function (s) { total += s.count; by[s.key] = s.count; });
+  var won = by.gewonnen, talk = by.qualifizierung + by.erstgespraech, offers = by.angebot, open = by.offen, lost = by.verlust + by.kein;
+  var openCount = talk + offers;
+  var conversion = Math.round(won / total * 100);
+  var wonRevenue = won * 26000;
+  var revenueTarget = 180000;
+  var revenuePct = Math.round(wonRevenue / revenueTarget * 100);
+
+  function set(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
+  function fmtDate(d) {
+    return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + d.getFullYear();
+  }
+  function k(v) { return Math.round(v / 1000) + 'k'; }
+
+  // Banner
+  set('page-sub', 'SP-2026-04 · Q4 2026 · 4 Consultants');
+  set('banner-dates', fmtDate(START) + ' – ' + fmtDate(END) + ' · ' + total + ' Zielkunden · 4 Consultants');
+  set('banner-week-label', 'Woche ' + week + ' von 13');
+  set('banner-progress-label', progress + ' % der Sprint-Laufzeit');
+  document.getElementById('banner-fill').style.width = progress + '%';
+  set('banner-days', daysLeft);
+  set('banner-customers', total);
+  set('banner-revenue', revenuePct + ' %');
+  set('banner-revenue-note', '€ ' + k(wonRevenue) + ' von € ' + k(revenueTarget));
+
+  // KPIs
+  set('kpi-total', total);
+  set('kpi-total-sub', open + ' offen · ' + (total - open) + ' in Bearbeitung');
+  set('kpi-talk', talk);
+  set('kpi-offer', offers);
+  set('kpi-won', won);
+  set('kpi-pipeline-sub', openCount + ' offene Vorgänge');
+  set('kpi-conv', conversion + ' %');
+  set('kpi-conv-sub', won + ' von ' + total + ' gewonnen');
+
+  // Funnel
+  var max = Math.max.apply(null, STATUS.map(function (s) { return s.count; }));
+  var rows = '';
+  STATUS.forEach(function (s) {
+    var w = Math.round(s.count / max * 100);
+    var share = Math.round(s.count / total * 100);
+    rows += '<div class="funnel-row">' +
+      '<span class="funnel-name">' + s.label + '</span>' +
+      '<div class="funnel-bar-bg"><div class="funnel-bar-fill" style="width:' + w + '%;background:' + s.color + '"><b>' + s.count + '</b></div></div>' +
+      '<span class="funnel-share">' + share + ' %</span>' +
+      '</div>';
+  });
+  document.getElementById('funnel-rows').innerHTML = rows;
+  document.getElementById('funnel-foot').innerHTML =
+    '<span><b>' + openCount + '</b> in Entscheidungsphase</span>' +
+    '<span><b>' + won + '</b> gewonnen</span>' +
+    '<span><b>' + lost + '</b> verloren</span>';
+
+  // Agenda
+  set('agenda-date', fmtDate(today));
+  var agenda = document.getElementById('agenda');
+  function refreshAgenda() {
+    var items = agenda.querySelectorAll('.agenda-item');
+    var done = 0;
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      var isDone = item.getAttribute('data-done') === '1';
+      item.classList.toggle('done', isDone);
+      item.querySelector('.agenda-check').classList.toggle('done', isDone);
+      if (isDone) done++;
+    }
+    set('agenda-meta', done + ' von ' + items.length + ' erledigt');
+  }
+  agenda.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('.agenda-check') : null;
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var item = btn.closest('.agenda-item');
+    item.setAttribute('data-done', item.getAttribute('data-done') === '1' ? '0' : '1');
+    refreshAgenda();
+  });
+  refreshAgenda();
+})();
+</script>
+</body>
+</html>

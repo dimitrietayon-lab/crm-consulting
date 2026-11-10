@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kontakte · Sprint-Vertrieb — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Chrome, buttons and badges come from mockup-sprint.css. */
+  * { margin: 0; padding: 0; }
+  body { display: flex; height: 100vh; overflow: hidden; background: #F5F5F5; }
+  .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  .btn.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* Topbar */
+  .ko-heading { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .ko-heading .breadcrumb { font-size: 11px; }
+  .ko-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  /* Content shell */
+  .ko-scroll { flex: 1; overflow-y: auto; }
+  .ko-wrap { max-width: 1240px; margin: 0 auto; padding: 20px 24px 32px; }
+
+  /* Stats */
+  .ko-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .ko-stat { flex: 1; min-width: 150px; background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 12px 16px; }
+  .ko-stat b { display: block; font-size: 21px; font-weight: 800; color: #111111; letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .ko-stat b.green { color: #16a34a; }
+  .ko-stat b.amber { color: #b45309; }
+  .ko-stat span { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; }
+
+  /* Filters */
+  .ko-filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .ko-search { flex: 1; min-width: 220px; max-width: 340px; padding: 7px 11px; font-size: 12.5px; }
+  .ko-select { padding: 7px 10px; font-size: 12px; color: #374151; cursor: pointer; }
+  .ko-filter-label { font-size: 11px; font-weight: 600; color: #94a3b8; }
+  .ko-count { margin-left: auto; font-size: 11px; color: #94a3b8; }
+
+  /* Table */
+  .ko-table { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); overflow: hidden; }
+  .ko-grid { display: grid; grid-template-columns: minmax(210px,1.7fr) minmax(160px,1.3fr) 118px minmax(170px,1.5fr) 130px 132px; align-items: center; gap: 12px; padding: 10px 16px; }
+  .ko-thead { background: #f8fafc; border-bottom: 1px solid #f1f5f9; }
+  .ko-thead > div { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; }
+  .ko-row { border-bottom: 1px solid #f8fafc; transition: background .1s; }
+  .ko-row:last-child { border-bottom: none; }
+  .ko-row:hover { background: #f8fafc; }
+
+  .ko-contact { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .ko-av { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .ko-name { font-size: 13px; font-weight: 700; color: #111111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ko-role { font-size: 11px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .ko-co { font-size: 12.5px; font-weight: 600; color: #334155; text-decoration: none; }
+  a.ko-co:hover { color: #F26722; }
+  .ko-meta { font-size: 11px; color: #94a3b8; }
+
+  .ko-st { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 700; letter-spacing: .02em; white-space: nowrap; }
+  .ko-st-offen { background: #f1f5f9; color: #475569; }
+  .ko-st-recherchiert { background: #dbeafe; color: #1d4ed8; }
+  .ko-st-vernetzt { background: #e0e7ff; color: #4338ca; }
+  .ko-st-kontaktiert { background: #ede9fe; color: #6d28d9; }
+  .ko-st-qualifizierung { background: #f3e8ff; color: #7e22ce; }
+  .ko-st-erstgespraech { background: #ccfbf1; color: #0f766e; }
+  .ko-st-verlust { background: #ffe4e6; color: #be123c; }
+  .ko-st-kein { background: #fee2e2; color: #dc2626; }
+  .ko-st-angebot { background: #ffedd5; color: #c2410c; }
+  .ko-st-gewonnen { background: #dcfce7; color: #15803d; }
+
+  .ko-last b { display: block; font-size: 12px; font-weight: 600; color: #374151; }
+  .ko-last span { font-size: 11px; color: #94a3b8; }
+  .ko-owner { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #374151; }
+  .ko-owner i { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 9px; font-weight: 800; color: #fff; flex-shrink: 0; }
+
+  .ko-acts { display: flex; gap: 4px; justify-content: flex-end; }
+  .ko-act { display: inline-flex; align-items: center; padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; color: #475569; font-size: 10.5px; font-weight: 600; font-family: inherit; text-decoration: none; cursor: pointer; white-space: nowrap; }
+  .ko-act:hover { background: #f8fafc; border-color: #cbd5e1; color: #111111; }
+  .ko-act.open { color: #F26722; border-color: #fed7aa; }
+  .ko-act.open:hover { background: #fff4ed; }
+
+  .ko-footer { padding: 11px 16px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; background: #fafafa; }
+  .ko-footer button { background: none; border: none; color: #F26722; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .ko-empty { padding: 30px 16px; text-align: center; font-size: 12px; color: #94a3b8; }
+
+  @media (max-width: 1100px) {
+    .ko-grid { grid-template-columns: minmax(190px,1.5fr) minmax(150px,1.2fr) 110px minmax(150px,1.2fr) 122px; }
+    .ko-grid > .ko-owner, .ko-thead > div:nth-child(5) { display: none; }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="kontakte"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="ko-heading">
+      <div class="breadcrumb">
+        <a href="mockup-sprint-kanban.html">Sprint-Vertrieb</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">Kontakte</span>
+      </div>
+      <span class="page-title">Kontakte</span>
+    </div>
+    <div class="ko-actions">
+      <button class="btn btn-ghost btn-sm" id="btn-export" type="button">Export CSV</button>
+      <button class="btn btn-primary btn-sm" id="btn-add" type="button">Kontakt hinzufügen</button>
+    </div>
+  </header>
+
+  <div class="ko-scroll">
+    <div class="ko-wrap">
+
+      <div class="ko-stats">
+        <div class="ko-stat"><b>47</b><span>Kontakte gesamt</span></div>
+        <div class="ko-stat"><b>14</b><span>Im Gespräch</span></div>
+        <div class="ko-stat"><b class="amber">6</b><span>Angebotsphase</span></div>
+        <div class="ko-stat"><b class="green">9</b><span>Gewonnen</span></div>
+      </div>
+
+      <div class="ko-filters">
+        <input class="ko-search" id="ko-search" type="text" placeholder="Name, Unternehmen oder Position suchen …" aria-label="Kontakte durchsuchen">
+        <select class="ko-select" id="ko-status" aria-label="Status filtern">
+          <option value="">Alle Status</option>
+          <option value="offen">Offen</option>
+          <option value="recherchiert">Recherchiert</option>
+          <option value="vernetzt">Vernetzt</option>
+          <option value="kontaktiert">Kontaktiert</option>
+          <option value="qualifizierung">Qualifizierungsgespräch</option>
+          <option value="erstgespraech">Erstgespräch</option>
+          <option value="angebot">Angebot</option>
+          <option value="gewonnen">Gewonnen</option>
+          <option value="verlust">Verlust</option>
+          <option value="kein">Kein Interesse</option>
+        </select>
+        <select class="ko-select" id="ko-owner" aria-label="Consultant filtern">
+          <option value="">Alle Consultants</option>
+          <option value="Anna Müller">Anna Müller</option>
+          <option value="Thomas Braun">Thomas Braun</option>
+          <option value="Lea Schmidt">Lea Schmidt</option>
+          <option value="Michael Weber">Michael Weber</option>
+        </select>
+        <span class="ko-count" id="ko-count"></span>
+      </div>
+
+      <div class="ko-table">
+        <div class="ko-grid ko-thead">
+          <div>Kontakt</div>
+          <div>Unternehmen</div>
+          <div>Status</div>
+          <div>Letzte Aktivität</div>
+          <div>Consultant</div>
+          <div style="text-align:right;">Aktionen</div>
+        </div>
+        <div id="ko-rows"></div>
+        <div class="ko-footer">
+          <span id="ko-footer-text"></span>
+          <button type="button" id="btn-load-all">Alle 47 Kontakte laden</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  var STATUS = {
+    offen: 'Offen',
+    recherchiert: 'Recherchiert',
+    vernetzt: 'Vernetzt',
+    kontaktiert: 'Kontaktiert',
+    qualifizierung: 'Qualifizierungsgespräch',
+    erstgespraech: 'Erstgespräch',
+    angebot: 'Angebot',
+    gewonnen: 'Gewonnen',
+    verlust: 'Verlust',
+    kein: 'Kein Interesse'
+  };
+
+  var OWNER_COLOR = {
+    'Anna Müller': '#F26722',
+    'Thomas Braun': '#0891b2',
+    'Lea Schmidt': '#16a34a',
+    'Michael Weber': '#d97706'
+  };
+
+  var CONTACTS = [
+    { n: 'R. Lehmann', role: 'Leiter IT-Strategie', co: 'AXA Konzern AG', seg: 'Versicherungen & Finanzvermittler', reg: 'NRW', st: 'angebot', last: 'Angebot versendet', ltype: 'E-Mail', date: '20.10.', o: 'Anna Müller', col: '#F26722', link: 'mockup-sprint-detail.html' },
+    { n: 'K. Müller', role: 'Head of IT Innovation', co: 'Münchener Rück AG', seg: 'Versicherungen & Finanzvermittler', reg: 'Bayern', st: 'qualifizierung', last: 'Demo Assessment', ltype: 'Meeting', date: '22.10.', o: 'Anna Müller', col: '#7c3aed' },
+    { n: 'T. Weber', role: 'Head of Digital Innovation', co: 'Bosch Rexroth', seg: 'Maschinenbau & Elektro', reg: 'Baden-Württemberg', st: 'qualifizierung', last: 'Erstgespräch', ltype: 'Anruf', date: '22.10.', o: 'Lea Schmidt', col: '#0891b2' },
+    { n: 'M. Klein', role: 'Head of Digitalisierung', co: 'Gothaer Versicherung', seg: 'Versicherungen & Finanzvermittler', reg: 'NRW', st: 'kontaktiert', last: 'Kein Erreichen', ltype: 'Anruf', date: '21.10.', o: 'Anna Müller', col: '#dc2626' },
+    { n: 'D. Weber', role: 'Chief Digital Officer', co: 'BASF Digital GmbH', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', st: 'angebot', last: 'Angebot versendet', ltype: 'E-Mail', date: '21.10.', o: 'Lea Schmidt', col: '#d97706' },
+    { n: 'P. Schmidt', role: 'Director IT', co: 'DHL Supply Chain', seg: 'Handel & Logistik', reg: 'Hamburg', st: 'qualifizierung', last: '2. Gespräch', ltype: 'Meeting', date: '21.10.', o: 'Thomas Braun', col: '#0ea5e9' },
+    { n: 'T. Bauer', role: 'Head of Innovation', co: 'Würth Gruppe', seg: 'Handel & Logistik', reg: 'Baden-Württemberg', st: 'qualifizierung', last: 'Erstgespräch', ltype: 'Meeting', date: '19.10.', o: 'Michael Weber', col: '#6d28d9' },
+    { n: 'J. Hoffmann', role: 'VP Technology', co: 'Commerzbank AG', seg: 'Banken', reg: 'Hamburg', st: 'gewonnen', last: 'Abschluss', ltype: 'Meeting', date: '20.10.', o: 'Anna Müller', col: '#15803d' }
+  ];
+
+  function initials(name) {
+    return name.split(/\s+/).map(function (p) { return p.charAt(0); }).join('').toUpperCase().slice(0, 2);
+  }
+
+  function initialOf(name) {
+    var parts = name.split(' ');
+    return parts.length > 1 ? parts[0].charAt(0) + parts[1].charAt(0) : parts[0].charAt(0);
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function toast(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1900);
+  }
+
+  var rowsEl = document.getElementById('ko-rows');
+  var countEl = document.getElementById('ko-count');
+  var footerEl = document.getElementById('ko-footer-text');
+
+  function filtered() {
+    var q = document.getElementById('ko-search').value.trim().toLowerCase();
+    var st = document.getElementById('ko-status').value;
+    var owner = document.getElementById('ko-owner').value;
+    return CONTACTS.filter(function (c) {
+      if (st && c.st !== st) return false;
+      if (owner && c.o !== owner) return false;
+      if (!q) return true;
+      return (c.n + ' ' + c.co + ' ' + c.role).toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  function render() {
+    var list = filtered();
+    rowsEl.innerHTML = '';
+
+    if (!list.length) {
+      var empty = document.createElement('div');
+      empty.className = 'ko-empty';
+      empty.textContent = 'Keine Kontakte für diese Filter gefunden.';
+      rowsEl.appendChild(empty);
+    }
+
+    list.forEach(function (c) {
+      var row = document.createElement('div');
+      row.className = 'ko-grid ko-row';
+
+      var company = c.link
+        ? '<a class="ko-co" href="' + c.link + '">' + esc(c.co) + '</a>'
+        : '<span class="ko-co">' + esc(c.co) + '</span>';
+
+      row.innerHTML =
+        '<div class="ko-contact">' +
+          '<div class="ko-av" style="background:' + c.col + '">' + esc(initials(c.n)) + '</div>' +
+          '<div style="min-width:0;">' +
+            '<div class="ko-name">' + esc(c.n) + '</div>' +
+            '<div class="ko-role">' + esc(c.role) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div>' + company + '<div class="ko-meta">' + esc(c.seg) + ' · ' + esc(c.reg) + '</div></div>' +
+        '<div><span class="ko-st ko-st-' + c.st + '">' + STATUS[c.st] + '</span></div>' +
+        '<div class="ko-last"><b>' + esc(c.ltype) + ' · ' + esc(c.date) + '</b><span>' + esc(c.last) + '</span></div>' +
+        '<div class="ko-owner"><i style="background:' + OWNER_COLOR[c.o] + '">' + esc(initialOf(c.o)) + '</i>' + esc(c.o.split(' ')[0]) + '</div>' +
+        '<div class="ko-acts">' +
+          '<button class="ko-act" type="button" data-act="call" data-name="' + esc(c.n) + '">Anruf</button>' +
+          '<button class="ko-act" type="button" data-act="mail" data-name="' + esc(c.n) + '">E-Mail</button>' +
+          (c.link
+            ? '<a class="ko-act open" href="' + c.link + '">Öffnen</a>'
+            : '<button class="ko-act open" type="button" data-act="open" data-name="' + esc(c.n) + '">Öffnen</button>') +
+        '</div>';
+
+      rowsEl.appendChild(row);
+    });
+
+    countEl.textContent = list.length + ' von ' + CONTACTS.length + ' Kontakten';
+    footerEl.textContent = 'Zeige ' + list.length + ' von 47 Kontakten · ';
+  }
+
+  document.getElementById('ko-search').addEventListener('input', render);
+  document.getElementById('ko-status').addEventListener('change', render);
+  document.getElementById('ko-owner').addEventListener('change', render);
+
+  rowsEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('.ko-act[data-act]');
+    if (!btn) return;
+    e.stopPropagation();
+    var act = btn.getAttribute('data-act');
+    var name = btn.getAttribute('data-name');
+    if (act === 'call') toast('Anruf bei ' + name + ' wird vorbereitet …');
+    if (act === 'mail') toast('E-Mail-Entwurf an ' + name + ' wird geöffnet …');
+    if (act === 'open') toast('Zielkunde von ' + name + ' wird geöffnet …');
+  });
+
+  document.getElementById('btn-add').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('Neuer Kontakt — Formular wird geöffnet …');
+  });
+
+  document.getElementById('btn-export').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('CSV-Export wird erstellt …');
+  });
+
+  document.getElementById('btn-load-all').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('Alle 47 Kontakte werden geladen …');
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

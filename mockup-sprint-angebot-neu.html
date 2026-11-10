@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neues Angebot · KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Chrome, buttons, cards and form basics come from mockup-sprint.css. */
+  * { margin: 0; padding: 0; }
+  body { display: flex; height: 100vh; overflow: hidden; background: #F5F5F5; }
+  .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  .btn.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* Topbar */
+  .an-heading { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .an-heading .breadcrumb { font-size: 11px; }
+  .an-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  /* Steps */
+  .an-steps { display: flex; align-items: center; gap: 4px; background: #fff; border-bottom: 1px solid #e8e8e8; padding: 0 24px; height: 46px; flex-shrink: 0; }
+  .an-step { display: flex; align-items: center; gap: 7px; padding: 4px 10px; border: none; background: none; border-radius: 6px; font-family: inherit; cursor: pointer; }
+  .an-step:hover { background: #f8fafc; }
+  .an-step-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700; background: #f1f5f9; color: #94a3b8; border: 1px solid #e2e8f0; }
+  .an-step.done .an-step-num { background: #F26722; border-color: #F26722; color: #fff; }
+  .an-step.active .an-step-num { background: #111111; border-color: #111111; color: #fff; box-shadow: 0 0 0 3px rgba(242,103,34,.16); }
+  .an-step-label { font-size: 12px; font-weight: 600; color: #94a3b8; }
+  .an-step.active .an-step-label { color: #111111; }
+  .an-step.done .an-step-label { color: #475569; }
+  .an-step-arrow { color: #cbd5e1; font-size: 13px; }
+
+  /* Shell */
+  .an-scroll { flex: 1; overflow-y: auto; }
+  .an-wrap { max-width: 1180px; margin: 0 auto; padding: 18px 24px 32px; display: flex; gap: 16px; align-items: flex-start; }
+  .an-form { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  .an-preview { width: 316px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
+
+  .card-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .an-card-num { width: 20px; height: 20px; border-radius: 50%; background: #F26722; color: #fff; font-size: 10.5px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; margin-right: 7px; }
+  .an-card-note { font-size: 10.5px; color: #94a3b8; }
+  .an-card-body { padding: 15px 18px; }
+
+  /* Zielkunde */
+  .an-search { margin-bottom: 10px; }
+  .an-search input { width: 100%; height: 34px; font-size: 12.5px; }
+  .an-zk-list { display: flex; flex-direction: column; gap: 6px; }
+  .an-zk { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; background: #fff; }
+  .an-zk:hover { border-color: #cbd5e1; background: #fafafa; }
+  .an-zk.selected { border-color: #F26722; background: #fff7f2; box-shadow: 0 0 0 1px rgba(242,103,34,.25); }
+  .an-zk-avatar { width: 32px; height: 32px; border-radius: 8px; background: #f1f5f9; color: #475569; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; flex-shrink: 0; }
+  .an-zk.selected .an-zk-avatar { background: linear-gradient(135deg, #F26722, #D4540A); color: #fff; }
+  .an-zk-info { flex: 1; min-width: 0; }
+  .an-zk-name { font-size: 12.5px; font-weight: 700; color: #111111; }
+  .an-zk-sub { font-size: 10.5px; color: #94a3b8; margin-top: 1px; }
+  .an-zk-check { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #e2e8f0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; font-weight: 800; }
+  .an-zk.selected .an-zk-check { background: #F26722; border-color: #F26722; }
+
+  /* Proposals */
+  .an-prop { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 6px; cursor: pointer; background: #fff; }
+  .an-prop:last-child { margin-bottom: 0; }
+  .an-prop:hover { border-color: #cbd5e1; background: #fafafa; }
+  .an-prop.selected { border-color: #F26722; background: #fff7f2; }
+  .an-prop input { width: 15px; height: 15px; accent-color: #F26722; margin-top: 2px; flex-shrink: 0; cursor: pointer; }
+  .an-prop-info { flex: 1; min-width: 0; }
+  .an-prop-name { font-size: 12.5px; font-weight: 700; color: #111111; }
+  .an-prop-desc { font-size: 11px; color: #64748b; line-height: 1.45; margin-top: 2px; }
+  .an-prop-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+  .an-prop-val { font-size: 12.5px; font-weight: 800; color: #16a34a; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .an-b-impl { background: #dbeafe; color: #1d4ed8; }
+  .an-b-add { background: #e0e7ff; color: #4338ca; }
+  .an-b-strat { background: #f3e8ff; color: #7e22ce; }
+  .an-b-p1 { background: #fee2e2; color: #dc2626; }
+  .an-b-p2 { background: #fef3c7; color: #b45309; }
+
+  /* Price table */
+  .an-rate-row { display: flex; align-items: center; gap: 8px; }
+  .an-rate-row label { margin: 0; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; }
+  .an-rate-row input { width: 84px; height: 28px; font-size: 12px; text-align: right; }
+  .an-table-wrap { overflow-x: auto; }
+  .an-table { width: 100%; border-collapse: collapse; }
+  .an-table thead th { font-size: 9.5px; padding: 7px 10px; }
+  .an-table tbody td { font-size: 11.5px; padding: 8px 10px; }
+  .an-table tr.is-hidden { display: none; }
+  .an-table .an-pos-name { font-size: 12px; font-weight: 700; color: #111111; }
+  .an-table .an-pos-desc { font-size: 10.5px; color: #94a3b8; margin-top: 1px; }
+  .an-table .num { text-align: right; }
+  .an-table input { height: 28px; padding: 0 8px; font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+  .an-days { width: 64px; }
+  .an-rate { width: 88px; }
+  .an-total { font-weight: 800; color: #111111; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+  /* BAFA toggle */
+  .an-bafa { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; margin-top: 12px; cursor: pointer; }
+  .an-bafa input { position: absolute; opacity: 0; pointer-events: none; }
+  .an-switch { width: 38px; height: 21px; border-radius: 11px; background: #cbd5e1; flex-shrink: 0; position: relative; margin-top: 1px; transition: background .15s; }
+  .an-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 17px; height: 17px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: left .15s; }
+  .an-bafa input:checked + .an-switch { background: #16a34a; }
+  .an-bafa input:checked + .an-switch::after { left: 19px; }
+  .an-bafa b { font-size: 12px; font-weight: 700; color: #15803d; }
+  .an-bafa p { font-size: 11px; color: #166534; line-height: 1.45; margin-top: 1px; }
+
+  /* Details form */
+  .an-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .an-field { display: flex; flex-direction: column; gap: 4px; }
+  .an-field.full { grid-column: 1 / -1; }
+  .an-field label { margin: 0; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; }
+  .an-field input, .an-field select, .an-field textarea { font-size: 12.5px; }
+  .an-field textarea { min-height: 74px; resize: vertical; }
+  .an-field input[readonly] { background: #f8fafc; color: #94a3b8; }
+
+  /* Preview */
+  .an-prev-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); overflow: hidden; }
+  .an-prev-head { background: linear-gradient(135deg, #1a0800 0%, #8B2E00 58%, #D4540A 100%); padding: 14px 16px; color: #fff; }
+  .an-prev-head h3 { font-size: 13.5px; font-weight: 800; }
+  .an-prev-head p { font-size: 10.5px; color: rgba(255,255,255,.65); margin-top: 2px; }
+  .an-prev-body { padding: 14px 16px; }
+  .an-prev-company { display: flex; align-items: center; gap: 8px; padding: 9px 11px; background: #fafafa; border: 1px solid #f1f5f9; border-radius: 8px; margin-bottom: 12px; }
+  .an-prev-av { width: 30px; height: 30px; border-radius: 7px; background: linear-gradient(135deg, #F26722, #D4540A); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 800; flex-shrink: 0; }
+  .an-prev-cname { font-size: 12px; font-weight: 700; color: #111111; }
+  .an-prev-csub { font-size: 10px; color: #94a3b8; }
+  .an-prev-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; margin-bottom: 5px; }
+  .an-prev-row { display: flex; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px solid #f8fafc; font-size: 11px; }
+  .an-prev-row:last-child { border-bottom: none; }
+  .an-prev-row span:first-child { color: #475569; }
+  .an-prev-row span:last-child { font-weight: 700; color: #111111; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .an-prev-totals { border-top: 1px solid #f1f5f9; margin-top: 8px; padding-top: 8px; }
+  .an-prev-total { display: flex; justify-content: space-between; font-size: 11px; padding: 3px 0; color: #475569; }
+  .an-prev-total.bafa { color: #15803d; }
+  .an-prev-total.grand { border-top: 1px solid #e2e8f0; margin-top: 5px; padding-top: 7px; font-size: 12.5px; font-weight: 800; color: #111111; }
+  .an-prev-total.grand span:last-child { color: #16a34a; font-size: 14px; }
+  .an-prev-meta { margin-top: 12px; padding: 9px 11px; background: #fafafa; border: 1px solid #f1f5f9; border-radius: 8px; display: flex; flex-direction: column; gap: 3px; }
+  .an-prev-meta div { display: flex; justify-content: space-between; font-size: 10.5px; color: #94a3b8; }
+  .an-prev-meta b { color: #374151; font-weight: 600; }
+  .an-prev-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+  .an-assess { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 12px 14px; }
+  .an-assess-title { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; margin-bottom: 4px; }
+  .an-assess-sub { font-size: 11px; color: #64748b; margin-bottom: 8px; }
+  .an-assess .btn { width: 100%; justify-content: center; }
+
+  @media (max-width: 1040px) {
+    .an-wrap { flex-direction: column; }
+    .an-preview { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="angebot-neu"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="an-heading">
+      <div class="breadcrumb">
+        <a href="mockup-sprint-kanban.html">Sprint-Vertrieb</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="mockup-sprint-angebot.html">Angebote</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">Neues Angebot</span>
+      </div>
+      <span class="page-title">Neues Angebot erstellen</span>
+    </div>
+    <div class="an-actions">
+      <a class="btn btn-ghost btn-sm" href="mockup-sprint-angebot.html">Abbrechen</a>
+      <button class="btn btn-ghost btn-sm" id="btn-save" type="button">Entwurf speichern</button>
+      <button class="btn btn-primary btn-sm" id="btn-create" type="button">Erstellen &amp; Versenden</button>
+    </div>
+  </header>
+
+  <div class="an-steps">
+    <button class="an-step done" type="button" data-target="card-zk"><span class="an-step-num">✓</span><span class="an-step-label">Zielkunde</span></button>
+    <span class="an-step-arrow">›</span>
+    <button class="an-step active" type="button" data-target="card-props"><span class="an-step-num">2</span><span class="an-step-label">Vorschläge wählen</span></button>
+    <span class="an-step-arrow">›</span>
+    <button class="an-step" type="button" data-target="card-price"><span class="an-step-num">3</span><span class="an-step-label">Preiskonfiguration</span></button>
+    <span class="an-step-arrow">›</span>
+    <button class="an-step" type="button" data-target="card-details"><span class="an-step-num">4</span><span class="an-step-label">Details &amp; Versand</span></button>
+  </div>
+
+  <div class="an-scroll">
+    <div class="an-wrap">
+
+      <!-- FORM -->
+      <div class="an-form">
+
+        <!-- 1 Zielkunde -->
+        <section class="card" id="card-zk">
+          <div class="card-header">
+            <div class="card-title"><span class="an-card-num">1</span>Zielkunde auswählen</div>
+            <span class="an-card-note">Pflichtfeld</span>
+          </div>
+          <div class="an-card-body">
+            <div class="an-search"><input type="text" id="zk-search" placeholder="Unternehmen suchen …"></div>
+            <div class="an-zk-list" id="zk-list">
+              <div class="an-zk selected" data-name="AXA Konzern AG" data-sub="R. Lehmann · Premium-Paket" data-initials="AX">
+                <div class="an-zk-avatar">AX</div>
+                <div class="an-zk-info">
+                  <div class="an-zk-name">AXA Konzern AG</div>
+                  <div class="an-zk-sub">Versicherung · Nordrhein-Westfalen · 5.600 MA · Score 3.7</div>
+                </div>
+                <span class="badge an-b-p2">Angebot</span>
+                <span class="an-zk-check">✓</span>
+              </div>
+              <div class="an-zk" data-name="Siemens Financial" data-sub="K. Maier · Premium-Paket" data-initials="SF">
+                <div class="an-zk-avatar">SF</div>
+                <div class="an-zk-info">
+                  <div class="an-zk-name">Siemens Financial</div>
+                  <div class="an-zk-sub">Banken · Bayern · 2.400 MA · Score 4.1</div>
+                </div>
+                <span class="badge an-b-p1">P1 · Hoch</span>
+                <span class="an-zk-check"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2 Vorschläge -->
+        <section class="card" id="card-props">
+          <div class="card-header">
+            <div class="card-title"><span class="an-card-num">2</span>Projektvorschläge auswählen</div>
+            <span class="an-card-note">Aus KI-Assessment v2 · 18.10.2026</span>
+          </div>
+          <div class="an-card-body">
+            <div id="prop-list">
+              <label class="an-prop selected">
+                <input type="checkbox" data-id="schaden" checked>
+                <div class="an-prop-info">
+                  <div class="an-prop-name">Intelligente Schadensprognose</div>
+                  <div class="an-prop-desc">ML-Modell zur Vorhersage von Schadenshöhe und -häufigkeit auf Basis historischer Policendaten.</div>
+                  <div class="an-prop-badges">
+                    <span class="badge an-b-impl">Implementierung</span>
+                    <span class="badge an-b-p1">P1 · Hoch</span>
+                  </div>
+                </div>
+                <div class="an-prop-val">€ 95.000</div>
+              </label>
+
+              <label class="an-prop">
+                <input type="checkbox" data-id="dokumenten">
+                <div class="an-prop-info">
+                  <div class="an-prop-name">Dokumenten-KI für Vertragsanalyse</div>
+                  <div class="an-prop-desc">LLM-basierte Pipeline zur Extraktion und Klassifikation von Vertragsklauseln und Risikoprüfung.</div>
+                  <div class="an-prop-badges">
+                    <span class="badge an-b-impl">Implementierung</span>
+                    <span class="badge an-b-p1">P1 · Hoch</span>
+                  </div>
+                </div>
+                <div class="an-prop-val">€ 120.000</div>
+              </label>
+
+              <label class="an-prop selected">
+                <input type="checkbox" data-id="strategie" checked>
+                <div class="an-prop-info">
+                  <div class="an-prop-name">KI-Strategie &amp; Roadmap</div>
+                  <div class="an-prop-desc">Workshops zur Entwicklung einer unternehmensweiten KI-Strategie mit Use-Case-Priorisierung und Governance-Rahmen.</div>
+                  <div class="an-prop-badges">
+                    <span class="badge an-b-strat">Strategie</span>
+                    <span class="badge an-b-p2">P2 · Mittel</span>
+                  </div>
+                </div>
+                <div class="an-prop-val">€ 45.000</div>
+              </label>
+
+              <label class="an-prop">
+                <input type="checkbox" data-id="mlops">
+                <div class="an-prop-info">
+                  <div class="an-prop-name">MLOps-Plattform Aufbau</div>
+                  <div class="an-prop-desc">Skalierbare MLOps-Infrastruktur auf Azure ML inkl. CI/CD-Pipelines.</div>
+                  <div class="an-prop-badges">
+                    <span class="badge an-b-add">Zusatzpaket</span>
+                    <span class="badge an-b-p2">P2 · Mittel</span>
+                  </div>
+                </div>
+                <div class="an-prop-val">€ 50.000</div>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3 Preise -->
+        <section class="card" id="card-price">
+          <div class="card-header">
+            <div class="card-title"><span class="an-card-num">3</span>Preiskonfiguration</div>
+            <div class="an-rate-row">
+              <label for="std-rate">Tagessatz</label>
+              <input type="number" id="std-rate" value="1750" step="50" min="0">
+              <button class="btn btn-ghost btn-sm" id="btn-apply-rate" type="button">Auf alle anwenden</button>
+            </div>
+          </div>
+          <div class="an-card-body" style="padding:0;">
+            <div class="an-table-wrap">
+              <table class="an-table">
+                <thead>
+                  <tr>
+                    <th style="width:42%;">Position</th>
+                    <th class="num" style="width:76px;">Tage</th>
+                    <th class="num" style="width:102px;">Tagessatz</th>
+                    <th class="num" style="width:110px;">Gesamt</th>
+                  </tr>
+                </thead>
+                <tbody id="pos-body">
+                  <tr data-id="assessment">
+                    <td><div class="an-pos-name">KI-Readiness Assessment</div><div class="an-pos-desc">6-dimensionale Analyse + Workshop + Präsentation</div></td>
+                    <td class="num"><input class="an-days" type="number" value="6" min="0" step="1"></td>
+                    <td class="num"><input class="an-rate" type="number" value="1750" min="0" step="50"></td>
+                    <td class="num an-total">€ 10.500</td>
+                  </tr>
+                  <tr data-id="strategie">
+                    <td><div class="an-pos-name">KI-Strategie &amp; Roadmap</div><div class="an-pos-desc">Ganztägige Workshops + Dokumentation + Roadmap</div></td>
+                    <td class="num"><input class="an-days" type="number" value="11" min="0" step="1"></td>
+                    <td class="num"><input class="an-rate" type="number" value="1750" min="0" step="50"></td>
+                    <td class="num an-total">€ 19.250</td>
+                  </tr>
+                  <tr data-id="schaden">
+                    <td><div class="an-pos-name">Pilot: Intelligente Schadensprognose</div><div class="an-pos-desc">Modellentwicklung, Integration, Monitoring</div></td>
+                    <td class="num"><input class="an-days" type="number" value="18" min="0" step="1"></td>
+                    <td class="num"><input class="an-rate" type="number" value="1750" min="0" step="50"></td>
+                    <td class="num an-total">€ 31.500</td>
+                  </tr>
+                  <tr data-id="dokumenten" class="is-hidden">
+                    <td><div class="an-pos-name">Dokumenten-KI für Vertragsanalyse</div><div class="an-pos-desc">LLM-Pipeline, Datenaufbereitung, Risikoprüfung</div></td>
+                    <td class="num"><input class="an-days" type="number" value="14" min="0" step="1"></td>
+                    <td class="num"><input class="an-rate" type="number" value="1750" min="0" step="50"></td>
+                    <td class="num an-total">€ 24.500</td>
+                  </tr>
+                  <tr data-id="mlops" class="is-hidden">
+                    <td><div class="an-pos-name">MLOps-Plattform Aufbau</div><div class="an-pos-desc">Azure ML, CI/CD-Pipelines, Monitoring</div></td>
+                    <td class="num"><input class="an-days" type="number" value="10" min="0" step="1"></td>
+                    <td class="num"><input class="an-rate" type="number" value="1750" min="0" step="50"></td>
+                    <td class="num an-total">€ 17.500</td>
+                  </tr>
+                  <tr data-id="change">
+                    <td><div class="an-pos-name">Change Management &amp; KI-Training</div><div class="an-pos-desc">Schulung von 3 Fachteams + Trainingsmaterial</div></td>
+                    <td class="num"><input class="an-days" type="number" value="5" min="0" step="1"></td>
+                    <td class="num"><input class="an-rate" type="number" value="1750" min="0" step="50"></td>
+                    <td class="num an-total">€ 8.750</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4 Details -->
+        <section class="card" id="card-details">
+          <div class="card-header">
+            <div class="card-title"><span class="an-card-num">4</span>Angebots-Details</div>
+          </div>
+          <div class="an-card-body">
+            <div class="an-grid">
+              <div class="an-field">
+                <label for="an-nr">Angebotsnummer</label>
+                <input id="an-nr" type="text" value="A-2026-047" readonly>
+              </div>
+              <div class="an-field">
+                <label for="an-date">Angebotsdatum</label>
+                <input id="an-date" type="date" value="2026-10-20">
+              </div>
+              <div class="an-field">
+                <label for="an-valid">Gültig bis</label>
+                <input id="an-valid" type="date" value="2026-11-20">
+              </div>
+              <div class="an-field">
+                <label for="an-package">Sprint-Paket</label>
+                <select id="an-package">
+                  <option>Basic</option>
+                  <option>Advanced</option>
+                  <option selected>Premium</option>
+                </select>
+              </div>
+              <div class="an-field">
+                <label for="an-contact">Ansprechpartner (Auftraggeber)</label>
+                <select id="an-contact">
+                  <option selected>R. Lehmann · Leiter IT-Strategie</option>
+                  <option>+ Neuen Kontakt hinzufügen</option>
+                </select>
+              </div>
+              <div class="an-field">
+                <label for="an-payment">Zahlungsbedingungen</label>
+                <select id="an-payment">
+                  <option>30 Tage netto</option>
+                  <option selected>3 Raten (30/40/30 %)</option>
+                  <option>Vorauszahlung</option>
+                </select>
+              </div>
+              <div class="an-field full">
+                <label for="an-notes-internal">Interne Notizen (nicht im Angebot sichtbar)</label>
+                <textarea id="an-notes-internal" placeholder="z. B. Budget-Limit des Kunden, interner Verhandlungsspielraum …">Budget ~€ 90k. R. Lehmann hat Budget Q1 2027 bestätigt. Spielraum bis −10 % bei Abschluss vor 15.11.</textarea>
+              </div>
+              <div class="an-field full">
+                <label for="an-notes-external">Angebotstext / Begleitnotiz (im Angebot sichtbar)</label>
+                <textarea id="an-notes-external" placeholder="Individueller Einleitungstext für das Angebot …">Sehr geehrter Herr Lehmann,
+
+vielen Dank für das konstruktive Gespräch am 21.10.2026. Gemäß unserer Vereinbarung übersende ich Ihnen unser maßgeschneidertes Angebot für den KI-Readiness Sprint bei der AXA Konzern AG.</textarea>
+              </div>
+            </div>
+
+            <label class="an-bafa">
+              <input type="checkbox" id="bafa-toggle" checked>
+              <span class="an-switch"></span>
+              <div>
+                <b>BAFA-Förderhinweis im Angebot aufnehmen</b>
+                <p>Automatisch Hinweis auf mögliche BAFA-Förderung (bis zu 3.500 €) und Unterstützung bei der Antragstellung einfügen.</p>
+              </div>
+            </label>
+          </div>
+        </section>
+
+      </div><!-- /form -->
+
+      <!-- PREVIEW -->
+      <div class="an-preview">
+        <div class="an-prev-card">
+          <div class="an-prev-head">
+            <h3>Angebot-Vorschau</h3>
+            <p>Wird live aktualisiert</p>
+          </div>
+          <div class="an-prev-body">
+            <div class="an-prev-company">
+              <div class="an-prev-av" id="prev-av">AX</div>
+              <div>
+                <div class="an-prev-cname" id="prev-company">AXA Konzern AG</div>
+                <div class="an-prev-csub" id="prev-contact">R. Lehmann · Premium-Paket</div>
+              </div>
+            </div>
+
+            <div class="an-prev-lbl">Ausgewählte Positionen</div>
+            <div id="prev-positions"></div>
+
+            <div class="an-prev-totals">
+              <div class="an-prev-total"><span>Netto gesamt</span><span id="prev-net">€ 70.000</span></div>
+              <div class="an-prev-total bafa" id="prev-bafa-row"><span>BAFA-Förderung*</span><span>− € 3.500</span></div>
+              <div class="an-prev-total"><span>Netto nach Förderung</span><span id="prev-after">€ 66.500</span></div>
+              <div class="an-prev-total"><span>USt. 19 %</span><span id="prev-vat">€ 12.635</span></div>
+              <div class="an-prev-total grand"><span>Brutto gesamt</span><span id="prev-gross">€ 79.135</span></div>
+            </div>
+
+            <div class="an-prev-meta">
+              <div><span>Datum</span><b id="prev-date">20.10.2026</b></div>
+              <div><span>Gültig bis</span><b id="prev-valid">20.11.2026</b></div>
+              <div><span>Paket</span><b id="prev-package">Premium</b></div>
+              <div><span>Zahlung</span><b id="prev-payment">3 Raten</b></div>
+            </div>
+
+            <div class="an-prev-actions">
+              <button class="btn btn-primary btn-sm" id="btn-create-2" type="button">Erstellen &amp; Versenden</button>
+              <button class="btn btn-ghost btn-sm" id="btn-pdf-prev" type="button">PDF-Vorschau öffnen</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="an-assess">
+          <div class="an-assess-title">Basis: KI-Assessment v2</div>
+          <div class="an-assess-sub">Score 3.7 / 5.0 · 18.10.2026</div>
+          <a class="btn btn-ghost btn-sm" href="mockup-sprint-assessment.html">Assessment öffnen →</a>
+        </div>
+      </div><!-- /preview -->
+
+    </div><!-- /wrap -->
+  </div><!-- /scroll -->
+</div><!-- /main-wrapper -->
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var POS_ORDER = ['assessment', 'strategie', 'schaden', 'dokumenten', 'mlops', 'change'];
+  var POS_NAMES = {
+    assessment: 'KI-Readiness Assessment',
+    strategie: 'KI-Strategie & Roadmap',
+    schaden: 'Pilot: Schadensprognose',
+    dokumenten: 'Dokumenten-KI Vertragsanalyse',
+    mlops: 'MLOps-Plattform Aufbau',
+    change: 'Change Management'
+  };
+
+  function toast(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1900);
+  }
+
+  function fmt(n) {
+    return '€ ' + Math.round(n).toLocaleString('de-DE');
+  }
+
+  function rowOf(id) {
+    return document.querySelector('.an-table tbody tr[data-id="' + id + '"]');
+  }
+
+  function visibleRows() {
+    var out = [];
+    POS_ORDER.forEach(function (id) {
+      var r = rowOf(id);
+      if (r && !r.classList.contains('is-hidden')) out.push(r);
+    });
+    return out;
+  }
+
+  function calc() {
+    var net = 0;
+    var previewHTML = '';
+    visibleRows().forEach(function (r) {
+      var days = parseFloat(r.querySelector('.an-days').value) || 0;
+      var rate = parseFloat(r.querySelector('.an-rate').value) || 0;
+      var total = days * rate;
+      net += total;
+      r.querySelector('.an-total').textContent = fmt(total);
+      var id = r.getAttribute('data-id');
+      previewHTML += '<div class="an-prev-row"><span>' + POS_NAMES[id] + ' (' + days + ' Tage)</span><span>' + fmt(total) + '</span></div>';
+    });
+    document.getElementById('prev-positions').innerHTML = previewHTML;
+
+    var bafaOn = document.getElementById('bafa-toggle').checked;
+    var deduct = bafaOn ? Math.min(3500, net) : 0;
+    var after = net - deduct;
+    var vat = after * 0.19;
+    var gross = after + vat;
+
+    document.getElementById('prev-net').textContent = fmt(net);
+    document.getElementById('prev-bafa-row').style.display = bafaOn ? 'flex' : 'none';
+    document.getElementById('prev-after').textContent = fmt(after);
+    document.getElementById('prev-vat').textContent = fmt(vat);
+    document.getElementById('prev-gross').textContent = fmt(gross);
+  }
+
+  /* ── Proposal selection ─────────────────────────────────── */
+  document.querySelectorAll('.an-prop input').forEach(function (cb) {
+    cb.addEventListener('change', function () {
+      var id = cb.getAttribute('data-id');
+      var row = rowOf(id);
+      if (row) row.classList.toggle('is-hidden', !cb.checked);
+      cb.closest('.an-prop').classList.toggle('selected', cb.checked);
+      calc();
+    });
+  });
+
+  /* ── Price edits ────────────────────────────────────────── */
+  document.getElementById('pos-body').addEventListener('input', calc);
+
+  document.getElementById('btn-apply-rate').addEventListener('click', function (e) {
+    e.stopPropagation();
+    var rate = parseFloat(document.getElementById('std-rate').value) || 0;
+    document.querySelectorAll('.an-rate').forEach(function (inp) { inp.value = rate; });
+    calc();
+    toast('Tagessatz auf alle Positionen angewendet');
+  });
+
+  /* ── BAFA ───────────────────────────────────────────────── */
+  document.getElementById('bafa-toggle').addEventListener('change', calc);
+
+  /* ── Zielkunde ──────────────────────────────────────────── */
+  var zkList = document.getElementById('zk-list');
+  zkList.addEventListener('click', function (e) {
+    var opt = e.target.closest('.an-zk');
+    if (!opt) return;
+    e.stopPropagation();
+    zkList.querySelectorAll('.an-zk').forEach(function (o) { o.classList.remove('selected'); });
+    opt.classList.add('selected');
+    opt.querySelector('.an-zk-check').textContent = '✓';
+    zkList.querySelectorAll('.an-zk:not(.selected) .an-zk-check').forEach(function (c) { c.textContent = ''; });
+    document.getElementById('prev-company').textContent = opt.getAttribute('data-name');
+    document.getElementById('prev-av').textContent = opt.getAttribute('data-initials');
+    document.getElementById('prev-contact').textContent = opt.getAttribute('data-sub');
+    toast('Zielkunde gewechselt: ' + opt.getAttribute('data-name'));
+  });
+
+  document.getElementById('zk-search').addEventListener('input', function (e) {
+    var q = e.target.value.toLowerCase();
+    zkList.querySelectorAll('.an-zk').forEach(function (o) {
+      var show = o.getAttribute('data-name').toLowerCase().indexOf(q) !== -1;
+      o.style.display = show ? 'flex' : 'none';
+    });
+  });
+
+  /* ── Details → preview ──────────────────────────────────── */
+  function deDate(v) {
+    if (!v) return '—';
+    var p = v.split('-');
+    return p[2] + '.' + p[1] + '.' + p[0];
+  }
+  function bindPreview(id, target, fn) {
+    document.getElementById(id).addEventListener('change', function (e) {
+      document.getElementById(target).textContent = fn ? fn(e.target.value) : e.target.value;
+    });
+  }
+  bindPreview('an-date', 'prev-date', deDate);
+  bindPreview('an-valid', 'prev-valid', deDate);
+  bindPreview('an-package', 'prev-package');
+  bindPreview('an-payment', 'prev-payment', function (v) { return v.indexOf('3 Raten') === 0 ? '3 Raten' : (v.indexOf('Vorauszahlung') !== -1 ? 'Vorauszahlung' : '30 Tage netto'); });
+
+  /* ── Steps ──────────────────────────────────────────────── */
+  var steps = document.querySelectorAll('.an-step');
+  steps.forEach(function (step, i) {
+    step.addEventListener('click', function (e) {
+      e.stopPropagation();
+      steps.forEach(function (s, j) {
+        s.classList.remove('active', 'done');
+        if (j < i) s.classList.add('done');
+      });
+      step.classList.add('active');
+      var target = document.getElementById(step.getAttribute('data-target'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  /* ── Actions ────────────────────────────────────────────── */
+  function save(e) {
+    e.stopPropagation();
+    toast('Angebot als Entwurf gespeichert (Demo)');
+  }
+  function create(e) {
+    e.stopPropagation();
+    toast('Angebot A-2026-047 erstellt und versendet (Demo)');
+  }
+  document.getElementById('btn-save').addEventListener('click', save);
+  document.getElementById('btn-create').addEventListener('click', create);
+  document.getElementById('btn-create-2').addEventListener('click', create);
+  document.getElementById('btn-pdf-prev').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('PDF-Vorschau wird geöffnet (Demo)');
+  });
+
+  calc();
+})();
+</script>
+</body>
+</html>

@@ -42,6 +42,14 @@ const teamsRoutes = require('./routes/teams');
 const workflowsRoutes = require('./routes/workflows');
 const notificationsRoutes = require('./routes/notifications');
 const settingsRoutes = require('./routes/settings');
+const sprintTargetsRoutes = require('./routes/sprint-targets');
+const sprintAssessmentsRoutes = require('./routes/sprint-assessments');
+const sprintOffersRoutes = require('./routes/sprint-offers');
+const sprintHandoverRoutes = require('./routes/sprint-handover');
+const sprintSettingsRoutes = require('./routes/sprint-settings');
+const sprintOutreachRoutes = require('./routes/sprint-outreach');
+const sprintContactsRoutes = require('./routes/sprint-contacts');
+const sprintMarketRoutes = require('./routes/sprint-market');
 const { startScheduler } = require('./scheduler');
 const { PrismaClient } = require('@prisma/client');
 const _prisma = new PrismaClient();
@@ -128,6 +136,14 @@ app.use('/api/teams', teamsRoutes);
 app.use('/api/workflows', workflowsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/sprint-targets', sprintTargetsRoutes);
+app.use('/api/sprint-assessments', sprintAssessmentsRoutes);
+app.use('/api/sprint-offers', sprintOffersRoutes);
+app.use('/api/sprint-handover', sprintHandoverRoutes);
+app.use('/api/sprint-settings', sprintSettingsRoutes);
+app.use('/api/sprint-outreach', sprintOutreachRoutes);
+app.use('/api/sprint-contacts', sprintContactsRoutes);
+app.use('/api/sprint-market', sprintMarketRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

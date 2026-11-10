@@ -1,0 +1,10 @@
+-- Erweiterte Sprint-Aktivitätsfelder
+ALTER TABLE "Activity" ADD COLUMN IF NOT EXISTS "sentiment" TEXT;
+ALTER TABLE "Activity" ADD COLUMN IF NOT EXISTS "doneById" TEXT;
+ALTER TABLE "Activity" ADD COLUMN IF NOT EXISTS "phaseChange" TEXT;
+ALTER TABLE "Activity" ADD COLUMN IF NOT EXISTS "contactName" TEXT;
+ALTER TABLE "Activity" ADD COLUMN IF NOT EXISTS "followUpTaskId" TEXT;
+ALTER TABLE "Activity" ADD COLUMN IF NOT EXISTS "outreachTemplateId" TEXT;
+ALTER TABLE "Activity" ADD COLUMN IF NOT EXISTS "channel" TEXT;
+
+ALTER TABLE "Activity" ADD CONSTRAINT "Activity_doneById_fkey" FOREIGN KEY ("doneById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

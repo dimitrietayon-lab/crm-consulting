@@ -7,7 +7,10 @@ const prisma = new PrismaClient();
 // GET /api/activities
 router.get('/', async (req, res) => {
   try {
-    const { type, accountId, dealId, projectId, createdById, dateFrom, dateTo, upcoming, limit } = req.query;
+    const {
+      type, accountId, dealId, projectId, createdById, ownerId, dateFrom, dateTo,
+      from, to, upcoming, limit, sprintTargetId, onlySprint, q, segment, channel,
+    } = req.query;
 
     const where = {};
 
@@ -16,13 +19,36 @@ router.get('/', async (req, res) => {
     if (dealId) where.dealId = dealId;
     if (projectId) where.projectId = projectId;
     if (createdById) where.createdById = createdById;
+    else if (ownerId) where.createdById = ownerId;
+    if (sprintTargetId) where.sprintTargetId = sprintTargetId;
+    if (onlySprint === 'true') where.sprintTargetId = { not: null };
+    if (q) {
+      where.OR = [
+        { summary: { contains: q, mode: 'insensitive' } },
+        { nextSteps: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+
+    // Kanal-Filter (E-Mail/LinkedIn/Telefon/Meeting) entspricht dem Aktivitätstyp
+    if (channel) {
+      const channels = (Array.isArray(channel) ? channel : String(channel).split(','))
+        .map((c) => c.trim())
+        .filter(Boolean);
+      if (channels.length) where.type = { in: channels };
+    }
+
+    // Segment-Filter läuft über den verknüpften Sprint-Zielkunden
+    if (segment) where.sprintTarget = { segment: { contains: segment, mode: 'insensitive' } };
+
+    const rangeFrom = dateFrom || from;
+    const rangeTo = dateTo || to;
 
     if (upcoming === 'true') {
       where.date = { gte: new Date() };
-    } else if (dateFrom || dateTo) {
+    } else if (rangeFrom || rangeTo) {
       where.date = {};
-      if (dateFrom) where.date.gte = new Date(dateFrom);
-      if (dateTo) where.date.lte = new Date(dateTo);
+      if (rangeFrom) where.date.gte = new Date(rangeFrom);
+      if (rangeTo) where.date.lte = new Date(rangeTo);
     }
 
     const activities = await prisma.activity.findMany({
@@ -32,6 +58,7 @@ router.get('/', async (req, res) => {
         account: { select: { id: true, companyName: true } },
         deal: { select: { id: true, title: true } },
         project: { select: { id: true, name: true } },
+        sprintTarget: { select: { id: true, companyName: true, status: true, segment: true } },
         participants: {
           include: {
             contact: { select: { id: true, name: true } },
@@ -77,6 +104,7 @@ router.post('/', async (req, res) => {
         account: { select: { id: true, companyName: true } },
         deal: { select: { id: true, title: true } },
         project: { select: { id: true, name: true } },
+        sprintTarget: { select: { id: true, companyName: true, status: true, segment: true } },
         participants: {
           include: {
             contact: { select: { id: true, name: true } },
@@ -153,6 +181,7 @@ router.put('/:id', async (req, res) => {
         account: { select: { id: true, companyName: true } },
         deal: { select: { id: true, title: true } },
         project: { select: { id: true, name: true } },
+        sprintTarget: { select: { id: true, companyName: true, status: true, segment: true } },
         participants: {
           include: {
             contact: { select: { id: true, name: true } },

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aktivitäten · Sprint-Vertrieb — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Chrome, buttons and badges come from mockup-sprint.css. */
+  * { margin: 0; padding: 0; }
+  body { display: flex; height: 100vh; overflow: hidden; background: #F5F5F5; }
+  .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  .btn.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* Topbar */
+  .ak-heading { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .ak-heading .breadcrumb { font-size: 11px; }
+  .ak-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  /* Content shell */
+  .ak-scroll { flex: 1; overflow-y: auto; }
+  .ak-wrap { max-width: 1060px; margin: 0 auto; padding: 20px 24px 32px; }
+
+  /* Stats */
+  .ak-stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 14px; }
+  .ak-stat { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 11px 14px; }
+  .ak-stat b { display: block; font-size: 20px; font-weight: 800; line-height: 1.1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .ak-stat b.call { color: #15803d; }
+  .ak-stat b.meeting { color: #4338ca; }
+  .ak-stat b.email { color: #b45309; }
+  .ak-stat b.linkedin { color: #6d28d9; }
+  .ak-stat b.note { color: #475569; }
+  .ak-stat span { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #94a3b8; }
+
+  /* Filters */
+  .ak-filters { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .ak-chip { padding: 5px 11px; border-radius: 20px; font-size: 11.5px; font-weight: 600; cursor: pointer; border: 1px solid #e2e8f0; background: #fff; color: #64748b; font-family: inherit; }
+  .ak-chip:hover { border-color: #cbd5e1; color: #111111; }
+  .ak-chip.active { background: #111111; border-color: #111111; color: #fff; }
+  .ak-chip b { margin-left: 4px; font-size: 10px; opacity: .65; }
+  .ak-select { padding: 6px 10px; font-size: 12px; color: #374151; cursor: pointer; margin-left: 4px; }
+  .ak-spacer { margin-left: auto; font-size: 11px; color: #94a3b8; }
+
+  /* Date groups */
+  .ak-group { margin-bottom: 20px; }
+  .ak-group-head { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+  .ak-group-head span { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; white-space: nowrap; }
+  .ak-group-head::after { content: ''; flex: 1; height: 1px; background: #e8e8e8; }
+
+  /* Activity item */
+  .ak-item { display: flex; gap: 12px; align-items: flex-start; background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 13px 15px; margin-bottom: 8px; transition: box-shadow .15s; }
+  .ak-item:hover { box-shadow: 0 3px 10px rgba(0,0,0,.07); }
+  .ak-ico { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ak-ico svg { width: 16px; height: 16px; }
+  .ak-ico.call { background: #dcfce7; color: #15803d; }
+  .ak-ico.meeting { background: #e0e7ff; color: #4338ca; }
+  .ak-ico.email { background: #fef3c7; color: #b45309; }
+  .ak-ico.linkedin { background: #ede9fe; color: #6d28d9; }
+  .ak-ico.note { background: #f1f5f9; color: #475569; }
+
+  .ak-body { flex: 1; min-width: 0; }
+  .ak-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+  .ak-title { font-size: 13px; font-weight: 700; color: #111111; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .ak-badge { font-size: 9.5px; font-weight: 700; padding: 2px 7px; border-radius: 20px; letter-spacing: .02em; }
+  .ak-badge.call { background: #dcfce7; color: #15803d; }
+  .ak-badge.meeting { background: #e0e7ff; color: #4338ca; }
+  .ak-badge.email { background: #fef3c7; color: #b45309; }
+  .ak-badge.linkedin { background: #ede9fe; color: #6d28d9; }
+  .ak-badge.note { background: #f1f5f9; color: #475569; }
+  .ak-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .ak-time { font-size: 11px; color: #94a3b8; font-variant-numeric: tabular-nums; }
+  .ak-owner { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; }
+
+  .ak-target { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; color: #475569; text-decoration: none; margin-bottom: 5px; }
+  .ak-target:hover { color: #F26722; }
+  .ak-text { font-size: 12px; color: #64748b; line-height: 1.55; }
+  .ak-next { font-size: 11.5px; color: #c2410c; font-weight: 600; margin-top: 5px; }
+  .ak-empty { padding: 34px 16px; text-align: center; font-size: 12px; color: #94a3b8; background: #fff; border: 1px dashed #e2e8f0; border-radius: 10px; }
+
+  @media (max-width: 980px) {
+    .ak-stats { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="aktivitaeten"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="ak-heading">
+      <div class="breadcrumb">
+        <a href="mockup-sprint-kanban.html">Sprint-Vertrieb</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">Aktivitäten</span>
+      </div>
+      <span class="page-title">Aktivitäten</span>
+    </div>
+    <div class="ak-actions">
+      <button class="btn btn-ghost btn-sm" id="btn-export" type="button">Export CSV</button>
+      <a class="btn btn-primary btn-sm" href="mockup-sprint-aktivitaet-loggen.html">Aktivität loggen</a>
+    </div>
+  </header>
+
+  <div class="ak-scroll">
+    <div class="ak-wrap">
+
+      <div class="ak-stats">
+        <div class="ak-stat"><b class="call">24</b><span>Anrufe · Woche</span></div>
+        <div class="ak-stat"><b class="meeting">8</b><span>Meetings · Woche</span></div>
+        <div class="ak-stat"><b class="email">17</b><span>E-Mails · Woche</span></div>
+        <div class="ak-stat"><b class="linkedin">31</b><span>LinkedIn · Woche</span></div>
+        <div class="ak-stat"><b class="note">12</b><span>Notizen · Woche</span></div>
+        <div class="ak-stat"><b>247</b><span>Aktivitäten gesamt</span></div>
+      </div>
+
+      <div class="ak-filters" id="ak-filters">
+        <button class="ak-chip active" type="button" data-type="all">Alle <b>10</b></button>
+        <button class="ak-chip" type="button" data-type="call">Anruf <b>3</b></button>
+        <button class="ak-chip" type="button" data-type="meeting">Meeting <b>3</b></button>
+        <button class="ak-chip" type="button" data-type="email">E-Mail <b>2</b></button>
+        <button class="ak-chip" type="button" data-type="linkedin">LinkedIn <b>1</b></button>
+        <button class="ak-chip" type="button" data-type="note">Notiz <b>1</b></button>
+        <select class="ak-select" id="ak-owner" aria-label="Consultant filtern">
+          <option value="">Alle Consultants</option>
+          <option value="Anna Müller">Anna Müller</option>
+          <option value="Thomas Braun">Thomas Braun</option>
+          <option value="Lea Schmidt">Lea Schmidt</option>
+          <option value="Michael Weber">Michael Weber</option>
+        </select>
+        <select class="ak-select" id="ak-seg" aria-label="Branche filtern">
+          <option value="">Alle Branchen</option>
+          <option value="Banken">Banken</option>
+          <option value="Versicherungen &amp; Finanzvermittler">Versicherungen &amp; Finanzvermittler</option>
+          <option value="Handel &amp; Logistik">Handel &amp; Logistik</option>
+          <option value="Maschinenbau &amp; Elektro">Maschinenbau &amp; Elektro</option>
+          <option value="IT &amp; Telekommunikation">IT &amp; Telekommunikation</option>
+          <option value="Übrige Industrie">Übrige Industrie</option>
+        </select>
+        <span class="ak-spacer" id="ak-count"></span>
+      </div>
+
+      <div id="ak-groups"></div>
+
+    </div>
+  </div>
+</div>
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  var ICONS = {
+    call: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+    meeting: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    email: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>',
+    linkedin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+    note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>'
+  };
+
+  var TYPE_LABEL = { call: 'Anruf', meeting: 'Meeting', email: 'E-Mail', linkedin: 'LinkedIn', note: 'Notiz' };
+  var OWNER_COLOR = { 'Anna Müller': '#F26722', 'Thomas Braun': '#0891b2', 'Lea Schmidt': '#16a34a', 'Michael Weber': '#d97706' };
+
+  var GROUPS = [
+    {
+      label: 'Heute · 23.10.2026',
+      items: [
+        { type: 'call', title: 'Angebot nachgefasst', target: 'AXA Konzern AG', seg: 'Versicherungen & Finanzvermittler', reg: 'NRW', link: 'mockup-sprint-detail.html', time: '09:40', o: 'Anna Müller',
+          text: 'R. Lehmann telefonisch erreicht. Angebot A-2026-047 über € 70.000 (nach BAFA € 66.500 zzgl. USt.) wird intern durch Procurement geprüft, Workshop-Bedarf bestätigt.',
+          next: 'Rückmeldung bis 27.10.2026 nachhalten' },
+        { type: 'call', title: 'Erstgespräch', target: 'Bosch Rexroth', seg: 'Maschinenbau & Elektro', reg: 'Baden-Württemberg', time: '09:15', o: 'Lea Schmidt',
+          text: 'Großes Interesse am KI-Readiness Assessment. Erste KI-Experimente ohne Strategie, Datenlage gut. Ansprechpartner T. Weber (Head of Digital Innovation).',
+          next: 'Assessment-Workshop für 29.10. vereinbaren' },
+        { type: 'linkedin', title: 'Kontaktanfrage', target: 'Deutsche Bank AG', seg: 'Banken', reg: 'Hessen', time: '08:40', o: 'Anna Müller',
+          text: 'Anfrage an Dr. A. Weber (Leiterin Digitalisierung) mit Bezug auf Stellenanzeige „AI Product Owner“ vom 12.10.2026. Wochenkontingent: 32 / 75.',
+          next: 'Bei Annahme Erstgespräch anbieten' }
+      ]
+    },
+    {
+      label: 'Gestern · 22.10.2026',
+      items: [
+        { type: 'meeting', title: 'Demo Assessment', target: 'Münchener Rück AG', seg: 'Versicherungen & Finanzvermittler', reg: 'Bayern', time: '15:00', o: 'Anna Müller',
+          text: 'Demo des KI-Assessments mit K. Müller (Head of IT Innovation). Score 3,7 sehr positiv aufgenommen; Diskussion der Use-Cases Schadensprognose und Dokumenten-KI. Budget in Q1/2027 eingeplant.',
+          next: 'Follow-up-Termin mit Procurement abstimmen' },
+        { type: 'meeting', title: '2. Gespräch', target: 'DHL Supply Chain', seg: 'Handel & Logistik', reg: 'Hamburg', time: '14:00', o: 'Thomas Braun',
+          text: 'Roadmap-Workshop-Idee sehr positiv aufgenommen. Der CTO soll beim nächsten Termin dabei sein. P. Schmidt (Director IT) ist interner Sponsor.',
+          next: 'Folgetermin mit CTO für KW44' },
+        { type: 'call', title: 'Kein Erreichen', target: 'Gothaer Versicherung', seg: 'Versicherungen & Finanzvermittler', reg: 'NRW', time: '11:30', o: 'Anna Müller',
+          text: '2. Anrufversuch, Voicemail hinterlassen. M. Klein laut LinkedIn diese Woche auf Konferenz.',
+          next: 'Nächster Versuch ab 27.10., alternativ E-Mail' }
+      ]
+    },
+    {
+      label: '21.10.2026',
+      items: [
+        { type: 'email', title: 'Angebot versendet', target: 'BASF Digital GmbH', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', time: '16:45', o: 'Lea Schmidt',
+          text: 'Angebot über das Advanced-Paket, € 120.000 zzgl. USt. Gültig bis 15.11.2026, Hinweis auf BAFA-Fördermöglichkeit aufgenommen.',
+          next: 'Follow-up-Anruf am 27.10.' },
+        { type: 'note', title: 'LinkedIn-Recherche', target: 'EnBW AG', seg: 'Energie, Wasser & Entsorgung', reg: 'Baden-Württemberg', time: '09:00', o: 'Thomas Braun',
+          text: 'EnBW hat am 18.10.2026 eine neue KI-Initiative öffentlich angekündigt. Guter Aufhänger für die Kaltakquise; IT-Entscheider auf LinkedIn identifiziert.',
+          next: 'Erstansprache mit Bezug auf KI-Initiative senden' },
+        { type: 'meeting', title: 'Abschluss — gewonnen', target: 'Commerzbank AG', seg: 'Banken', reg: 'Hamburg', time: '09:30', o: 'Anna Müller',
+          text: 'Abschlussgespräch: Angebot über € 42.000 angenommen. Kickoff-Termin für 10.11.2026 vereinbart, Vertrag folgt diese Woche.',
+          next: 'Vertrag und Kickoff-Vorbereitung' }
+      ]
+    },
+    {
+      label: '20.10.2026',
+      items: [
+        { type: 'email', title: 'E-Mail-Kampagne', target: '6 Zielkunden', seg: 'Banken', reg: 'DACH', time: '10:00', o: 'Michael Weber',
+          text: 'Follow-up mit Sprint-Übersicht an Banken-Zielkunden in den Status „Offen“ und „Recherchiert“. Vorlage: Erstansprache Banken. Öffnungsrate bisher 4 / 6.',
+          next: 'Antworten nachhalten und Termine einplanen' }
+      ]
+    }
+  ];
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function toast(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1900);
+  }
+
+  function initials(name) {
+    return name.split(/\s+/).map(function (p) { return p.charAt(0); }).join('').toUpperCase().slice(0, 2);
+  }
+
+  var state = { type: 'all', owner: '', seg: '' };
+
+  function visible(items) {
+    return items.filter(function (a) {
+      if (state.type !== 'all' && a.type !== state.type) return false;
+      if (state.owner && a.o !== state.owner) return false;
+      if (state.seg && a.seg !== state.seg) return false;
+      return true;
+    });
+  }
+
+  function render() {
+    var box = document.getElementById('ak-groups');
+    box.innerHTML = '';
+    var total = 0;
+
+    GROUPS.forEach(function (g) {
+      var list = visible(g.items);
+      if (!list.length) return;
+      total += list.length;
+
+      var group = document.createElement('div');
+      group.className = 'ak-group';
+
+      var head = document.createElement('div');
+      head.className = 'ak-group-head';
+      head.innerHTML = '<span>' + esc(g.label) + '</span>';
+      group.appendChild(head);
+
+      list.forEach(function (a) {
+        var target = a.link
+          ? '<a class="ak-target" href="' + a.link + '">' + esc(a.target) + ' · ' + esc(a.seg) + ' · ' + esc(a.reg) + '</a>'
+          : '<span class="ak-target">' + esc(a.target) + ' · ' + esc(a.seg) + ' · ' + esc(a.reg) + '</span>';
+
+        var item = document.createElement('div');
+        item.className = 'ak-item';
+        item.innerHTML =
+          '<div class="ak-ico ' + a.type + '">' + ICONS[a.type] + '</div>' +
+          '<div class="ak-body">' +
+            '<div class="ak-top">' +
+              '<div class="ak-title">' + esc(a.title) + '<span class="ak-badge ' + a.type + '">' + TYPE_LABEL[a.type] + '</span></div>' +
+              '<div class="ak-meta"><span class="ak-time">' + esc(a.time) + ' Uhr</span><span class="ak-owner" style="background:' + OWNER_COLOR[a.o] + '" title="' + esc(a.o) + '">' + esc(initials(a.o)) + '</span></div>' +
+            '</div>' +
+            target +
+            '<div class="ak-text">' + esc(a.text) + '</div>' +
+            '<div class="ak-next">→ ' + esc(a.next) + '</div>' +
+          '</div>';
+        group.appendChild(item);
+      });
+
+      box.appendChild(group);
+    });
+
+    if (!total) {
+      box.innerHTML = '<div class="ak-empty">Keine Aktivitäten für diese Filter.</div>';
+    }
+    document.getElementById('ak-count').textContent = total + ' Aktivitäten';
+  }
+
+  document.getElementById('ak-filters').addEventListener('click', function (e) {
+    var chip = e.target.closest('.ak-chip');
+    if (!chip) return;
+    e.stopPropagation();
+    document.querySelectorAll('.ak-chip').forEach(function (c) { c.classList.remove('active'); });
+    chip.classList.add('active');
+    state.type = chip.getAttribute('data-type');
+    render();
+  });
+
+  document.getElementById('ak-owner').addEventListener('change', function (e) {
+    state.owner = e.target.value;
+    render();
+  });
+
+  document.getElementById('ak-seg').addEventListener('change', function (e) {
+    state.seg = e.target.value;
+    render();
+  });
+
+  document.getElementById('btn-export').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('CSV-Export wird erstellt …');
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

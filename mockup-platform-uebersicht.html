@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plattform — Mandanten</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="mockup-platform.css">
+</head>
+<body>
+<aside class="sidebar pf-sidebar">
+  <div class="brand">
+    <div class="pf-brand-row">
+      <div class="brand-icon">🧩</div>
+      <div class="pf-brand-text">
+        <div class="brand-name">innolab CRM</div>
+        <div class="brand-sub">Plattform-Admin</div>
+      </div>
+    </div>
+  </div>
+  <nav class="sidebar-nav pf-sidebar-nav">
+    <div id="platform-nav" data-active="uebersicht"></div>
+  </nav>
+  <div class="pf-sidebar-foot">
+    <div class="user-row">
+      <div class="user-avatar">DT</div>
+      <div>
+        <div class="user-name">D. Tayon</div>
+        <div class="user-role">Plattform-Admin</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-wrapper pf-main">
+  <header class="topbar pf-topbar">
+    <div>
+      <div class="page-title">Plattform-Übersicht</div>
+      <div class="pf-page-sub">3 Mandanten · 41 Benutzer · 3 Aktivitäten</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <a class="btn btn-ghost" href="mockup-platform-wechsel.html">👁️ Mandantenwechsel ansehen</a>
+      <a class="btn btn-primary" href="mockup-platform-mandant-neu.html">＋ Neuer Mandant</a>
+    </div>
+  </header>
+
+  <main class="pf-content">
+    <!-- KPIs -->
+    <div class="pf-kpis">
+      <div class="card pf-kpi">
+        <div class="kpi-label">Mandanten</div>
+        <div class="kpi-value">3</div>
+        <div class="pf-kpi-sub">2 aktiv · 1 im Onboarding</div>
+      </div>
+      <div class="card pf-kpi">
+        <div class="kpi-label">Benutzer gesamt</div>
+        <div class="kpi-value">41</div>
+        <div class="pf-kpi-sub">über 3 getrennte Kundenkreise</div>
+      </div>
+      <div class="card pf-kpi">
+        <div class="kpi-label">Aktivierte Module</div>
+        <div class="kpi-value">48</div>
+        <div class="pf-kpi-sub">Ø 16,0 Module je Mandant</div>
+      </div>
+      <div class="card pf-kpi">
+        <div class="kpi-label">Onboarding offen</div>
+        <div class="kpi-value" style="color:#d97706">1</div>
+        <div class="pf-kpi-sub">My Next Lesson · Schritt 3/4</div>
+      </div>
+    </div>
+
+    <!-- Tenant list -->
+    <div class="pf-section-head">
+      <div class="pf-section-title">Mandanten</div>
+      <div style="display:flex;gap:6px">
+        <button class="filter-btn active">Alle · 3</button>
+        <button class="filter-btn">Aktiv · 2</button>
+        <button class="filter-btn">Onboarding · 1</button>
+      </div>
+    </div>
+
+    <div class="pf-grid-3">
+      <!-- Ponturo -->
+      <div class="card pf-tenant">
+        <div class="pf-tenant-head">
+          <div class="pf-tenant-icon" style="background:#FFF4ED;color:#C2410C">P</div>
+          <div style="flex:1;min-width:0">
+            <div class="pf-tenant-name">Ponturo Beratung</div>
+            <div class="pf-mono">ponturo.innolab-crm.de</div>
+          </div>
+          <span class="pf-badge pf-badge-active">● Aktiv</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="pf-badge pf-badge-act">Beratung</span>
+          <span class="pf-badge pf-badge-lock">🔒 Daten getrennt</span>
+        </div>
+        <div class="pf-tenant-stats">
+          <div><div class="pf-stat-num">24</div><div class="pf-stat-label">Module</div></div>
+          <div><div class="pf-stat-num">18</div><div class="pf-stat-label">Benutzer</div></div>
+          <div><div class="pf-stat-num">1.284</div><div class="pf-stat-label">Kontakte</div></div>
+        </div>
+        <div class="pf-tenant-foot">
+          <div class="pf-owner"><div class="pf-avatar-xs">MW</div> M. Weber · Admin</div>
+          <a class="btn btn-ghost" href="mockup-platform-mandant.html" style="padding:5px 10px;font-size:12px">Öffnen</a>
+        </div>
+      </div>
+
+      <!-- KI-Readiness -->
+      <div class="card pf-tenant">
+        <div class="pf-tenant-head">
+          <div class="pf-tenant-icon" style="background:#eff6ff;color:#1d4ed8">K</div>
+          <div style="flex:1;min-width:0">
+            <div class="pf-tenant-name">Unturo</div>
+            <div class="pf-mono">ki-readiness.innolab-crm.de</div>
+          </div>
+          <span class="pf-badge pf-badge-active">● Aktiv</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="pf-badge pf-badge-act">KI-Readiness</span>
+          <span class="pf-badge pf-badge-lock">🔒 Daten getrennt</span>
+        </div>
+        <div class="pf-tenant-stats">
+          <div><div class="pf-stat-num">14</div><div class="pf-stat-label">Module</div></div>
+          <div><div class="pf-stat-num">14</div><div class="pf-stat-label">Benutzer</div></div>
+          <div><div class="pf-stat-num">47</div><div class="pf-stat-label">Zielkunden</div></div>
+        </div>
+        <div class="pf-tenant-foot">
+          <div class="pf-owner"><div class="pf-avatar-xs">SK</div> S. König · Admin</div>
+          <a class="btn btn-ghost" href="mockup-platform-mandant.html" style="padding:5px 10px;font-size:12px">Öffnen</a>
+        </div>
+      </div>
+
+      <!-- My Next Lesson -->
+      <div class="card pf-tenant">
+        <div class="pf-tenant-head">
+          <div class="pf-tenant-icon" style="background:#f0fdf4;color:#15803d">M</div>
+          <div style="flex:1;min-width:0">
+            <div class="pf-tenant-name">My Next Lesson</div>
+            <div class="pf-mono">my-next-lesson.innolab-crm.de</div>
+          </div>
+          <span class="pf-badge pf-badge-onboarding">● Onboarding 60%</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="pf-badge pf-badge-act">SaaS</span>
+          <span class="pf-badge pf-badge-lock">🔒 Daten getrennt</span>
+        </div>
+        <div class="pf-tenant-stats">
+          <div><div class="pf-stat-num">10</div><div class="pf-stat-label">Module</div></div>
+          <div><div class="pf-stat-num">9</div><div class="pf-stat-label">Benutzer</div></div>
+          <div><div class="pf-stat-num">1.240</div><div class="pf-stat-label">Abos</div></div>
+        </div>
+        <div class="pf-tenant-foot">
+          <div class="pf-owner"><div class="pf-avatar-xs">AS</div> A. Schmitt · Admin</div>
+          <a class="btn btn-ghost" href="mockup-platform-mandant.html" style="padding:5px 10px;font-size:12px">Öffnen</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Presets -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="card-title">Aktivitäts-Presets</div>
+          <div class="pf-page-sub">Modul-Sets, die beim Onboarding angewendet werden</div>
+        </div>
+        <span class="card-link">Presets verwalten →</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Preset</th>
+            <th>Aktivität</th>
+            <th>Module</th>
+            <th>Standard-Rollen</th>
+            <th>Mandanten</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Beratung</strong></td>
+            <td>Consulting</td>
+            <td>24 Module</td>
+            <td>Admin, Manager, Consultant, Finance</td>
+            <td>1</td>
+            <td><span class="pf-badge pf-badge-active">Aktiv</span></td>
+          </tr>
+          <tr>
+            <td><strong>KI-Readiness</strong></td>
+            <td>Sprint-Vertrieb</td>
+            <td>14 Module</td>
+            <td>Admin, Vertrieb, KI-Experte, Teamleitung</td>
+            <td>1</td>
+            <td><span class="pf-badge pf-badge-active">Aktiv</span></td>
+          </tr>
+          <tr>
+            <td><strong>SaaS</strong></td>
+            <td>SaaS-Produkt</td>
+            <td>10 Module</td>
+            <td>Admin, Sales, Customer Success, Finance</td>
+            <td>1</td>
+            <td><span class="pf-badge pf-badge-onboarding">Entwurf</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script src="mockup-sprint-nav.js"></script>
+</body>
+</html>

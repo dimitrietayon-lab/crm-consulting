@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KI-Assessment · AXA Konzern AG — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Chrome, buttons and badges come from mockup-sprint.css. */
+  * { margin: 0; padding: 0; }
+  body { display: flex; height: 100vh; overflow: hidden; background: #F5F5F5; }
+  .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  .btn.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* Topbar */
+  .as-heading { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .as-heading .breadcrumb { font-size: 11px; }
+  .as-title-row { display: flex; align-items: center; gap: 8px; }
+  .as-version-pill { padding: 1px 8px; border-radius: 20px; background: #f1f5f9; color: #64748b; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+  .as-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .as-actions .btn[disabled] { opacity: .6; cursor: default; }
+
+  /* Content shell */
+  .as-scroll { flex: 1; overflow-y: auto; }
+  .as-wrap { max-width: 1180px; margin: 0 auto; padding: 18px 24px 32px; }
+
+  /* Version bar */
+  .as-version { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 10px 16px; margin-bottom: 14px; }
+  .as-version-left { display: flex; align-items: center; gap: 12px; }
+  .as-version-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; }
+  .as-chips { display: flex; gap: 5px; }
+  .as-chip { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid #e2e8f0; background: #fff; color: #64748b; font-family: inherit; }
+  .as-chip:hover { border-color: #cbd5e1; color: #111111; }
+  .as-chip.active { background: #F26722; border-color: #F26722; color: #fff; }
+  .as-version-meta { font-size: 11px; color: #94a3b8; }
+
+  /* Score hero */
+  .as-hero { display: flex; align-items: center; gap: 26px; background: linear-gradient(135deg, #1a0800 0%, #8B2E00 58%, #D4540A 100%); border-radius: 12px; padding: 22px 24px; color: #fff; margin-bottom: 16px; box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+  .as-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 7px; flex-shrink: 0; }
+  .as-ring { position: relative; width: 104px; height: 104px; }
+  .as-ring svg { display: block; }
+  .as-ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .as-ring-label b { font-size: 26px; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
+  .as-ring-label small { font-size: 9px; color: rgba(255,255,255,.6); margin-top: 2px; }
+  .as-ring-band { padding: 2px 10px; border-radius: 20px; background: rgba(255,255,255,.16); font-size: 10px; font-weight: 700; letter-spacing: .03em; white-space: nowrap; }
+  .as-hero-info { flex: 1; min-width: 0; }
+  .as-hero-title { font-size: 18px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 4px; }
+  .as-hero-text { font-size: 12.5px; line-height: 1.55; color: rgba(255,255,255,.82); max-width: 720px; }
+  .as-hero-meta { display: flex; gap: 26px; margin-top: 14px; flex-wrap: wrap; }
+  .as-hero-meta div { font-size: 10.5px; color: rgba(255,255,255,.62); }
+  .as-hero-meta b { display: block; font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 1px; }
+
+  /* Grid + cards */
+  .as-grid { display: grid; grid-template-columns: minmax(0, 1fr) 332px; gap: 16px; align-items: start; }
+  .as-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); overflow: hidden; margin-bottom: 16px; }
+  .as-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 18px; border-bottom: 1px solid #f1f5f9; }
+  .as-card-title { font-size: 13px; font-weight: 700; color: #111111; letter-spacing: -.01em; }
+  .as-card-sub { font-size: 10.5px; color: #94a3b8; }
+  .as-card-body { padding: 6px 18px 12px; }
+
+  /* Dimensions */
+  .as-dim-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid #f8fafc; }
+  .as-dim-row:last-child { border-bottom: none; }
+  .as-dim-label { width: 178px; flex-shrink: 0; font-size: 12px; font-weight: 500; color: #374151; }
+  .as-dim-bar { flex: 1; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+  .as-dim-fill { height: 100%; border-radius: 4px; }
+  .as-dim-fill.high { background: linear-gradient(90deg, #16a34a, #4ade80); }
+  .as-dim-fill.mid { background: linear-gradient(90deg, #d97706, #fbbf24); }
+  .as-dim-fill.low { background: linear-gradient(90deg, #dc2626, #f87171); }
+  .as-dim-score { width: 26px; text-align: right; font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .as-dim-score.high { color: #15803d; }
+  .as-dim-score.mid { color: #b45309; }
+  .as-dim-score.low { color: #dc2626; }
+  .as-dim-tag { width: 62px; text-align: center; padding: 2px 0; border-radius: 4px; font-size: 10px; font-weight: 700; }
+  .as-dim-tag.high { background: #dcfce7; color: #15803d; }
+  .as-dim-tag.mid { background: #fef3c7; color: #b45309; }
+  .as-dim-tag.low { background: #fee2e2; color: #dc2626; }
+  .as-avg { font-size: 11px; color: #64748b; }
+  .as-avg b { color: #111111; font-size: 13px; }
+
+  /* Findings */
+  .as-find { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f8fafc; }
+  .as-find:last-child { border-bottom: none; }
+  .as-find-tag { flex-shrink: 0; margin-top: 1px; padding: 2px 8px; border-radius: 4px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
+  .as-find-tag.strong { background: #dcfce7; color: #15803d; }
+  .as-find-tag.risk { background: #fef3c7; color: #b45309; }
+  .as-find-tag.gap { background: #fee2e2; color: #dc2626; }
+  .as-find-text { font-size: 12px; color: #475569; line-height: 1.55; }
+
+  /* Recommendations */
+  .as-rec { display: flex; gap: 11px; padding: 11px 0; border-bottom: 1px solid #f8fafc; align-items: flex-start; }
+  .as-rec:last-child { border-bottom: none; }
+  .as-rec-num { width: 24px; height: 24px; border-radius: 50%; background: #fff4ed; color: #F26722; border: 1px solid #fed7aa; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .as-rec-body { flex: 1; min-width: 0; }
+  .as-rec-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12.5px; font-weight: 700; color: #111111; margin-bottom: 3px; }
+  .as-rec-text { font-size: 12px; color: #64748b; line-height: 1.5; }
+  .as-rec-text b { color: #374151; }
+  .as-badge-strat { background: #f3e8ff; color: #7e22ce; }
+  .as-badge-tech { background: #dbeafe; color: #1d4ed8; }
+  .as-badge-quick { background: #dcfce7; color: #15803d; }
+
+  /* Use cases */
+  .as-uc-head { margin-bottom: 10px; }
+  .as-uc { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 13px 15px; margin-bottom: 10px; transition: box-shadow .2s, transform .2s; }
+  .as-uc:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); transform: translateY(-1px); }
+  .as-uc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
+  .as-uc-title { font-size: 12.5px; font-weight: 700; color: #111111; line-height: 1.35; }
+  .as-uc-val { text-align: right; flex-shrink: 0; }
+  .as-uc-val b { display: block; font-size: 13px; font-weight: 800; color: #16a34a; font-variant-numeric: tabular-nums; }
+  .as-uc-val small { font-size: 8.5px; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+  .as-uc-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 7px; }
+  .as-uc-desc { font-size: 11.5px; color: #64748b; line-height: 1.5; }
+  .as-badge-impl { background: #dbeafe; color: #1d4ed8; }
+  .as-badge-add { background: #e0e7ff; color: #4338ca; }
+  .as-badge-strategy { background: #f3e8ff; color: #7e22ce; }
+  .as-badge-p1 { background: #fee2e2; color: #dc2626; }
+  .as-badge-p2 { background: #fef3c7; color: #b45309; }
+  .as-badge-now { background: #dcfce7; color: #15803d; }
+  .as-badge-prep { background: #f1f5f9; color: #64748b; }
+
+  /* Potential */
+  .as-pot { background: #111111; border-radius: 10px; padding: 16px 18px; color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+  .as-pot-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #94a3b8; }
+  .as-pot-value { font-size: 26px; font-weight: 800; color: #4ade80; letter-spacing: -.02em; margin: 3px 0 1px; }
+  .as-pot-sub { font-size: 10.5px; color: #64748b; margin-bottom: 12px; }
+  .as-pot .btn { width: 100%; justify-content: center; }
+
+  @media (max-width: 1000px) {
+    .as-grid { grid-template-columns: 1fr; }
+    .as-hero { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="assessment"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="as-heading">
+      <div class="breadcrumb">
+        <a href="mockup-sprint-kanban.html">Sprint-Vertrieb</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="mockup-sprint-detail.html">AXA Konzern AG</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">KI-Assessment</span>
+      </div>
+      <div class="as-title-row">
+        <span class="page-title">KI-Assessment</span>
+        <span class="as-version-pill">v2</span>
+      </div>
+    </div>
+    <div class="as-actions">
+      <a class="btn btn-ghost btn-sm" href="mockup-sprint-proposals.html">Projektvorschläge</a>
+      <button class="btn btn-ghost btn-sm" id="btn-pdf" type="button">PDF exportieren</button>
+      <button class="btn btn-primary btn-sm" id="btn-gen" type="button">Neu generieren</button>
+    </div>
+  </header>
+
+  <div class="as-scroll">
+    <div class="as-wrap">
+
+      <!-- Version bar -->
+      <div class="as-version">
+        <div class="as-version-left">
+          <span class="as-version-label">Assessment-Version</span>
+          <div class="as-chips">
+            <button class="as-chip" type="button" data-v="v1 · 10.10.2026">v1 · 10.10.2026</button>
+            <button class="as-chip active" type="button" data-v="v2 · 18.10.2026">v2 · 18.10.2026</button>
+          </div>
+        </div>
+        <div class="as-version-meta">Generiert mit Claude Sonnet · 18.10.2026, 14:32</div>
+      </div>
+
+      <!-- Score hero -->
+      <section class="as-hero">
+        <div class="as-ring-wrap">
+          <div class="as-ring">
+            <svg width="104" height="104" viewBox="0 0 110 110">
+              <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="9"/>
+              <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="9"
+                stroke-dasharray="289" stroke-dashoffset="75" stroke-linecap="round"
+                transform="rotate(-90 55 55)"/>
+            </svg>
+            <div class="as-ring-label"><b>3.7</b><small>/ 5.0</small></div>
+          </div>
+          <div class="as-ring-band">Solide Basis</div>
+        </div>
+        <div class="as-hero-info">
+          <div class="as-hero-title">KI-Readiness Assessment · AXA Konzern AG</div>
+          <div class="as-hero-text">Das Unternehmen zeigt eine solide technologische Basis mit gut strukturierten Datenprozessen. KI-Kompetenz im mittleren Management ist vorhanden, die strategische Verankerung jedoch ausbaufähig.</div>
+          <div class="as-hero-meta">
+            <div><b>4</b>Use Cases identifiziert</div>
+            <div><b>3</b>Empfehlungen</div>
+            <div><b>€ 310k</b>Projektpotenzial</div>
+            <div><b>18.10.2026</b>Letzte Aktualisierung</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="as-grid">
+
+        <!-- LEFT -->
+        <div>
+
+          <!-- Dimensions -->
+          <section class="as-card">
+            <div class="as-card-head">
+              <div class="as-card-title">Dimensionen-Scoring</div>
+              <div class="as-avg">Ø <b id="as-avg">3.7</b> / 5.0</div>
+            </div>
+            <div class="as-card-body" id="as-dims"></div>
+          </section>
+
+          <!-- Findings -->
+          <section class="as-card">
+            <div class="as-card-head">
+              <div class="as-card-title">Befunde</div>
+              <div class="as-card-sub">Skala 0 = nicht vorhanden · 5 = ausgereift</div>
+            </div>
+            <div class="as-card-body">
+              <div class="as-find">
+                <span class="as-find-tag strong">Stärke</span>
+                <div class="as-find-text">Strukturierte Datenpipelines für Schadensfälle und Kundeninteraktionen vorhanden. Historische Daten über 10+ Jahre verfügbar und qualitätsgesichert.</div>
+              </div>
+              <div class="as-find">
+                <span class="as-find-tag strong">Stärke</span>
+                <div class="as-find-text">Cloud-Infrastruktur auf Azure-Basis. Microservices-Architektur ermöglicht eine flexible KI-Integration.</div>
+              </div>
+              <div class="as-find">
+                <span class="as-find-tag risk">Risiko</span>
+                <div class="as-find-text">KI-Strategie fehlt auf Unternehmensebene. Initiativen laufen dezentral in einzelnen Geschäftsbereichen ohne übergreifende Steuerung.</div>
+              </div>
+              <div class="as-find">
+                <span class="as-find-tag risk">Risiko</span>
+                <div class="as-find-text">Data-Science-Team mit 8 Personen vorhanden, jedoch ohne dediziertes KI-Engineering. Fokus liegt auf klassischer Analytik.</div>
+              </div>
+              <div class="as-find">
+                <span class="as-find-tag gap">Lücke</span>
+                <div class="as-find-text">Kein einheitliches MLOps-Framework. Modell-Deployment und Monitoring werden manuell verwaltet, was die Skalierung erschwert.</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Recommendations -->
+          <section class="as-card">
+            <div class="as-card-head">
+              <div class="as-card-title">Empfehlungen</div>
+              <div class="as-card-sub">Priorisiert nach Wirkung und Aufwand</div>
+            </div>
+            <div class="as-card-body">
+              <div class="as-rec">
+                <div class="as-rec-num">1</div>
+                <div class="as-rec-body">
+                  <div class="as-rec-title">KI-Strategie-Workshop <span class="badge as-badge-strat">Strategie</span></div>
+                  <div class="as-rec-text">Entwicklung einer unternehmensweiten KI-Roadmap mit Priorisierung der Use Cases nach ROI und Umsetzbarkeit. <b>Zeitrahmen:</b> 4–6 Wochen.</div>
+                </div>
+              </div>
+              <div class="as-rec">
+                <div class="as-rec-num">2</div>
+                <div class="as-rec-body">
+                  <div class="as-rec-title">MLOps-Plattform aufbauen <span class="badge as-badge-tech">Technologie</span></div>
+                  <div class="as-rec-text">Einführung von Azure ML als zentrales Framework für Modell-Training, Deployment und Monitoring. <b>Zeitrahmen:</b> 8–12 Wochen.</div>
+                </div>
+              </div>
+              <div class="as-rec">
+                <div class="as-rec-num">3</div>
+                <div class="as-rec-body">
+                  <div class="as-rec-title">Pilotprojekt Schadensprognose <span class="badge as-badge-quick">Quick-Win</span></div>
+                  <div class="as-rec-text">Höchster Quick-Win mit verfügbaren Daten. <b>Erwarteter ROI:</b> 15–20 % Effizienzgewinn in der Schadenbearbeitung.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div><!-- /left -->
+
+        <!-- RIGHT -->
+        <div>
+          <div class="as-uc-head">
+            <div class="as-card-title">Identifizierte Use Cases</div>
+            <div class="as-card-sub" style="margin-top:2px;">4 Vorschläge · sortiert nach Priorität</div>
+          </div>
+
+          <article class="as-uc">
+            <div class="as-uc-top">
+              <div class="as-uc-title">Intelligente Schadensprognose</div>
+              <div class="as-uc-val"><b>€ 95.000</b><small>Potenzial</small></div>
+            </div>
+            <div class="as-uc-badges">
+              <span class="badge as-badge-impl">Implementierung</span>
+              <span class="badge as-badge-p1">P1 · Hoch</span>
+              <span class="badge as-badge-now">Sofort umsetzbar</span>
+            </div>
+            <div class="as-uc-desc">ML-Modell zur Vorhersage von Schadenshöhe und -häufigkeit auf Basis historischer Policen- und Schadensdaten.</div>
+          </article>
+
+          <article class="as-uc">
+            <div class="as-uc-top">
+              <div class="as-uc-title">Dokumenten-KI für Vertragsanalyse</div>
+              <div class="as-uc-val"><b>€ 120.000</b><small>Potenzial</small></div>
+            </div>
+            <div class="as-uc-badges">
+              <span class="badge as-badge-impl">Implementierung</span>
+              <span class="badge as-badge-p1">P1 · Hoch</span>
+              <span class="badge as-badge-prep">Nach Vorbereitung</span>
+            </div>
+            <div class="as-uc-desc">LLM-basierte Extraktion und Klassifikation von Vertragsklauseln zur automatisierten Risikoprüfung.</div>
+          </article>
+
+          <article class="as-uc">
+            <div class="as-uc-top">
+              <div class="as-uc-title">KI-Strategie-Roadmap</div>
+              <div class="as-uc-val"><b>€ 45.000</b><small>Potenzial</small></div>
+            </div>
+            <div class="as-uc-badges">
+              <span class="badge as-badge-strategy">Strategie</span>
+              <span class="badge as-badge-p2">P2 · Mittel</span>
+              <span class="badge as-badge-now">Sofort umsetzbar</span>
+            </div>
+            <div class="as-uc-desc">Unternehmensweite KI-Strategie mit Use-Case-Priorisierung, Governance-Rahmen und Change-Management-Plan.</div>
+          </article>
+
+          <article class="as-uc">
+            <div class="as-uc-top">
+              <div class="as-uc-title">MLOps-Plattform Aufbau</div>
+              <div class="as-uc-val"><b>€ 50.000</b><small>Potenzial</small></div>
+            </div>
+            <div class="as-uc-badges">
+              <span class="badge as-badge-add">Zusatzpaket</span>
+              <span class="badge as-badge-p2">P2 · Mittel</span>
+              <span class="badge as-badge-prep">Nach Vorbereitung</span>
+            </div>
+            <div class="as-uc-desc">Skalierbare MLOps-Infrastruktur auf Azure ML inkl. CI/CD-Pipelines für Modelle.</div>
+          </article>
+
+          <div class="as-pot">
+            <div class="as-pot-label">Gesamt-Projektpotenzial</div>
+            <div class="as-pot-value">€ 310.000</div>
+            <div class="as-pot-sub">Summe aus 4 Use Cases</div>
+            <a class="btn btn-primary btn-sm" href="mockup-sprint-proposals.html">Projektvorschläge ansehen</a>
+          </div>
+
+        </div><!-- /right -->
+      </div><!-- /grid -->
+    </div><!-- /wrap -->
+  </div><!-- /scroll -->
+</div><!-- /main-wrapper -->
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ── Dimensions (data-driven) ───────────────────────────── */
+  var DIMS = [
+    { l: 'Datenverfügbarkeit',         v: 4.2 },
+    { l: 'Tech-Stack & Infrastruktur', v: 3.8 },
+    { l: 'Prozessreife',               v: 3.6 },
+    { l: 'KI-Kompetenz',               v: 3.9 },
+    { l: 'Governance & Compliance',    v: 3.9 },
+    { l: 'KI-Strategie',               v: 2.8 }
+  ];
+
+  function cls(v) { return v >= 3.8 ? 'high' : (v >= 3.0 ? 'mid' : 'low'); }
+  function tag(v) { return v >= 3.8 ? 'Gut' : (v >= 3.0 ? 'Mittel' : 'Schwach'); }
+
+  var html = '';
+  var sum = 0;
+  DIMS.forEach(function (d) {
+    var c = cls(d.v);
+    sum += d.v;
+    html += '<div class="as-dim-row">' +
+              '<div class="as-dim-label">' + d.l + '</div>' +
+              '<div class="as-dim-bar"><div class="as-dim-fill ' + c + '" style="width:' + Math.round(d.v / 5 * 100) + '%"></div></div>' +
+              '<div class="as-dim-score ' + c + '">' + d.v.toFixed(1) + '</div>' +
+              '<div class="as-dim-tag ' + c + '">' + tag(d.v) + '</div>' +
+            '</div>';
+  });
+  document.getElementById('as-dims').innerHTML = html;
+  document.getElementById('as-avg').textContent = (sum / DIMS.length).toFixed(1);
+
+  /* ── Toast ───────────────────────────────────────────────── */
+  function toast(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1900);
+  }
+
+  /* ── Version chips ───────────────────────────────────────── */
+  var chips = document.querySelectorAll('.as-chip');
+  chips.forEach(function (chip) {
+    chip.addEventListener('click', function (e) {
+      e.stopPropagation();
+      chips.forEach(function (c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      toast('Version ' + chip.getAttribute('data-v') + ' geladen (Demo)');
+    });
+  });
+
+  /* ── Actions ─────────────────────────────────────────────── */
+  var pdfBtn = document.getElementById('btn-pdf');
+  pdfBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('PDF-Export wird vorbereitet (Demo)');
+  });
+
+  var genBtn = document.getElementById('btn-gen');
+  genBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (genBtn.disabled) return;
+    var label = genBtn.textContent;
+    genBtn.disabled = true;
+    genBtn.textContent = 'Wird generiert …';
+    setTimeout(function () {
+      genBtn.disabled = false;
+      genBtn.textContent = label;
+      toast('Neues Assessment erstellt (Demo)');
+    }, 1300);
+  });
+})();
+</script>
+</body>
+</html>

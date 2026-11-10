@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Übergabe an Engagement Manager — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; display: flex; height: 100vh; overflow: hidden; }
+
+/* Sidebar */
+.sidebar { width: 240px; background: #111111; color: #94a3b8; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+.brand { padding: 20px 16px 16px; border-bottom: 1px solid #1e293b; }
+.brand-name { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+.brand-sub { font-size: 11px; color: #F26722; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
+.sidebar-nav { padding: 12px 8px; flex: 1; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; color: #94a3b8; text-decoration: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .15s; }
+.nav-item:hover { background: #1e293b; color: #e2e8f0; }
+.nav-item.active { background: #1e3a5f; color: #60a5fa; }
+
+/* Layout */
+.main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.breadcrumb a { color: #64748b; text-decoration: none; }
+.breadcrumb a:hover { color: #F26722; }
+.breadcrumb-sep { color: #cbd5e1; }
+.breadcrumb-current { color: #111111; font-weight: 600; }
+main { flex: 1; overflow-y: auto; padding: 24px; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; text-decoration: none; font-family: inherit; }
+.btn-primary { background: #F26722; color: #fff; border-color: #D4540A; }
+.btn-primary:hover { background: #D4540A; }
+.btn-ghost { background: #fff; color: #374151; border-color: #e2e8f0; }
+.btn-ghost:hover { background: #f8fafc; }
+
+/* Head */
+.company { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.company-main { display: flex; align-items: center; gap: 14px; }
+.company-avatar { width: 48px; height: 48px; border-radius: 10px; background: #eef2ff; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+.company-name { font-size: 18px; font-weight: 700; color: #111111; }
+.company-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+.company-badges { display: flex; gap: 6px; margin-top: 8px; }
+.badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.badge-blue { background: #e7f1fb; color: #1d4ed8; }
+.badge-purple { background: #efedff; color: #6d28d9; }
+.badge-amber { background: #f9eeda; color: #b45309; }
+.badge-green { background: #e5f4e4; color: #15803d; }
+
+/* Grid */
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 20px; align-items: start; }
+
+/* Cards */
+.card { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; overflow: hidden; }
+.card-header { padding: 14px 18px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-size: 14px; font-weight: 700; color: #111111; }
+.card-desc { font-size: 12px; color: #64748b; margin-top: 2px; }
+.card-body { padding: 18px; }
+
+/* Checklist */
+.check-title { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .04em; }
+.check-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f8fafc; font-size: 13px; }
+.check-row:last-child { border-bottom: none; }
+.check-box { width: 20px; height: 20px; border-radius: 5px; border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 1px; color: transparent; }
+.check-box.done { background: #dcfce7; border-color: #86efac; color: #15803d; }
+.check-box.open { background: #fff; border-color: #F26722; color: #F26722; }
+.check-main { flex: 1; }
+.check-sub { font-size: 11px; color: #94a3b8; }
+.progress-wrap { margin-top: 14px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-bottom: 6px; }
+.progress-bg { height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; width: 83%; background: linear-gradient(90deg, #F26722, #D4540A); border-radius: 4px; }
+
+/* Form */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group.full { grid-column: 1 / -1; }
+label { font-size: 12px; font-weight: 600; color: #374151; }
+label .req { color: #ef4444; }
+select, input[type=date], input[type=time], textarea { padding: 8px 11px; border: 1px solid #e2e8f0; border-radius: 7px; font-size: 13px; font-family: inherit; background: #fff; outline: none; }
+select:focus, input:focus, textarea:focus { border-color: #F26722; }
+textarea { resize: vertical; min-height: 84px; }
+.hint { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+.note { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; font-size: 12px; color: #475569; line-height: 1.6; margin-top: 14px; }
+.note strong { color: #111111; }
+.actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="uebergabe"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <a href="mockup-sprint-kanban.html">Zielkunden</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="mockup-sprint-detail.html">Münchener Rück AG</a>
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current">Übergabe an Engagement Manager</span>
+    </div>
+    <a href="mockup-sprint-detail.html" class="btn btn-ghost">Zurück zum Zielkunden</a>
+  </header>
+
+  <main>
+    <div class="company">
+      <div class="company-main">
+        <div class="company-avatar">🏛️</div>
+        <div>
+          <div class="company-name">Münchener Rück AG</div>
+          <div class="company-sub">Versicherungen &amp; Finanzvermittler · München, Bayern · 32.000 Mitarbeiter</div>
+          <div class="company-badges">
+            <span class="badge badge-blue">Qualifizierungsgespräch</span>
+            <span class="badge badge-purple">Premium</span>
+            <span class="badge badge-amber">P1</span>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;">Aktueller Schritt</div>
+        <div style="font-size:18px;font-weight:800;color:#111111;">Übergabe</div>
+        <div style="font-size:12px;color:#64748b;">Erstgespräch → Assessment</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT: Checklist -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Übergabe-Checkliste</div>
+            <div class="card-desc">5 von 6 Punkten erledigt</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="check-title">Vor der Übergabe</div>
+          <div class="check-row">
+            <div class="check-box done">✓</div>
+            <div class="check-main">Anruf-Anlass dokumentiert<div class="check-sub">LinkedIn-Post vom 18.10.2026 · Quelle und Datum erfasst</div></div>
+          </div>
+          <div class="check-row">
+            <div class="check-box done">✓</div>
+            <div class="check-main">Einwilligung E-Mail<div class="check-sub">Mündlich erteilt am 14.10.2026 · im Zielkunden hinterlegt</div></div>
+          </div>
+          <div class="check-row">
+            <div class="check-box done">✓</div>
+            <div class="check-main">Bedarf und Use Cases notiert<div class="check-sub">Schadensprognose, Dokumenten-KI · Budget Q1 2027</div></div>
+          </div>
+          <div class="check-row">
+            <div class="check-box done">✓</div>
+            <div class="check-main">Assessment v1 vorhanden<div class="check-sub">Score 3,7 / 5,0 · sechs Dimensionen bewertet</div></div>
+          </div>
+          <div class="check-row">
+            <div class="check-box done">✓</div>
+            <div class="check-main">Erstgespräch terminiert<div class="check-sub">21.10.2026 · 10:30 Uhr · K. Müller (Head of IT Innovation)</div></div>
+          </div>
+          <div class="check-row">
+            <div class="check-box open">•</div>
+            <div class="check-main">Engagement Manager zugewiesen<div class="check-sub">Offen — bitte im Formular auswählen</div></div>
+          </div>
+
+          <div class="progress-wrap">
+            <div class="progress-label"><span>Fortschritt</span><strong>83 %</strong></div>
+            <div class="progress-bg"><div class="progress-fill"></div></div>
+          </div>
+
+          <div class="note">
+            <strong>Warum die Checkliste?</strong> Der Engagement Manager übernimmt nach dem Erstgespräch. Anlass, Einwilligung und Bedarf müssen vorher dokumentiert sein — sonst ist die Übergabe nicht UWG- und DSGVO-konform.
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Form -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Übergabe bestätigen</div>
+            <div class="card-desc">Zielkunde an den Engagement Manager übergeben</div>
+          </div>
+          <span class="badge badge-green">Bereit</span>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Engagement Manager <span class="req">*</span></label>
+              <select>
+                <option value="">— auswählen —</option>
+                <option>Thomas Braun</option>
+                <option>Lea Schmidt</option>
+                <option>Markus Krause</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Übergabedatum <span class="req">*</span></label>
+              <input type="date" value="2026-10-22">
+            </div>
+            <div class="form-group">
+              <label>Erstgespräch — Datum</label>
+              <input type="date" value="2026-10-28">
+            </div>
+            <div class="form-group">
+              <label>Erstgespräch — Uhrzeit</label>
+              <input type="time" value="10:30">
+            </div>
+            <div class="form-group">
+              <label>Format</label>
+              <select>
+                <option selected>Remote (Teams)</option>
+                <option>Vor Ort</option>
+                <option>Telefon</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Teilnehmer</label>
+              <input type="text" value="K. Müller (Head of IT Innovation)" style="padding:8px 11px;border:1px solid #e2e8f0;border-radius:7px;font-size:13px;font-family:inherit;">
+            </div>
+            <div class="form-group full">
+              <label>Übergabe-Notiz</label>
+              <textarea placeholder="Was hat der Engagement Manager zu wissen? Budget, politische Lage, Erwartungen, Risiken …">Starkes Interesse an KI-Piloten, Budget in Q1 2027 eingeplant. Assessment-Score 3,7. Entscheider ist K. Müller; IT-Leiterin Wagner unterstützt. BAFA-Förderung prüfen (Versicherung meist kein KMU).</textarea>
+            </div>
+          </div>
+
+          <div class="note">
+            <strong>Nächster Schritt nach der Übergabe:</strong> Der Engagement Manager führt das Erstgespräch, aktualisiert Status und Startdatum und stößt das KI-Assessment an. Der Consultant bleibt bis zum Angebot informiert.
+          </div>
+
+          <div class="actions">
+            <a href="mockup-sprint-detail.html" class="btn btn-ghost">Abbrechen</a>
+            <button class="btn btn-primary">Übergabe bestätigen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="mockup-sprint-nav.js"></script>
+</body>
+</html>

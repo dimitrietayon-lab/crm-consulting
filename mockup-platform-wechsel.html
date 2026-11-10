@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mandantenwechsel — Ponturo Beratung</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="mockup-platform.css">
+</head>
+<body>
+<aside class="sidebar pf-sidebar">
+  <div class="brand">
+    <div class="pf-brand-row">
+      <div class="brand-icon" style="background:linear-gradient(135deg,#2563eb,#1d4ed8)">P</div>
+      <div class="pf-brand-text">
+        <div class="brand-name">Ponturo Beratung</div>
+        <div class="brand-sub">Beratung · Mandant</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tenant switcher (open) -->
+  <div class="pf-switcher">
+    <div class="pf-switcher-label">Mandant</div>
+    <div class="pf-switcher-current">
+      <div class="pf-switcher-avatar" style="background:#F26722;color:#fff">P</div>
+      <span class="pf-switcher-name">Ponturo Beratung</span>
+      <span class="pf-switcher-chev">▲</span>
+    </div>
+    <div class="pf-switcher-menu">
+      <div class="pf-switcher-item active">
+        <div class="pf-switcher-avatar" style="background:#F26722;color:#fff">P</div>
+        Ponturo Beratung
+        <span class="pf-mini">Aktiv</span>
+      </div>
+      <a class="pf-switcher-item" href="mockup-platform-mandant.html" style="text-decoration:none">
+        <div class="pf-switcher-avatar">K</div>
+        Unturo
+        <span class="pf-mini">Sprint</span>
+      </a>
+      <a class="pf-switcher-item" href="mockup-platform-mandant.html" style="text-decoration:none">
+        <div class="pf-switcher-avatar">M</div>
+        My Next Lesson
+        <span class="pf-mini">SaaS</span>
+      </a>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav pf-sidebar-nav">
+    <div class="nav-group">
+      <div class="nav-group-label">Beratung</div>
+      <a class="nav-item active" href="#"><span class="icon">🏠</span><span>Dashboard</span></a>
+      <a class="nav-item" href="#"><span class="icon">👥</span><span>Accounts</span></a>
+      <a class="nav-item" href="#"><span class="icon">👤</span><span>Kontakte</span></a>
+      <a class="nav-item" href="#"><span class="icon">📋</span><span>Aktivitäten</span></a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Vertrieb</div>
+      <a class="nav-item" href="#"><span class="icon">📈</span><span>Pipeline</span></a>
+      <a class="nav-item" href="#"><span class="icon">📄</span><span>Angebote</span></a>
+      <a class="nav-item" href="#"><span class="icon">✅</span><span>Verträge</span></a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Projekte</div>
+      <a class="nav-item" href="#"><span class="icon">🗂️</span><span>Projekte</span></a>
+      <a class="nav-item" href="#"><span class="icon">⏳</span><span>Zeiterfassung</span></a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Finanzen</div>
+      <a class="nav-item" href="#"><span class="icon">💶</span><span>Rechnungen</span></a>
+      <a class="nav-item" href="#"><span class="icon">📊</span><span>Reporting</span></a>
+    </div>
+  </nav>
+
+  <div class="pf-sidebar-foot">
+    <a class="nav-item other-app" href="mockup-platform-uebersicht.html"><span class="icon">🧩</span><span>Plattform-Admin</span></a>
+    <div class="user-row">
+      <div class="user-avatar">SK</div>
+      <div>
+        <div class="user-name">S. König</div>
+        <div class="user-role">Mandanten-Admin</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-wrapper pf-main">
+  <header class="topbar pf-topbar">
+    <div>
+      <div class="page-title">Dashboard</div>
+      <div class="pf-page-sub">Ponturo Beratung · Beratung · Mandanten-Admin</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <a class="btn btn-ghost" href="#">Aktivität loggen</a>
+      <a class="btn btn-primary" href="#">Angebot erstellen</a>
+    </div>
+  </header>
+
+  <main class="pf-content">
+    <div class="pf-banner">
+      <div class="pf-banner-icon">🔒</div>
+      <div>
+        <div class="pf-banner-title">Datenisolation aktiv</div>
+        <div class="pf-banner-sub">Sie sehen ausschließlich Daten von <strong>Ponturo Beratung</strong>. Ein Mandantenwechsel lädt Navigation und Daten des Zielmandanten neu — die Sitzung bleibt bestehen.</div>
+      </div>
+    </div>
+
+    <div class="pf-kpis">
+      <div class="card pf-kpi">
+        <div class="kpi-label">Accounts</div>
+        <div class="kpi-value">128</div>
+        <div class="pf-kpi-sub">+4 diesen Monat</div>
+      </div>
+      <div class="card pf-kpi">
+        <div class="kpi-label">Kontakte</div>
+        <div class="kpi-value">342</div>
+        <div class="pf-kpi-sub">davon 87 aktiv</div>
+      </div>
+      <div class="card pf-kpi">
+        <div class="kpi-label">Offene Deals</div>
+        <div class="kpi-value" style="color:#C2410C">14</div>
+        <div class="pf-kpi-sub">€ 486k Pipeline</div>
+      </div>
+      <div class="card pf-kpi">
+        <div class="kpi-label">Team</div>
+        <div class="kpi-value">18</div>
+        <div class="pf-kpi-sub">4 Rollen im Mandanten</div>
+      </div>
+    </div>
+
+    <div class="pf-grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Aktiver Mandant</div>
+        </div>
+        <div style="padding:6px 18px 16px">
+          <div class="pf-info-row"><span class="pf-info-key">Name</span><span class="pf-info-val">Ponturo Beratung</span></div>
+          <div class="pf-info-row"><span class="pf-info-key">Aktivität</span><span class="pf-info-val">Beratung / Consulting</span></div>
+          <div class="pf-info-row"><span class="pf-info-key">Slug</span><span class="pf-info-val pf-mono" style="color:#111">ponturo</span></div>
+          <div class="pf-info-row"><span class="pf-info-key">Aktive Module</span><span class="pf-info-val">24</span></div>
+          <div class="pf-info-row"><span class="pf-info-key">Ihre Rolle</span><span class="pf-info-val">Mandanten-Admin</span></div>
+          <div style="margin-top:14px">
+            <div class="pf-module-group-label" style="padding:0 0 6px">Aktive Module (Auszug)</div>
+            <div class="pf-chip-row">
+              <span class="pf-chip">Accounts</span>
+              <span class="pf-chip">Kontakte</span>
+              <span class="pf-chip">Aktivitäten</span>
+              <span class="pf-chip">Pipeline</span>
+              <span class="pf-chip">Angebote</span>
+              <span class="pf-chip">Verträge</span>
+              <span class="pf-chip">Projekte</span>
+              <span class="pf-chip">Zeiterfassung</span>
+              <span class="pf-chip">Rechnungen</span>
+              <span class="pf-chip">Reporting</span>
+              <span class="pf-chip">+ 14 weitere</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Verfügbare Mandanten</div>
+          </div>
+          <div style="padding:8px 14px 12px">
+            <div class="pf-role-row" style="padding:10px 4px">
+              <div class="pf-switcher-avatar" style="background:#F26722;color:#fff;width:26px;height:26px;border-radius:7px;font-size:10px">P</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12.5px;font-weight:600;color:#111">Ponturo Beratung</div>
+                <div style="font-size:10.5px;color:#94a3b8">Beratung · 24 Module</div>
+              </div>
+              <span class="pf-badge pf-badge-active">Aktiv</span>
+            </div>
+            <div class="pf-role-row" style="padding:10px 4px">
+              <div class="pf-switcher-avatar" style="width:26px;height:26px;border-radius:7px;font-size:10px">K</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12.5px;font-weight:600;color:#111">Unturo</div>
+                <div style="font-size:10.5px;color:#94a3b8">KI-Readiness · 14 Module</div>
+              </div>
+              <span class="pf-badge pf-badge-lock">Mitglied</span>
+              <a class="btn btn-ghost" href="mockup-platform-mandant.html" style="padding:4px 8px;font-size:11px">Wechseln</a>
+            </div>
+            <div class="pf-role-row" style="padding:10px 4px;border-bottom:none">
+              <div class="pf-switcher-avatar" style="width:26px;height:26px;border-radius:7px;font-size:10px">M</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12.5px;font-weight:600;color:#111">My Next Lesson</div>
+                <div style="font-size:10.5px;color:#94a3b8">SaaS · 10 Module</div>
+              </div>
+              <span class="pf-badge pf-badge-lock">Einladung</span>
+              <a class="btn btn-ghost" href="mockup-platform-mandant.html" style="padding:4px 8px;font-size:11px">Wechseln</a>
+            </div>
+            <div style="margin-top:10px;font-size:11.5px;color:#94a3b8">Ihr Benutzerkonto ist diesen 3 Mandanten zugeordnet.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Beim Wechsel</div>
+          </div>
+          <div style="padding:10px 18px 16px;font-size:12px;color:#64748b;line-height:1.6">
+            <div>1. Neue Sitzung mit <strong style="color:#111">Mandanten-Kontext</strong> wird geladen</div>
+            <div>2. Navigation zeigt nur die Module des Zielmandanten</div>
+            <div>3. Alle Listen und KPIs sind auf dessen Datenbestand gefiltert</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="mockup-sprint-nav.js"></script>
+</body>
+</html>

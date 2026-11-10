@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sidebar-Alternativen – Ponturo CRM</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f4f6fb;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --nav: #0f172a;
+  --navLine: #1e293b;
+  --navText: #cbd5e1;
+  --navMuted: #64748b;
+  --accent: #2563eb;
+}
+body {
+  font-family: "Segoe UI", Inter, system-ui, -apple-system, sans-serif;
+  background: var(--bg); color: var(--ink);
+  padding: 28px 24px 64px;
+}
+.ic { width: 14px; height: 14px; flex: none; }
+
+/* ── Seitenkopf ─────────────────────────────────────────── */
+.page-head { max-width: 1500px; margin: 0 auto 22px; }
+.brand { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.brand-logo {
+  width: 28px; height: 28px; border-radius: 8px; background: var(--accent);
+  color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 12px;
+}
+.brand b { font-size: 13px; }
+.brand small { font-size: 11px; color: var(--muted); }
+.page-head h1 { font-size: 24px; letter-spacing: -.02em; }
+.page-head p { color: var(--muted); font-size: 13px; margin-top: 6px; max-width: 820px; line-height: 1.55; }
+.hint {
+  display: inline-flex; align-items: center; gap: 7px; margin-top: 12px;
+  font-size: 11.5px; color: #1e40af; background: #eff6ff;
+  border: 1px solid #bfdbfe; border-radius: 999px; padding: 5px 12px;
+}
+
+/* ── Varianten-Grid ─────────────────────────────────────── */
+.variants {
+  max-width: 1500px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: start;
+}
+@media (max-width: 1240px) { .variants { grid-template-columns: 1fr; } }
+.variant {
+  background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+}
+.v-head { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px; }
+.tag {
+  flex: none; width: 26px; height: 26px; border-radius: 8px;
+  background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe;
+  display: grid; place-items: center; font-weight: 800; font-size: 12px;
+}
+.v-head h2 { font-size: 15px; }
+.v-head p { font-size: 11.5px; color: var(--muted); margin-top: 2px; line-height: 1.45; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0 12px; }
+.chip { font-size: 10px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); color: #475569; background: #f8fafc; }
+.chip.good { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+.chip.warn { background: #fffbeb; border-color: #fde68a; color: #b45309; }
+
+/* ── App-Fenster ────────────────────────────────────────── */
+.frame { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; }
+.frame-bar {
+  height: 25px; display: flex; align-items: center; gap: 5px; padding: 0 9px;
+  background: #f1f5f9; border-bottom: 1px solid var(--line);
+}
+.dot { width: 6px; height: 6px; border-radius: 50%; background: #cbd5e1; }
+.frame-bar .url {
+  margin: 0 auto; font-size: 9px; color: #94a3b8; background: #fff;
+  border: 1px solid var(--line); border-radius: 999px; padding: 1px 12px;
+}
+.app { display: flex; height: 452px; overflow: hidden; position: relative; }
+
+/* ── Sidebar A: klassisch dunkel ────────────────────────── */
+.sb-a { flex: 0 0 206px; background: var(--nav); color: var(--navText); display: flex; flex-direction: column; }
+.sb-brand { display: flex; gap: 8px; align-items: center; padding: 11px 12px; border-bottom: 1px solid var(--navLine); }
+.logo { width: 26px; height: 26px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 11px; flex: none; }
+.sb-brand b { font-size: 11.5px; color: #fff; display: block; line-height: 1.25; }
+.sb-brand small { font-size: 9px; color: var(--navMuted); }
+.switch { margin: 9px 10px 4px; border: 1px solid var(--navLine); background: #0b1526; border-radius: 8px; padding: 3px; display: flex; gap: 3px; }
+.switch span { flex: 1; text-align: center; font-size: 9px; padding: 4px 2px; border-radius: 6px; color: #94a3b8; cursor: pointer; }
+.switch span.on { background: #334155; color: #fff; }
+.sb-scroll { flex: 1; overflow-y: auto; padding: 4px 8px 12px; }
+.sb-scroll::-webkit-scrollbar { width: 6px; }
+.sb-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+.grp { margin-top: 9px; }
+.grp > p { font-size: 8.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--navMuted); padding: 0 8px 4px; font-weight: 700; }
+.item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 7px; font-size: 11px; color: var(--navText); cursor: pointer; }
+.item .ic { color: #94a3b8; }
+.item:hover { background: var(--navLine); color: #fff; }
+.item.on { background: #334155; color: #fff; }
+.item.on .ic { color: #60a5fa; }
+.item .cnt { margin-left: auto; font-size: 8.5px; color: #94a3b8; background: var(--navLine); border-radius: 999px; padding: 1px 5px; }
+.sb-user { display: flex; gap: 8px; align-items: center; padding: 9px 10px; border-top: 1px solid var(--navLine); }
+.avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 8.5px; display: grid; place-items: center; font-weight: 700; flex: none; }
+.sb-user b { font-size: 10px; color: #fff; display: block; }
+.sb-user small { font-size: 8.5px; color: var(--navMuted); }
+.sb-user .ic { margin-left: auto; color: #64748b; }
+
+/* ── Sidebar B: hell + Accordion ────────────────────────── */
+.sb-b { flex: 0 0 216px; background: #fff; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+.sb-b .sb-brand { border-bottom: 1px solid var(--line); }
+.sb-b .sb-brand b { color: var(--ink); }
+.sb-b .sb-brand small { color: var(--muted); }
+.search {
+  margin: 8px 10px; display: flex; align-items: center; gap: 6px;
+  background: #f1f5f9; border: 1px solid var(--line); border-radius: 8px;
+  padding: 5px 8px; font-size: 10px; color: #94a3b8;
+}
+.kbd { margin-left: auto; font-size: 8px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 0 3px; background: #fff; color: #64748b; }
+.acc-list { flex: 1; overflow-y: auto; padding: 0 6px 10px; }
+.fav-label, .acc-head {
+  display: flex; align-items: center; gap: 7px; width: 100%;
+  padding: 7px 8px; background: none; border: none; font: inherit;
+  font-size: 9.5px; font-weight: 700; color: #64748b;
+  text-transform: uppercase; letter-spacing: .07em; cursor: pointer;
+}
+.acc-head .chev { margin-left: auto; font-size: 9px; color: #94a3b8; transition: transform .15s; display: inline-block; }
+.acc.open .acc-head .chev { transform: rotate(90deg); }
+.acc-body { display: none; padding-bottom: 2px; }
+.acc.open .acc-body { display: block; }
+.b-item { display: flex; gap: 7px; align-items: center; padding: 6px 8px; border-radius: 7px; font-size: 11px; color: #334155; cursor: pointer; }
+.b-item .ic { color: #94a3b8; }
+.b-item:hover { background: #f1f5f9; }
+.b-item.on { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+.b-item.on .ic { color: #2563eb; }
+.fav { padding-bottom: 4px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.fav .b-item { color: #475569; }
+.acc-count { margin-left: auto; font-size: 8.5px; color: #94a3b8; background: #f1f5f9; border: 1px solid var(--line); border-radius: 999px; padding: 0 5px; }
+.b-foot { border-top: 1px solid var(--line); padding: 8px 10px; display: flex; align-items: center; gap: 7px; font-size: 9px; color: #64748b; }
+.b-foot .ic { color: #94a3b8; }
+
+/* ── Sidebar C: Icon-Rail + Flyout ──────────────────────── */
+.sb-c { display: flex; flex: none; position: relative; }
+.rail {
+  flex: none; width: 56px; background: var(--nav); display: flex; flex-direction: column;
+  align-items: center; padding: 9px 0; gap: 2px; border-right: 1px solid var(--navLine);
+}
+.rail-logo { width: 30px; height: 30px; border-radius: 9px; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 11px; margin-bottom: 7px; }
+.rail-item {
+  width: 38px; height: 33px; border-radius: 9px; display: grid; place-items: center;
+  color: #94a3b8; cursor: pointer; position: relative;
+}
+.rail-item .ic { width: 16px; height: 16px; }
+.rail-item:hover { background: var(--navLine); color: #fff; }
+.rail-item.on { background: var(--accent); color: #fff; }
+.rail-item .badge { position: absolute; top: 5px; right: 5px; width: 5px; height: 5px; border-radius: 50%; background: #f87171; }
+.rail-sep { width: 24px; height: 1px; background: var(--navLine); margin: 5px 0; }
+.rail-item.avatar-chip { margin-top: auto; }
+.flyout {
+  position: absolute; top: 40px; left: 54px; width: 184px; z-index: 5;
+  background: #fff; border: 1px solid var(--line); border-radius: 0 10px 10px 10px;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, .18); padding: 7px; display: none;
+}
+.flyout.show { display: block; }
+.flyout h4 { font-size: 8.5px; text-transform: uppercase; letter-spacing: .09em; color: #94a3b8; margin: 2px 6px 5px; }
+.flyout a { display: flex; gap: 7px; align-items: center; padding: 6px; border-radius: 7px; font-size: 11px; color: #334155; text-decoration: none; }
+.flyout a:hover { background: #f1f5f9; }
+.flyout a.on { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+.flyout a .ic { color: #94a3b8; }
+.flyout a.on .ic { color: #2563eb; }
+
+/* ── Inhaltsfläche ──────────────────────────────────────── */
+.content { flex: 1; background: #f8fafc; padding: 13px; overflow: hidden; }
+.c-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 11px; }
+.c-head h3 { font-size: 13.5px; }
+.c-head p { font-size: 9.5px; color: var(--muted); margin-top: 1px; }
+.c-btn { font-size: 9px; background: var(--accent); color: #fff; padding: 5px 9px; border-radius: 6px; border: none; }
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-bottom: 10px; }
+.kpi { background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 8px; }
+.kpi small { font-size: 8px; color: var(--muted); display: block; }
+.kpi b { font-size: 15px; display: block; margin-top: 2px; }
+.panel { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+.panel-title { font-size: 10.5px; font-weight: 700; color: #334155; margin-bottom: 8px; }
+.row { height: 8px; border-radius: 4px; background: #eef2f7; margin: 8px 0; }
+.row.w60 { width: 60%; } .row.w40 { width: 40%; } .row.w80 { width: 80%; } .row.w100 { width: 100%; }
+.chart { height: 74px; display: flex; align-items: flex-end; gap: 6px; padding-top: 6px; }
+.bar { flex: 1; background: #dbeafe; border-radius: 4px 4px 0 0; }
+.bar.hi { background: #93c5fd; }
+
+/* ── Vergleich + Empfehlung ─────────────────────────────── */
+.compare, .recommend { max-width: 1500px; margin: 22px auto 0; }
+.panel-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
+.compare h2, .recommend h2 { font-size: 15px; margin-bottom: 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); background: #f8fafc; }
+th:first-child, td:first-child { width: 22%; font-weight: 600; color: #334155; }
+tr:last-child td { border-bottom: none; }
+.recommend .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 900px) { .recommend .cards { grid-template-columns: 1fr; } }
+.rc { border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.rc .tag { margin-bottom: 8px; }
+.rc b { font-size: 13px; display: block; margin-bottom: 4px; }
+.rc p { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+.rc.best { border-color: #bfdbfe; background: #f8fbff; }
+</style>
+</head>
+<body>
+
+<!-- Icon-Sprite -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 8-4-16-3 8H2"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></symbol>
+  <symbol id="i-contract" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="m8 14 2.5 2.5L15 12"/></symbol>
+  <symbol id="i-briefcase" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-tasks" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m8 12 3 3 6-6"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.8 6.2 20.9l1.1-6.5L2.6 9.8l6.5-.9z"/></symbol>
+  <symbol id="i-shuffle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="m4 4 5 5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></symbol>
+  <symbol id="i-brain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4a3 3 0 0 0-3 3v1a3 3 0 0 0 0 6v1a3 3 0 0 0 3 3h1V4z"/><path d="M15 4a3 3 0 0 1 3 3v1a3 3 0 0 1 0 6v1a3 3 0 0 1-3 3h-1V4z"/></symbol>
+  <symbol id="i-news" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h13v14H5a1 1 0 0 1-1-1z"/><path d="M17 8h3v9a2 2 0 0 1-2 2h-1"/><path d="M7 9h7M7 12h7M7 15h4"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></symbol>
+  <symbol id="i-admin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a5 5 0 0 1 5-5h4"/><circle cx="17" cy="17" r="3"/><path d="M17 12v2M17 20v2M12 17h2M20 17h2"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 3 8l4 4"/><path d="M3 8h13"/><path d="m17 20 4-4-4-4"/><path d="M21 16H8"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+</svg>
+
+<header class="page-head">
+  <div class="brand">
+    <div class="brand-logo">i</div>
+    <div><b>innolab CRM</b><br><small>Design-Vorschläge · Ponturo CRM</small></div>
+  </div>
+  <h1>Sidebar-Alternativen für das Ponturo CRM</h1>
+  <p>
+    Drei Varianten auf Basis des CRM-Profils: 19 sichtbare Einträge, die 12 Module aus Finanzen,
+    Personal, Zeit und Automatisierung bleiben in allen Varianten ausgeblendet. Die Vorschauen sind
+    klickbar – Gruppen, Flyouts und aktive Einträge reagieren.
+  </p>
+  <span class="hint">
+    <svg class="ic" style="width:13px;height:13px"><use href="#i-lock"/></svg>
+    „CRM-Profil“ erscheint in allen Varianten nur im Admin-Bereich.
+  </span>
+</header>
+
+<div class="variants">
+
+  <!-- ═══════════ A: klassisch gruppiert ═══════════ -->
+  <section class="variant">
+    <div class="v-head">
+      <span class="tag">A</span>
+      <div>
+        <h2>Klassisch gruppiert</h2>
+        <p>Der heutige Aufbau: dunkle Leiste, feste Gruppen, alle Einträge direkt sichtbar.</p>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip good">vertraut</span>
+      <span class="chip good">alles auf einen Blick</span>
+      <span class="chip warn">lange Leiste</span>
+      <span class="chip warn">scrollen</span>
+    </div>
+    <div class="frame">
+      <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">app.ponturo.de</span></div>
+      <div class="app">
+        <aside class="sb-a">
+          <div class="sb-brand">
+            <div class="logo">P</div>
+            <div><b>Ponturo CRM</b><small>Consulting Suite</small></div>
+          </div>
+          <div class="switch">
+            <span class="on">CRM</span>
+            <span>KI-Readiness</span>
+          </div>
+          <div class="sb-scroll">
+            <div class="grp">
+              <p>Portal</p>
+              <div class="item"><svg class="ic"><use href="#i-home"/></svg>Startseite</div>
+              <div class="item on"><svg class="ic"><use href="#i-grid"/></svg>Dashboard</div>
+            </div>
+            <div class="grp">
+              <p>Kunden</p>
+              <div class="item"><svg class="ic"><use href="#i-building"/></svg>Accounts</div>
+              <div class="item"><svg class="ic"><use href="#i-users"/></svg>Kontakte</div>
+              <div class="item"><svg class="ic"><use href="#i-activity"/></svg>Aktivitäten<span class="cnt">8</span></div>
+            </div>
+            <div class="grp">
+              <p>Vertrieb</p>
+              <div class="item"><svg class="ic"><use href="#i-trend"/></svg>Pipeline</div>
+              <div class="item"><svg class="ic"><use href="#i-file"/></svg>Angebote</div>
+              <div class="item"><svg class="ic"><use href="#i-contract"/></svg>Verträge</div>
+            </div>
+            <div class="grp">
+              <p>Mandate</p>
+              <div class="item"><svg class="ic"><use href="#i-briefcase"/></svg>Projekte</div>
+              <div class="item"><svg class="ic"><use href="#i-tasks"/></svg>Aufgaben<span class="cnt">5</span></div>
+            </div>
+            <div class="grp">
+              <p>Wissen</p>
+              <div class="item"><svg class="ic"><use href="#i-folder"/></svg>Dokumente</div>
+            </div>
+            <div class="grp">
+              <p>Analyse</p>
+              <div class="item"><svg class="ic"><use href="#i-star"/></svg>Key Accounts</div>
+              <div class="item"><svg class="ic"><use href="#i-shuffle"/></svg>Cross-Selling</div>
+              <div class="item"><svg class="ic"><use href="#i-shield"/></svg>Compliance</div>
+            </div>
+            <div class="grp">
+              <p>KI &amp; Analyse</p>
+              <div class="item"><svg class="ic"><use href="#i-brain"/></svg>KI-Opportunities</div>
+              <div class="item"><svg class="ic"><use href="#i-news"/></svg>News Monitoring</div>
+            </div>
+            <div class="grp">
+              <p>System</p>
+              <div class="item"><svg class="ic"><use href="#i-settings"/></svg>Einstellungen</div>
+              <div class="item"><svg class="ic"><use href="#i-admin"/></svg>Benutzerverwaltung</div>
+              <div class="item"><svg class="ic"><use href="#i-lock"/></svg>CRM-Profil</div>
+            </div>
+          </div>
+          <div class="sb-user">
+            <div class="avatar">DT</div>
+            <div><b>D. Tayon</b><small>Administrator</small></div>
+            <svg class="ic"><use href="#i-logout"/></svg>
+          </div>
+        </aside>
+        <main class="content">
+          <div class="c-head"><div><h3>Dashboard</h3><p>Unternehmensüberblick</p></div><button class="c-btn">Bericht</button></div>
+          <div class="kpis">
+            <div class="kpi"><small>Aktive Mandate</small><b>12</b></div>
+            <div class="kpi"><small>Offene Deals</small><b>28</b></div>
+            <div class="kpi"><small>Pipeline</small><b>1,4 M</b></div>
+            <div class="kpi"><small>Win-Rate</small><b>38%</b></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Pipeline-Übersicht</div>
+            <div class="chart">
+              <div class="bar" style="height:38%"></div><div class="bar hi" style="height:58%"></div>
+              <div class="bar" style="height:74%"></div><div class="bar hi" style="height:46%"></div>
+              <div class="bar" style="height:26%"></div><div class="bar" style="height:64%"></div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ B: hell + Accordion ═══════════ -->
+  <section class="variant">
+    <div class="v-head">
+      <span class="tag">B</span>
+      <div>
+        <h2>Accordion + Suche</h2>
+        <p>Helle Leiste, Gruppen einklappbar, Suche und Favoriten oben. Skaliert mit vielen Modulen.</p>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip good">kurz &amp; ruhig</span>
+      <span class="chip good">Suche</span>
+      <span class="chip good">Favoriten</span>
+      <span class="chip warn">ein Klick mehr</span>
+    </div>
+    <div class="frame">
+      <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">app.ponturo.de</span></div>
+      <div class="app">
+        <aside class="sb-b">
+          <div class="sb-brand">
+            <div class="logo">P</div>
+            <div><b>Ponturo CRM</b><small>Consulting Suite</small></div>
+          </div>
+          <div class="search">
+            <svg class="ic"><use href="#i-search"/></svg> Modul suchen
+            <span class="kbd">⌘K</span>
+          </div>
+          <div class="acc-list">
+            <div class="fav">
+              <p class="fav-label">Favoriten</p>
+              <div class="b-item"><svg class="ic"><use href="#i-grid"/></svg>Dashboard</div>
+              <div class="b-item"><svg class="ic"><use href="#i-trend"/></svg>Pipeline</div>
+              <div class="b-item"><svg class="ic"><use href="#i-building"/></svg>Accounts</div>
+            </div>
+
+            <div class="acc open">
+              <button class="acc-head">
+                <svg class="ic"><use href="#i-users"/></svg>Kunden
+                <span class="acc-count">3</span><span class="chev">›</span>
+              </button>
+              <div class="acc-body">
+                <div class="b-item"><svg class="ic"><use href="#i-building"/></svg>Accounts</div>
+                <div class="b-item"><svg class="ic"><use href="#i-users"/></svg>Kontakte</div>
+                <div class="b-item"><svg class="ic"><use href="#i-activity"/></svg>Aktivitäten</div>
+              </div>
+            </div>
+
+            <div class="acc open">
+              <button class="acc-head">
+                <svg class="ic"><use href="#i-trend"/></svg>Vertrieb
+                <span class="acc-count">3</span><span class="chev">›</span>
+              </button>
+              <div class="acc-body">
+                <div class="b-item on"><svg class="ic"><use href="#i-trend"/></svg>Pipeline</div>
+                <div class="b-item"><svg class="ic"><use href="#i-file"/></svg>Angebote</div>
+                <div class="b-item"><svg class="ic"><use href="#i-contract"/></svg>Verträge</div>
+              </div>
+            </div>
+
+            <div class="acc">
+              <button class="acc-head">
+                <svg class="ic"><use href="#i-briefcase"/></svg>Mandate
+                <span class="acc-count">2</span><span class="chev">›</span>
+              </button>
+              <div class="acc-body">
+                <div class="b-item"><svg class="ic"><use href="#i-briefcase"/></svg>Projekte</div>
+                <div class="b-item"><svg class="ic"><use href="#i-tasks"/></svg>Aufgaben</div>
+              </div>
+            </div>
+
+            <div class="acc">
+              <button class="acc-head">
+                <svg class="ic"><use href="#i-folder"/></svg>Wissen
+                <span class="acc-count">1</span><span class="chev">›</span>
+              </button>
+              <div class="acc-body">
+                <div class="b-item"><svg class="ic"><use href="#i-folder"/></svg>Dokumente</div>
+              </div>
+            </div>
+
+            <div class="acc">
+              <button class="acc-head">
+                <svg class="ic"><use href="#i-star"/></svg>Analyse
+                <span class="acc-count">3</span><span class="chev">›</span>
+              </button>
+              <div class="acc-body">
+                <div class="b-item"><svg class="ic"><use href="#i-star"/></svg>Key Accounts</div>
+                <div class="b-item"><svg class="ic"><use href="#i-shuffle"/></svg>Cross-Selling</div>
+                <div class="b-item"><svg class="ic"><use href="#i-shield"/></svg>Compliance</div>
+              </div>
+            </div>
+
+            <div class="acc">
+              <button class="acc-head">
+                <svg class="ic"><use href="#i-brain"/></svg>KI &amp; Analyse
+                <span class="acc-count">2</span><span class="chev">›</span>
+              </button>
+              <div class="acc-body">
+                <div class="b-item"><svg class="ic"><use href="#i-brain"/></svg>KI-Opportunities</div>
+                <div class="b-item"><svg class="ic"><use href="#i-news"/></svg>News Monitoring</div>
+              </div>
+            </div>
+
+            <div class="acc">
+              <button class="acc-head">
+                <svg class="ic"><use href="#i-settings"/></svg>System
+                <span class="acc-count">3</span><span class="chev">›</span>
+              </button>
+              <div class="acc-body">
+                <div class="b-item"><svg class="ic"><use href="#i-settings"/></svg>Einstellungen</div>
+                <div class="b-item"><svg class="ic"><use href="#i-admin"/></svg>Benutzerverwaltung</div>
+                <div class="b-item"><svg class="ic"><use href="#i-lock"/></svg>CRM-Profil</div>
+              </div>
+            </div>
+          </div>
+          <div class="b-foot">
+            <svg class="ic"><use href="#i-swap"/></svg>KI-Readiness Sprint · Portal wechseln
+          </div>
+          <div class="sb-user" style="border-top:1px solid var(--line)">
+            <div class="avatar">DT</div>
+            <div><b style="color:var(--ink)">D. Tayon</b><small>Administrator</small></div>
+            <svg class="ic" style="margin-left:auto;color:#94a3b8"><use href="#i-logout"/></svg>
+          </div>
+        </aside>
+        <main class="content">
+          <div class="c-head"><div><h3>Pipeline</h3><p>28 offene Deals · 1,4 M Volumen</p></div><button class="c-btn">Neuer Deal</button></div>
+          <div class="kpis">
+            <div class="kpi"><small>First Contact</small><b>9</b></div>
+            <div class="kpi"><small>Needs Analysis</small><b>7</b></div>
+            <div class="kpi"><small>Proposal</small><b>8</b></div>
+            <div class="kpi"><small>Negotiation</small><b>4</b></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Deals</div>
+            <div class="row w100"></div><div class="row w80"></div><div class="row w60"></div><div class="row w80"></div><div class="row w40"></div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ C: Icon-Rail + Flyout ═══════════ -->
+  <section class="variant">
+    <div class="v-head">
+      <span class="tag">C</span>
+      <div>
+        <h2>Icon-Rail mit Flyout</h2>
+        <p>Schmale Leiste (56 px), Gruppen öffnen sich als Flyout daneben. Maximaler Platz für Inhalte.</p>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip good">viel Inhaltsfläche</span>
+      <span class="chip good">schnell für Vielnutzer</span>
+      <span class="chip warn">Icons allein</span>
+      <span class="chip warn">Lernkurve</span>
+    </div>
+    <div class="frame">
+      <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">app.ponturo.de</span></div>
+      <div class="app">
+        <div class="sb-c">
+          <div class="rail">
+            <div class="rail-logo">P</div>
+            <div class="rail-item" title="Startseite"><svg class="ic"><use href="#i-home"/></svg></div>
+            <div class="rail-item on" title="Dashboard"><svg class="ic"><use href="#i-grid"/></svg></div>
+            <div class="rail-sep"></div>
+            <div class="rail-item" data-group="kunden" title="Kunden"><svg class="ic"><use href="#i-building"/></svg></div>
+            <div class="rail-item" data-group="vertrieb" title="Vertrieb"><svg class="ic"><use href="#i-trend"/></svg><span class="badge"></span></div>
+            <div class="rail-item" data-group="mandate" title="Mandate"><svg class="ic"><use href="#i-briefcase"/></svg></div>
+            <div class="rail-item" data-group="wissen" title="Wissen"><svg class="ic"><use href="#i-folder"/></svg></div>
+            <div class="rail-item" data-group="analyse" title="Analyse"><svg class="ic"><use href="#i-star"/></svg></div>
+            <div class="rail-item" data-group="ki" title="KI &amp; Analyse"><svg class="ic"><use href="#i-brain"/></svg></div>
+            <div class="rail-sep"></div>
+            <div class="rail-item" data-group="system" title="System"><svg class="ic"><use href="#i-settings"/></svg></div>
+            <div class="rail-item" title="Portal wechseln"><svg class="ic"><use href="#i-swap"/></svg></div>
+            <div class="rail-item avatar-chip" title="D. Tayon"><div class="avatar" style="width:28px;height:28px;font-size:9px">DT</div></div>
+          </div>
+          <div class="flyout" id="flyout"></div>
+        </div>
+        <main class="content">
+          <div class="c-head"><div><h3>Accounts</h3><p>185 Kunden · 24 Key Accounts</p></div><button class="c-btn">Neu</button></div>
+          <div class="kpis">
+            <div class="kpi"><small>Accounts</small><b>185</b></div>
+            <div class="kpi"><small>Key</small><b>24</b></div>
+            <div class="kpi"><small>Aktivitäten</small><b>312</b></div>
+            <div class="kpi"><small>Ø Umsatz</small><b>84 k</b></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Zuletzt bearbeitet</div>
+            <div class="row w80"></div><div class="row w60"></div><div class="row w100"></div><div class="row w40"></div><div class="row w80"></div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ═══════════ Vergleich ═══════════ -->
+<section class="compare">
+  <div class="panel-card">
+    <h2>Worin sich die Varianten unterscheiden</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Kriterium</th>
+          <th>A · Klassisch gruppiert</th>
+          <th>B · Accordion + Suche</th>
+          <th>C · Icon-Rail + Flyout</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Platzbedarf</td><td>ca. 206 px</td><td>ca. 216 px</td><td>ca. 56 px (+ 184 px Flyout)</td></tr>
+        <tr><td>Überblick bei 19 Einträgen</td><td>Alles gleichzeitig sichtbar</td><td>Nur offene Gruppen sichtbar</td><td>Nur Gruppen-Icons sichtbar</td></tr>
+        <tr><td>Skalierung auf 30+ Module</td><td>Wird lang, Scrollen nötig</td><td>Gut – Gruppen bleiben kurz</td><td>Gut – Rail wächst kaum</td></tr>
+        <tr><td>Auffindbarkeit für neue Nutzer</td><td>Sehr hoch (Labels immer da)</td><td>Hoch (Labels + Suche)</td><td>Niedrig (Icons ohne Text)</td></tr>
+        <tr><td>Ausgeblendete Module (CRM-Profil)</td><td>Einträge entfallen einfach</td><td>Gruppen passen Zähler an</td><td>Gruppen-Slot bleibt, Flyout kürzer</td></tr>
+        <tr><td>Mobile / Tablet</td><td>Als Drawer</td><td>Als Drawer, Suche praktisch</td><td>Rail bleibt, Flyout als Sheet</td></tr>
+        <tr><td>Klicks bis zum Ziel</td><td>1</td><td>2 (Gruppe öffnen, Eintrag)</td><td>2 (Icons, Flyout) – mit Hover 1</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════ Empfehlung ═══════════ -->
+<section class="recommend">
+  <div class="panel-card">
+    <h2>Empfehlung</h2>
+    <div class="cards">
+      <div class="rc best">
+        <span class="tag">A</span>
+        <b>Als Standard behalten</b>
+        <p>Bei 19 Einträgen ist die gruppierte Leiste am schnellsten zu erfassen. Ergänzt um eine kleine Suche im Kopf und gemerkte Favoriten wäre sie schon ausreichend.</p>
+      </div>
+      <div class="rc">
+        <span class="tag">B</span>
+        <b>Wenn die Module wachsen</b>
+        <p>Accordion plus Suche skaliert, hält die Leiste ruhig und merkt sich den Zustand. Ideal, sobald zusätzliche Module oder Mandanten dazukommen.</p>
+      </div>
+      <div class="rc">
+        <span class="tag">C</span>
+        <b>Für Vielnutzer / später</b>
+        <p>Maximiert die Fläche für Tabellen und Kanban. Sinnvoll mit Tooltips, Tastaturkürzeln und Onboarding – sonst leiden Gelegenheitsnutzer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  // ── A: aktiver Eintrag ──────────────────────────────────
+  document.querySelectorAll('.sb-a .item').forEach(function (el) {
+    el.addEventListener('click', function () {
+      document.querySelectorAll('.sb-a .item').forEach(function (n) { n.classList.remove('on'); });
+      el.classList.add('on');
+    });
+  });
+  document.querySelectorAll('.sb-a .switch span').forEach(function (el) {
+    el.addEventListener('click', function () {
+      document.querySelectorAll('.sb-a .switch span').forEach(function (n) { n.classList.remove('on'); });
+      el.classList.add('on');
+    });
+  });
+
+  // ── B: Accordion + aktive Einträge ──────────────────────
+  document.querySelectorAll('.sb-b .acc-head').forEach(function (head) {
+    head.addEventListener('click', function () {
+      head.parentElement.classList.toggle('open');
+    });
+  });
+  document.querySelectorAll('.sb-b .b-item').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var group = el.closest('.acc') || el.closest('.fav');
+      if (!group) return;
+      group.querySelectorAll('.b-item').forEach(function (n) { n.classList.remove('on'); });
+      el.classList.add('on');
+    });
+  });
+
+  // ── C: Rail-Flyout ──────────────────────────────────────
+  var GROUPS = {
+    kunden:  { title: 'Kunden', items: [['Accounts', 'building'], ['Kontakte', 'users'], ['Aktivitäten', 'activity']] },
+    vertrieb:{ title: 'Vertrieb', items: [['Pipeline', 'trend', true], ['Angebote', 'file'], ['Verträge', 'contract']] },
+    mandate: { title: 'Mandate', items: [['Projekte', 'briefcase'], ['Aufgaben', 'tasks']] },
+    wissen:  { title: 'Wissen', items: [['Dokumente', 'folder']] },
+    analyse: { title: 'Analyse', items: [['Key Accounts', 'star'], ['Cross-Selling', 'shuffle'], ['Compliance', 'shield']] },
+    ki:      { title: 'KI & Analyse', items: [['KI-Opportunities', 'brain'], ['News Monitoring', 'news']] },
+    system:  { title: 'System', items: [['Einstellungen', 'settings'], ['Benutzerverwaltung', 'admin'], ['CRM-Profil', 'lock']] }
+  };
+  var appC = document.querySelector('.sb-c');
+  var fly = document.getElementById('flyout');
+
+  function openFlyout(item) {
+    var group = GROUPS[item.getAttribute('data-group')];
+    if (!group) return;
+    var html = '<h4>' + group.title + '</h4>';
+    group.items.forEach(function (it) {
+      html += '<a href="#" class="' + (it[2] ? 'on' : '') + '">' +
+        '<svg class="ic"><use href="#i-' + it[1] + '"/></svg>' + it[0] + '</a>';
+    });
+    fly.innerHTML = html;
+    var appRect = appC.closest('.app').getBoundingClientRect();
+    var r = item.getBoundingClientRect();
+    fly.style.top = Math.max(6, r.top - appRect.top - 6) + 'px';
+    fly.classList.add('show');
+  }
+
+  document.querySelectorAll('.sb-c .rail-item[data-group]').forEach(function (el) {
+    el.addEventListener('mouseenter', function () { openFlyout(el); });
+  });
+  appC.addEventListener('mouseleave', function () { fly.classList.remove('show'); });
+
+  // Standard: Vertrieb aufgeklappt zeigen
+  var defaultItem = document.querySelector('.sb-c .rail-item[data-group="vertrieb"]');
+  if (defaultItem) {
+    defaultItem.classList.add('on');
+    setTimeout(function () { openFlyout(defaultItem); }, 60);
+  }
+})();
+</script>
+
+</body>
+</html>

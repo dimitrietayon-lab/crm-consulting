@@ -12,7 +12,6 @@ import { api } from '@/lib/api'
 
 const PAGE_TITLES = {
   '/': 'Dashboard',
-  '/home': 'Übersicht',
   '/accounts': 'Accounts',
   '/contacts': 'Kontakte',
   '/pipeline': 'Pipeline',
@@ -36,12 +35,39 @@ const PAGE_TITLES = {
   '/workflows': 'Workflow-Automatisierung',
   '/admin': 'Administration',
   '/settings': 'Einstellungen',
+  '/crm-profil': 'CRM-Profil',
   '/mein-bereich': 'Mein Bereich',
+}
+
+const SPRINT_TITLES = {
+  '/sprint-targets':           'Zielkunden',
+  '/sprint-targets/dashboard': 'Sprint-Dashboard',
+  '/sprint-targets/import':    'Listen-Import',
+  '/sprint-targets/blocklist': 'Sperrliste',
+  '/sprint-targets/activities':'Aktivitäten',
+  '/sprint-targets/offers':    'Angebote',
+  '/sprint-targets/outreach':  'Outreach',
+  '/sprint-targets/contacts':  'Sprint-Kontakte',
+  '/sprint-targets/team':      'Team & Zuweisung',
+  '/sprint-targets/reporting': 'Reporting',
+  '/sprint-targets/market':    'Marktauswahl',
+  '/sprint-targets/capacity':  'Planung',
+  '/sprint-targets/bafa':      'BAFA-Förderung',
+  '/sprint-targets/settings':  'Sprint-Einstellungen',
 }
 
 function getPageTitle(pathname) {
   if (pathname === '/workflows/new') return 'Neuer Workflow'
   if (/^\/workflows\/[^/]+\/edit$/.test(pathname)) return 'Workflow bearbeiten'
+  if (SPRINT_TITLES[pathname]) return SPRINT_TITLES[pathname]
+  if (/^\/sprint-targets\/team\/zuweisung\/[^/]+$/.test(pathname)) return 'Kundenzuweisung'
+  if (/^\/sprint-targets\/team\/[^/]+$/.test(pathname)) return 'Teammitglied'
+  if (/^\/sprint-targets\/offers\/new$/.test(pathname)) return 'Neues Angebot'
+  if (/^\/sprint-targets\/offers\/[^/]+$/.test(pathname)) return 'Angebot'
+  if (/^\/sprint-targets\/[^/]+\/handover$/.test(pathname)) return 'Übergabe'
+  if (/^\/sprint-targets\/[^/]+\/assessment$/.test(pathname)) return 'KI-Assessment'
+  if (/^\/sprint-targets\/[^/]+\/proposals$/.test(pathname)) return 'Projektvorschläge'
+  if (pathname.startsWith('/sprint-targets/')) return 'Zielkunde'
   if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname]
   const base = '/' + pathname.split('/').filter(Boolean)[0]
   return PAGE_TITLES[base] || 'CRM'

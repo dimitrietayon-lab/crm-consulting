@@ -1,0 +1,14 @@
+-- Zusätzliche Stammdaten und Deal-Felder am Sprint-Zielkunden
+ALTER TABLE "SprintTarget" ADD COLUMN IF NOT EXISTS "contactEmail" TEXT;
+ALTER TABLE "SprintTarget" ADD COLUMN IF NOT EXISTS "revenue" DOUBLE PRECISION;
+ALTER TABLE "SprintTarget" ADD COLUMN IF NOT EXISTS "website" TEXT;
+ALTER TABLE "SprintTarget" ADD COLUMN IF NOT EXISTS "wzCode" TEXT;
+ALTER TABLE "SprintTarget" ADD COLUMN IF NOT EXISTS "emailConsentAt" TIMESTAMP(3);
+ALTER TABLE "SprintTarget" ADD COLUMN IF NOT EXISTS "emailConsentSource" TEXT;
+ALTER TABLE "SprintTarget" ADD COLUMN IF NOT EXISTS "callConsentAt" TIMESTAMP(3);
+ALTER TABLE "SprintTarget" ADD COLUMN IF NOT EXISTS "callConsentSource" TEXT;
+ALTER TABLE "SprintTarget" ADD COLUMN IF NOT EXISTS "decisionDate" TIMESTAMP(3);
+ALTER TABLE "SprintTarget" ADD COLUMN IF NOT EXISTS "nextStep" TEXT;
+ALTER TABLE "SprintTarget" ADD COLUMN IF NOT EXISTS "nextStepDue" TIMESTAMP(3);
+ALTER TABLE "SprintTarget" ADD COLUMN IF NOT EXISTS "fundingAmount" DOUBLE PRECISION;
+ALTER TABLE "SprintTarget" ADD COLUMN IF NOT EXISTS "offerValidUntil" TIMESTAMP(3);

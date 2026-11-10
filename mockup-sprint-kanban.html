@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zielkunden — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Chrome, buttons, stats and filters come from mockup-sprint.css. */
+  * { margin: 0; padding: 0; }
+  body { display: flex; height: 100vh; overflow: hidden; }
+  .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  .top-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .page-sub { font-size: 11.5px; color: #94a3b8; margin-top: 2px; }
+  .kb-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Stats */
+  .kb-stats { display: flex; align-items: center; padding: 10px 24px; overflow-x: auto; flex-shrink: 0; }
+  .kb-stat { display: flex; flex-direction: column; align-items: flex-start; padding: 0 22px; border-right: 1px solid #f1f5f9; }
+  .kb-stat:first-child { padding-left: 0; }
+  .kb-stat:last-child { border-right: none; }
+  .kb-stat .stat-value { font-size: 20px; line-height: 1.1; }
+  .kb-stat .stat-label { font-size: 10.5px; color: #94a3b8; margin-top: 2px; }
+
+  /* Toolbar */
+  .kb-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; row-gap: 8px; background: #fff; border-bottom: 1px solid #e8e8e8; padding: 9px 24px; flex-shrink: 0; }
+  .kb-search { position: relative; width: 270px; flex-shrink: 0; }
+  .kb-search .si { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: #94a3b8; }
+  .kb-search input { width: 100%; height: 32px; padding-left: 30px; background: #f8fafc; font-size: 12.5px; }
+  .kb-chips { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .kb-chips .filter-btn { white-space: nowrap; }
+  .kb-reset { font-size: 12px; padding: 5px 10px; }
+  .kb-reset[hidden] { display: none; }
+  .kb-result { margin-left: auto; font-size: 11.5px; color: #94a3b8; white-space: nowrap; }
+  .kb-result b { color: #111111; }
+
+  /* Board */
+  .kb-board { flex: 1; display: flex; gap: 12px; padding: 16px 24px; overflow-x: auto; overflow-y: hidden; min-height: 0; }
+  .kb-col { display: flex; flex-direction: column; width: 252px; flex: 0 0 252px; min-height: 0; max-height: 100%; }
+  .kb-col-head { display: flex; align-items: center; gap: 7px; padding: 2px 6px 8px; flex-shrink: 0; }
+  .kb-col-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .kb-col-title { font-size: 12px; font-weight: 700; letter-spacing: -.01em; }
+  .kb-col-count { margin-left: auto; min-width: 22px; padding: 1px 7px; border-radius: 10px; background: rgba(255,255,255,.85); border: 1px solid rgba(0,0,0,.05); text-align: center; font-size: 10.5px; font-weight: 700; color: #475569; }
+  .kb-col-body { flex: 1; min-height: 120px; overflow-y: auto; border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 8px; transition: box-shadow .15s, background .15s; }
+  .kb-col-body.drop-target { box-shadow: inset 0 0 0 2px #F26722; background: #fff7ed; }
+  .kb-empty { padding: 16px 8px; border: 1px dashed #e2e8f0; border-radius: 8px; text-align: center; font-size: 11px; color: #94a3b8; }
+
+  .col-offen .kb-col-title { color: #475569; }
+  .col-offen .kb-col-body { background: #f8fafc; }
+  .col-recherchiert .kb-col-title { color: #1d4ed8; }
+  .col-recherchiert .kb-col-body { background: #eff6ff; }
+  .col-vernetzt .kb-col-title { color: #4338ca; }
+  .col-vernetzt .kb-col-body { background: #eef2ff; }
+  .col-kontaktiert .kb-col-title { color: #6d28d9; }
+  .col-kontaktiert .kb-col-body { background: #f5f3ff; }
+  .col-qualifizierung .kb-col-title { color: #7e22ce; }
+  .col-qualifizierung .kb-col-body { background: #faf5ff; }
+  .col-erstgespraech .kb-col-title { color: #0f766e; }
+  .col-erstgespraech .kb-col-body { background: #f0fdfa; }
+  .col-verlust .kb-col-title { color: #be123c; }
+  .col-verlust .kb-col-body { background: #fff1f2; }
+  .col-angebot .kb-col-title { color: #b45309; }
+  .col-angebot .kb-col-body { background: #fffbeb; }
+  .col-gewonnen .kb-col-title { color: #15803d; }
+  .col-gewonnen .kb-col-body { background: #f0fdf4; }
+  .col-kein .kb-col-title { color: #dc2626; }
+  .col-kein .kb-col-body { background: #fff5f5; }
+
+  /* Cards */
+  .kb-card { position: relative; display: block; padding: 9px 10px; background: #fff; border: 1px solid #e5e7eb; border-left: 3px solid #e5e7eb; border-radius: 8px; text-decoration: none; color: inherit; cursor: grab; box-shadow: 0 1px 2px rgba(0,0,0,.04); transition: box-shadow .15s, transform .12s; user-select: none; }
+  .kb-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.10); transform: translateY(-1px); }
+  .kb-card:active { cursor: grabbing; }
+  .kb-card.dragging { opacity: .4; }
+  .kb-card.p-h { border-left-color: #ef4444; }
+  .kb-card.p-m { border-left-color: #f59e0b; }
+  .kb-card.p-l { border-left-color: #22c55e; }
+  .kb-card.is-won { background: #fcfffd; }
+  .kb-card-name { display: block; font-size: 12px; font-weight: 600; color: #111111; line-height: 1.35; }
+  .kb-card-sub { margin-top: 2px; font-size: 10.5px; color: #94a3b8; }
+  .kb-card-meta { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 7px; }
+  .kb-emp { font-size: 10.5px; color: #94a3b8; }
+  .kb-pkg { padding: 1px 6px; border-radius: 10px; font-size: 9.5px; font-weight: 700; white-space: nowrap; }
+  .pkg-basic { background: #dbeafe; color: #1d4ed8; }
+  .pkg-advanced { background: #e0e7ff; color: #4338ca; }
+  .pkg-premium { background: #f5f3ff; color: #6d28d9; }
+  .kb-val { margin-top: 7px; font-size: 11.5px; font-weight: 700; color: #b45309; }
+  .kb-val.won { color: #16a34a; }
+  .kb-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 7px; padding-top: 7px; border-top: 1px solid #f5f5f5; }
+  .kb-contact { min-width: 0; font-size: 10.5px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kb-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .kb-age { font-size: 9.5px; color: #cbd5e1; }
+  .kb-avatar { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; color: #fff; font-size: 8.5px; font-weight: 700; }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="kanban"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div>
+      <div class="page-title">Zielkunden</div>
+      <div class="page-sub" id="page-sub">Sprint-Pipeline · Q4 2026 · 47 Zielkunden</div>
+    </div>
+    <div class="top-actions">
+      <a class="btn btn-ghost" href="mockup-sprint-zielkunden-liste.html">📋 Listenansicht</a>
+      <button class="btn btn-ghost" id="btn-export" type="button">⬇ Export</button>
+      <a class="btn btn-primary" href="mockup-sprint-zielkunde-neu.html">＋ Neuer Zielkunde</a>
+    </div>
+  </header>
+
+  <main class="kb-main">
+    <div class="stats-bar kb-stats">
+      <div class="kb-stat"><span class="stat-value" id="st-total">47</span><span class="stat-label">Zielkunden</span></div>
+      <div class="kb-stat"><span class="stat-value" style="color:#7c3aed;" id="st-talk">8</span><span class="stat-label">Im Gespräch</span></div>
+      <div class="kb-stat"><span class="stat-value" style="color:#d97706;" id="st-offers">5</span><span class="stat-label">Angebote offen</span></div>
+      <div class="kb-stat"><span class="stat-value" style="color:#16a34a;" id="st-won">6</span><span class="stat-label">Gewonnen</span></div>
+      <div class="kb-stat"><span class="stat-value" style="color:#F26722;" id="st-pipe">€ 420k</span><span class="stat-label">Pipeline-Wert</span></div>
+      <div class="kb-stat"><span class="stat-value" id="st-conv">13 %</span><span class="stat-label">Konversion</span></div>
+    </div>
+
+    <div class="kb-toolbar">
+      <div class="kb-search">
+        🔍<input type="text" id="search" placeholder="Zielkunde, Branche oder Kontakt suchen…" autocomplete="off">
+      </div>
+      <div class="kb-chips" id="chips"></div>
+      <button class="btn btn-ghost kb-reset" id="btn-reset" type="button" hidden>Filter zurücksetzen</button>
+      <span class="kb-result" id="result">47 Zielkunden</span>
+    </div>
+
+    <div class="kb-board" id="board"></div>
+  </main>
+</div>
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  var COLUMNS = [
+    { key: 'offen',           label: 'Offen',                   dot: '#94a3b8' },
+    { key: 'recherchiert',    label: 'Recherchiert',            dot: '#3b82f6' },
+    { key: 'vernetzt',        label: 'Vernetzt',                dot: '#6366f1' },
+    { key: 'kontaktiert',     label: 'Kontaktiert',             dot: '#8b5cf6' },
+    { key: 'qualifizierung',  label: 'Qualifizierungsgespräch', dot: '#a855f7' },
+    { key: 'erstgespraech',   label: 'Erstgespräch',            dot: '#14b8a6' },
+    { key: 'angebot',         label: 'Angebot',                 dot: '#d97706' },
+    { key: 'gewonnen',        label: 'Gewonnen',                dot: '#16a34a' },
+    { key: 'verlust',         label: 'Verlust',                 dot: '#be123c' },
+    { key: 'kein',            label: 'Kein Interesse',          dot: '#dc2626' }
+  ];
+  var SEGMENTS = [
+    'Banken', 'Bau & Immobilien', 'Bildung, Sport & Kultur', 'Energie, Wasser & Entsorgung',
+    'Gesundheit & Soziales', 'Handel & Logistik', 'Ingenieur- & Architekturbüros',
+    'IT & Telekommunikation', 'Marketing & Medien', 'Maschinenbau & Elektro',
+    'Personaldienstleister', 'Rechts- & Steuerberatung, WP', 'Übrige Industrie',
+    'Versicherungen & Finanzvermittler', 'Sonstige'
+  ];
+  var OWNERS = { AM: '#F26722', TB: '#0891b2', LS: '#16a34a', MW: '#d97706' };
+  var OWNER_NAMES = { AM: 'Anna Müller', TB: 'Thomas Braun', LS: 'Lea Schmidt', MW: 'Michael Weber' };
+
+  var DATA = [
+    // Offen (9)
+    { n: 'Volksbank Rhein-Main', seg: 'Banken', reg: 'Bayern', ma: '420 MA', prio: 3, st: 'offen', o: 'AM' },
+    { n: 'Sparkasse Düsseldorf', seg: 'Banken', reg: 'NRW', ma: '280 MA', prio: 2, st: 'offen', o: 'AM' },
+    { n: 'Signal Iduna', seg: 'Versicherungen & Finanzvermittler', reg: 'Hamburg', ma: '1.200 MA', prio: 1, st: 'offen', o: 'AM' },
+    { n: 'R+V Versicherung', seg: 'Versicherungen & Finanzvermittler', reg: 'Hessen', ma: '8.900 MA', prio: 3, st: 'offen', o: 'AM' },
+    { n: 'DATEV eG', seg: 'Banken', reg: 'Bayern', ma: '7.500 MA', prio: 2, st: 'offen', o: 'AM' },
+    { n: 'HUK-COBURG', seg: 'Versicherungen & Finanzvermittler', reg: 'Bayern', ma: '9.500 MA', prio: 1, st: 'offen', o: 'AM' },
+    { n: 'Miele & Cie. KG', seg: 'Übrige Industrie', reg: 'NRW', ma: '23k MA', prio: 2, st: 'offen', o: 'TB' },
+    { n: 'Hugo Boss AG', seg: 'Handel & Logistik', reg: 'Baden-Württemberg', ma: '19k MA', prio: 1, st: 'offen', o: 'MW' },
+    { n: 'Krones AG', seg: 'Maschinenbau & Elektro', reg: 'Bayern', ma: '18k MA', prio: 2, st: 'offen', o: 'LS' },
+
+    // Recherchiert (7)
+    { n: 'BMW Financial Services', seg: 'Banken', reg: 'Bayern', ma: '2.400 MA', prio: 3, st: 'recherchiert', pkg: 'Basic', o: 'AM' },
+    { n: 'Wacker Chemie AG', seg: 'Übrige Industrie', reg: 'Bayern', ma: '16k MA', prio: 2, st: 'recherchiert', o: 'LS' },
+    { n: 'DB Cargo AG', seg: 'Handel & Logistik', reg: 'Hessen', ma: '29k MA', prio: 1, st: 'recherchiert', o: 'TB' },
+    { n: 'Beiersdorf AG', seg: 'Übrige Industrie', reg: 'Hamburg', ma: '22k MA', prio: 2, st: 'recherchiert', o: 'TB' },
+    { n: 'Otto Group', seg: 'Handel & Logistik', reg: 'Hamburg', ma: '43k MA', prio: 3, st: 'recherchiert', pkg: 'Advanced', o: 'MW' },
+    { n: 'EnBW AG', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', ma: '27k MA', prio: 2, st: 'recherchiert', o: 'TB' },
+    { n: 'Fresenius SE', seg: 'Übrige Industrie', reg: 'Hessen', ma: '180k MA', prio: 3, st: 'recherchiert', o: 'TB' },
+
+    // Vernetzt (5)
+    { n: 'Freudenberg SE', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', ma: '11k MA', prio: 2, st: 'vernetzt', o: 'TB' },
+    { n: 'Heidelberg Materials', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', ma: '27k MA', prio: 1, st: 'vernetzt', o: 'TB' },
+    { n: 'Zalando SE', seg: 'Handel & Logistik', reg: 'Berlin', ma: '17k MA', prio: 3, st: 'vernetzt', pkg: 'Advanced', o: 'MW' },
+    { n: 'Kühne + Nagel', seg: 'Handel & Logistik', reg: 'Hamburg', ma: '79k MA', prio: 2, st: 'vernetzt', o: 'TB' },
+    { n: 'SWM Services GmbH', seg: 'Übrige Industrie', reg: 'Bayern', ma: '9.800 MA', prio: 1, st: 'vernetzt', o: 'TB' },
+
+    // Kontaktiert (4)
+    { n: 'Aldi Süd IT GmbH', seg: 'Handel & Logistik', reg: 'Bayern', ma: '650 MA', prio: 3, st: 'kontaktiert', c: 'M. Roth', calls: 1, o: 'MW' },
+    { n: 'Lanxess AG', seg: 'Übrige Industrie', reg: 'NRW', ma: '14k MA', prio: 2, st: 'kontaktiert', c: 'Dr. A. Klein', calls: 2, o: 'LS' },
+    { n: 'Gothaer Versicherung', seg: 'Versicherungen & Finanzvermittler', reg: 'NRW', ma: '3.100 MA', prio: 2, st: 'kontaktiert', c: 'M. Klein', calls: 2, o: 'AM' },
+    { n: 'Südzucker AG', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', ma: '19k MA', prio: 1, st: 'kontaktiert', c: 'S. Wolf', calls: 1, o: 'TB' },
+
+    // Qualifizierungsgespräch (6) + Erstgespräch (2)
+    { n: 'Münchener Rück AG', seg: 'Versicherungen & Finanzvermittler', reg: 'Bayern', ma: '32k MA', prio: 3, st: 'qualifizierung', pkg: 'Premium', c: 'K. Müller', calls: 3, o: 'AM' },
+    { n: 'DHL Supply Chain', seg: 'Handel & Logistik', reg: 'Hamburg', ma: '12k MA', prio: 2, st: 'qualifizierung', pkg: 'Advanced', c: 'P. Schmidt', calls: 2, o: 'TB' },
+    { n: 'Würth Gruppe', seg: 'Handel & Logistik', reg: 'Baden-Württemberg', ma: '82k MA', prio: 3, st: 'qualifizierung', pkg: 'Premium', c: 'T. Bauer', calls: 2, o: 'MW' },
+    { n: 'Bosch Rexroth', seg: 'Maschinenbau & Elektro', reg: 'Baden-Württemberg', ma: '8.500 MA', prio: 3, st: 'qualifizierung', pkg: 'Advanced', c: 'T. Weber', calls: 1, o: 'LS' },
+    { n: 'SAP SE', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', ma: '107k MA', prio: 3, st: 'qualifizierung', pkg: 'Premium', c: 'L. Hoffmann', calls: 3, o: 'TB' },
+    { n: 'Deutsche Bahn AG', seg: 'Handel & Logistik', reg: 'Berlin', ma: '340k MA', prio: 2, st: 'erstgespraech', c: 'F. Meier', calls: 1, o: 'TB' },
+    { n: 'Continental AG', seg: 'Maschinenbau & Elektro', reg: 'Niedersachsen', ma: '199k MA', prio: 2, st: 'qualifizierung', c: 'J. Braun', calls: 2, o: 'LS' },
+    { n: 'Zürich Versicherung', seg: 'Versicherungen & Finanzvermittler', reg: 'Hessen', ma: '5.400 MA', prio: 1, st: 'erstgespraech', c: 'C. Vogel', calls: 1, o: 'AM' },
+
+    // Angebot (5) — Pipeline 420.000 €
+    { n: 'Siemens Financial', seg: 'Banken', reg: 'Bayern', ma: '2.400 MA', prio: 3, st: 'angebot', pkg: 'Premium', val: 85000, c: 'K. Maier', o: 'AM' },
+    { n: 'BASF Digital GmbH', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', ma: '110k MA', prio: 2, st: 'angebot', pkg: 'Advanced', val: 120000, c: 'D. Weber', o: 'LS' },
+    { n: 'Metro AG Digital', seg: 'Handel & Logistik', reg: 'NRW', ma: '95k MA', prio: 1, st: 'angebot', val: 65000, c: 'S. König', o: 'MW' },
+    { n: 'AXA Konzern AG', seg: 'Versicherungen & Finanzvermittler', reg: 'NRW', ma: '5.600 MA', prio: 2, st: 'angebot', pkg: 'Premium', val: 70000, c: 'R. Lehmann', o: 'AM' },
+    { n: 'E.ON Digital', seg: 'Übrige Industrie', reg: 'NRW', ma: '75k MA', prio: 3, st: 'angebot', pkg: 'Advanced', val: 80000, c: 'H. Fischer', o: 'TB' },
+
+    // Gewonnen (6) — 156.000 € Umsatz
+    { n: 'Commerzbank AG', seg: 'Banken', reg: 'Hamburg', ma: '32k MA', prio: 3, st: 'gewonnen', pkg: 'Premium', val: 42000, o: 'AM' },
+    { n: 'Knorr-Bremse AG', seg: 'Maschinenbau & Elektro', reg: 'Bayern', ma: '31k MA', prio: 3, st: 'gewonnen', pkg: 'Advanced', val: 28000, o: 'LS' },
+    { n: 'Rheinmetall AG', seg: 'Maschinenbau & Elektro', reg: 'NRW', ma: '28k MA', prio: 2, st: 'gewonnen', pkg: 'Advanced', val: 31000, o: 'LS' },
+    { n: 'Bechtle AG', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', ma: '14k MA', prio: 2, st: 'gewonnen', pkg: 'Basic', val: 22000, o: 'TB' },
+    { n: 'Jungheinrich AG', seg: 'Handel & Logistik', reg: 'Hamburg', ma: '20k MA', prio: 2, st: 'gewonnen', pkg: 'Advanced', val: 18000, o: 'TB' },
+    { n: 'Pfeiffer Vacuum', seg: 'Maschinenbau & Elektro', reg: 'Hessen', ma: '4.500 MA', prio: 1, st: 'gewonnen', pkg: 'Basic', val: 15000, o: 'LS' },
+
+    // Kein Interesse (3)
+    { n: 'Rewe Digital', seg: 'Handel & Logistik', reg: 'Bayern', ma: '90k MA', prio: 2, st: 'kein', o: 'MW' },
+    { n: 'Heraeus GmbH', seg: 'Übrige Industrie', reg: 'Hessen', ma: '15k MA', prio: 1, st: 'kein', o: 'TB' },
+    { n: 'Nordzucker AG', seg: 'Übrige Industrie', reg: 'Niedersachsen', ma: '3.900 MA', prio: 2, st: 'kein', o: 'TB' }
+  ];
+
+  DATA.forEach(function (z, i) {
+    z.id = 'zk-' + i;
+    z.d = (i * 5 + z.n.length) % 38 + 1;
+  });
+
+  var state = { seg: '', q: '' };
+  var board = document.getElementById('board');
+  var chips = document.getElementById('chips');
+  var search = document.getElementById('search');
+  var resetBtn = document.getElementById('btn-reset');
+  var dragId = null;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function euro(v) { return '€ ' + v.toLocaleString('de-DE'); }
+  function labelOf(key) {
+    for (var i = 0; i < COLUMNS.length; i++) if (COLUMNS[i].key === key) return COLUMNS[i].label;
+    return key;
+  }
+  function countBy(key) {
+    return DATA.filter(function (z) { return z.st === key; }).length;
+  }
+  function toast(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1900);
+  }
+
+  function matches(z) {
+    if (state.seg && z.seg !== state.seg) return false;
+    if (state.q) {
+      var hay = (z.n + ' ' + z.seg + ' ' + z.reg + ' ' + (z.c || '')).toLowerCase();
+      if (hay.indexOf(state.q.toLowerCase()) === -1) return false;
+    }
+    return true;
+  }
+
+  function updateStats() {
+    var total = DATA.length;
+    var talk = countBy('qualifizierung') + countBy('erstgespraech');
+    var offers = countBy('angebot');
+    var won = countBy('gewonnen');
+    var pipe = DATA.filter(function (z) { return z.st === 'angebot'; })
+      .reduce(function (s, z) { return s + (z.val || 0); }, 0);
+    document.getElementById('st-total').textContent = total;
+    document.getElementById('st-talk').textContent = talk;
+    document.getElementById('st-offers').textContent = offers;
+    document.getElementById('st-won').textContent = won;
+    document.getElementById('st-pipe').textContent = '€ ' + Math.round(pipe / 1000) + 'k';
+    document.getElementById('st-conv').textContent = Math.round(won / total * 100) + ' %';
+    document.getElementById('page-sub').textContent = 'Sprint-Pipeline · Q4 2026 · ' + total + ' Zielkunden';
+  }
+
+  function cardHtml(z) {
+    var prioCls = z.prio === 3 ? 'p-h' : (z.prio === 2 ? 'p-m' : 'p-l');
+    var prioTxt = z.prio === 3 ? 'Hoch' : (z.prio === 2 ? 'Mittel' : 'Niedrig');
+    var contact = z.c ? z.c + (z.calls ? ' · ' + z.calls + (z.calls === 1 ? ' Anruf' : ' Anrufe') : '') : 'Noch kein Kontakt';
+    var pkgHtml = z.pkg ? '<span class="kb-pkg pkg-' + z.pkg.toLowerCase() + '">' + z.pkg + '</span>' : '';
+    var valHtml = z.val ? '<div class="kb-val' + (z.st === 'gewonnen' ? ' won' : '') + '">' + euro(z.val) + '</div>' : '';
+    return '<a class="kb-card ' + prioCls + (z.st === 'gewonnen' ? ' is-won' : '') + '" href="mockup-sprint-detail.html" draggable="true" data-id="' + z.id + '" title="' + esc(z.n) + ' · Priorität ' + prioTxt + '">' +
+      '<span class="kb-card-name">' + esc(z.n) + '</span>' +
+      '<div class="kb-card-sub">' + esc(z.seg) + ' · ' + esc(z.reg) + '</div>' +
+      '<div class="kb-card-meta"><span class="kb-emp">' + esc(z.ma) + '</span>' + pkgHtml + '</div>' +
+      valHtml +
+      '<div class="kb-card-foot"><span class="kb-contact">' + esc(contact) + '</span>' +
+        '<span class="kb-right"><span class="kb-age" title="Tage in dieser Phase">' + z.d + ' T</span>' +
+        '<span class="kb-avatar" style="background:' + OWNERS[z.o] + '" title="' + OWNER_NAMES[z.o] + '">' + z.o + '</span></span>' +
+      '</div></a>';
+  }
+
+  function render() {
+    var visible = DATA.filter(matches);
+    var html = '';
+    COLUMNS.forEach(function (c) {
+      var cards = visible.filter(function (z) { return z.st === c.key; })
+        .sort(function (a, b) {
+          if (b.prio !== a.prio) return b.prio - a.prio;
+          return a.n.localeCompare(b.n, 'de');
+        });
+      html += '<section class="kanban-column kb-col col-' + c.key + '" data-status="' + c.key + '">' +
+        '<div class="kb-col-head"><span class="kb-col-dot" style="background:' + c.dot + '"></span>' +
+        '<span class="kb-col-title">' + c.label + '</span>' +
+        '<span class="kb-col-count">' + cards.length + '</span></div>' +
+        '<div class="kb-col-body" data-status="' + c.key + '">' +
+        (cards.length ? cards.map(cardHtml).join('') : '<div class="kb-empty">Keine Treffer</div>') +
+        '</div></section>';
+    });
+    board.innerHTML = html;
+    var filtered = state.seg || state.q;
+    document.getElementById('result').innerHTML = filtered
+      ? '<b>' + visible.length + '</b> von ' + DATA.length + ' Zielkunden'
+      : '<b>' + DATA.length + '</b> Zielkunden';
+    resetBtn.hidden = !filtered;
+  }
+
+  function renderChips() {
+    var all = ['Alle'].concat(SEGMENTS);
+    chips.innerHTML = all.map(function (seg) {
+      var active = (seg === 'Alle' && !state.seg) || seg === state.seg;
+      return '<button class="filter-btn' + (active ? ' active' : '') + '" type="button" data-seg="' + (seg === 'Alle' ? '' : seg) + '">' + seg + '</button>';
+    }).join('');
+  }
+
+  chips.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('.filter-btn') : null;
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    state.seg = btn.getAttribute('data-seg');
+    var all = chips.querySelectorAll('.filter-btn');
+    for (var i = 0; i < all.length; i++) all[i].classList.toggle('active', all[i] === btn);
+    render();
+  });
+
+  search.addEventListener('input', function () {
+    state.q = search.value.trim();
+    render();
+  });
+
+  resetBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    state.seg = '';
+    state.q = '';
+    search.value = '';
+    renderChips();
+    render();
+  });
+
+  document.getElementById('btn-export').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('Zielkunden-Export wird vorbereitet (Demo)');
+  });
+
+  // Drag & drop between columns
+  board.addEventListener('dragstart', function (e) {
+    var card = e.target.closest ? e.target.closest('.kb-card') : null;
+    if (!card) return;
+    dragId = card.getAttribute('data-id');
+    card.classList.add('dragging');
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move';
+      try { e.dataTransfer.setData('text/plain', dragId); } catch (err) {}
+    }
+  });
+
+  board.addEventListener('dragend', function () {
+    var el = board.querySelector('.kb-card.dragging');
+    if (el) el.classList.remove('dragging');
+    var t = board.querySelector('.drop-target');
+    if (t) t.classList.remove('drop-target');
+    dragId = null;
+  });
+
+  board.addEventListener('dragover', function (e) {
+    var body = e.target.closest ? e.target.closest('.kb-col-body') : null;
+    if (!body) return;
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    var current = board.querySelector('.drop-target');
+    if (current !== body) {
+      if (current) current.classList.remove('drop-target');
+      body.classList.add('drop-target');
+    }
+  });
+
+  board.addEventListener('dragleave', function (e) {
+    var body = e.target.closest ? e.target.closest('.kb-col-body') : null;
+    if (body && !body.contains(e.relatedTarget)) body.classList.remove('drop-target');
+  });
+
+  board.addEventListener('drop', function (e) {
+    var body = e.target.closest ? e.target.closest('.kb-col-body') : null;
+    if (!body) return;
+    e.preventDefault();
+    var id = dragId;
+    if (!id && e.dataTransfer) { try { id = e.dataTransfer.getData('text/plain'); } catch (err) {} }
+    var z = null;
+    for (var i = 0; i < DATA.length; i++) if (DATA[i].id === id) { z = DATA[i]; break; }
+    var target = body.getAttribute('data-status');
+    if (!z || !target || z.st === target) return;
+    var from = labelOf(z.st);
+    z.st = target;
+    render();
+    updateStats();
+    toast('„' + z.n + '“: ' + from + ' → ' + labelOf(target));
+  });
+
+  // Initial render
+  renderChips();
+  render();
+  updateStats();
+})();
+</script>
+</body>
+</html>

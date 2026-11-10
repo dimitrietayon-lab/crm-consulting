@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sperrliste — DSGVO — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; display: flex; height: 100vh; overflow: hidden; }
+
+/* Sidebar */
+.sidebar { width: 240px; background: #111111; color: #94a3b8; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+.brand { padding: 20px 16px 16px; border-bottom: 1px solid #1e293b; }
+.brand-name { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+.brand-sub { font-size: 11px; color: #F26722; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
+.sidebar-nav { padding: 12px 8px; flex: 1; }
+.nav-group { margin-bottom: 8px; }
+.nav-group-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; color: #475569; padding: 6px 8px 4px; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; color: #94a3b8; text-decoration: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .15s; }
+.nav-item:hover { background: #1e293b; color: #e2e8f0; }
+.nav-item.active { background: #1e3a5f; color: #60a5fa; }
+
+/* Layout */
+.main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.page-title { font-size: 16px; font-weight: 700; color: #111111; }
+main { flex: 1; overflow-y: auto; padding: 24px; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; font-family: inherit; }
+.btn-ghost { background: transparent; color: #64748b; border: 1px solid #e2e8f0; }
+.btn-ghost:hover { background: #f8fafc; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-danger { background: #fff; color: #dc2626; border: 1px solid #fca5a5; }
+.btn-danger:hover { background: #fee2e2; }
+
+/* Alert banner */
+.alert-banner { border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; gap: 12px; align-items: flex-start; }
+.alert-danger { background: #fff1f2; border: 1px solid #fecdd3; }
+.alert-amber { background: #fffbeb; border: 1px solid #fde68a; }
+.alert-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.alert-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+.alert-danger .alert-title { color: #dc2626; }
+.alert-amber .alert-title { color: #d97706; }
+.alert-text { font-size: 12px; line-height: 1.5; }
+.alert-danger .alert-text { color: #9f1239; }
+.alert-amber .alert-text { color: #92400e; }
+
+/* KPI row */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+.kpi-card { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; padding: 16px 18px; }
+.kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: #64748b; margin-bottom: 6px; }
+.kpi-value { font-size: 24px; font-weight: 700; color: #111111; }
+.kpi-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+/* Filter row */
+.filter-row { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+.filter-select { padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; font-family: inherit; background: #fff; outline: none; }
+
+/* Table */
+.table-card { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 20px; }
+.table-header { padding: 14px 18px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
+.table-title { font-size: 13px; font-weight: 700; color: #111111; }
+table { width: 100%; border-collapse: collapse; }
+thead th { padding: 9px 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; color: #64748b; border-bottom: 1px solid #f1f5f9; background: #f8fafc; text-align: left; }
+tbody td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #fef2f2; }
+.company-name { font-weight: 600; color: #374151; }
+.date-cell { font-size: 12px; color: #64748b; }
+.expiry-cell { font-size: 12px; }
+.expiry-soon { color: #d97706; font-weight: 600; }
+.expiry-ok { color: #64748b; }
+
+/* Info boxes */
+.info-box { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; padding: 18px; margin-bottom: 16px; }
+.info-box-title { font-size: 13px; font-weight: 700; color: #111111; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.info-box-text { font-size: 12px; color: #475569; line-height: 1.6; }
+.info-box.danger { background: #fff5f5; border-color: #fca5a5; }
+.workflow-step { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+.workflow-step:last-child { border-bottom: none; }
+.step-num { width: 22px; height: 22px; border-radius: 50%; background: #F26722; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+.step-num.red { background: #dc2626; }
+.step-text { font-size: 12px; color: #374151; line-height: 1.5; }
+.step-text strong { color: #111111; }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="sperrliste"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <span class="page-title">Sperrliste</span>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm">Exportieren</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Alert banners -->
+    <div class="alert-banner alert-danger">
+      <span class="alert-icon">🔒</span>
+      <div>
+        <div class="alert-title">Sperrliste — Nur minimale Daten erlaubt (Art. 17 DSGVO + § 7 UWG)</div>
+        <div class="alert-text">
+          Eingetragene Unternehmen haben einer erneuten Kontaktaufnahme ausdrücklich widersprochen. Keine erneute Kontaktaufnahme per Anruf, E-Mail oder LinkedIn.
+          Nur folgende Daten werden gespeichert: Unternehmensname, Datum gesperrt, Grund, Aufbewahrungsfrist. Alle anderen Felder wurden automatisch gelöscht.
+        </div>
+      </div>
+    </div>
+
+    <div class="alert-banner alert-amber">
+      <span class="alert-icon">⚠️</span>
+      <div>
+        <div class="alert-title">Löschpflicht gemäß Dokumentationspflicht</div>
+        <div class="alert-text">
+          2 Einträge überschreiten in weniger als 90 Tagen die 3-Jahres-Aufbewahrungsfrist und müssen dann vollständig gelöscht werden.
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Gesperrte Firmen</div>
+        <div class="kpi-value">7</div>
+        <div class="kpi-sub">gesamt im Sprint</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Gesperrt diesen Monat</div>
+        <div class="kpi-value">2</div>
+        <div class="kpi-sub">Oktober 2026</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Automatisch gesperrt</div>
+        <div class="kpi-value">5</div>
+        <div class="kpi-sub">durch Status-Wechsel</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Ø Aufbewahrungsfrist</div>
+        <div class="kpi-value">2,1 J.</div>
+        <div class="kpi-sub">noch verbleibend</div>
+      </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-row">
+      <select class="filter-select">
+        <option>Alle Branchen</option>
+        <option>Banken</option>
+        <option>Versicherungen &amp; Finanzvermittler</option>
+        <option>Maschinenbau &amp; Elektro</option>
+        <option>Gesundheit &amp; Soziales</option>
+      </select>
+      <select class="filter-select">
+        <option>Alle Zeiträume</option>
+        <option>Letzte 30 Tage</option>
+        <option>Letzte 90 Tage</option>
+        <option>Dieses Jahr</option>
+      </select>
+      <select class="filter-select">
+        <option>Aufbewahrungsfrist: Alle</option>
+        <option>Läuft in &lt; 90 Tagen ab</option>
+        <option>Läuft in &lt; 1 Jahr ab</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">Gesperrte Unternehmen (7)</div>
+        <div style="font-size:12px;color:#dc2626;font-weight:500">⚠️ Kein Export personenbezogener Daten erlaubt</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Unternehmensname</th>
+            <th>Datum gesperrt</th>
+            <th>Grund</th>
+            <th>Aufbewahrungsfrist bis</th>
+            <th>Aktion</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:#94a3b8;font-size:12px">1</td>
+            <td><div class="company-name">Consulting Braun AG</div></td>
+            <td class="date-cell">01.10.2026</td>
+            <td style="font-size:12px;color:#374151">Kein Interesse (Anruf)</td>
+            <td class="expiry-cell expiry-ok">01.10.2029</td>
+            <td><button class="btn btn-danger btn-sm">Löschen</button></td>
+          </tr>
+          <tr>
+            <td style="color:#94a3b8;font-size:12px">2</td>
+            <td><div class="company-name">Marktech Systeme GmbH</div></td>
+            <td class="date-cell">15.09.2026</td>
+            <td style="font-size:12px;color:#374151">Kein Interesse (E-Mail)</td>
+            <td class="expiry-cell expiry-ok">15.09.2029</td>
+            <td><button class="btn btn-danger btn-sm">Löschen</button></td>
+          </tr>
+          <tr>
+            <td style="color:#94a3b8;font-size:12px">3</td>
+            <td><div class="company-name">Bauträger Hofmann KG</div></td>
+            <td class="date-cell">03.08.2026</td>
+            <td style="font-size:12px;color:#374151">Kein Interesse (LinkedIn)</td>
+            <td class="expiry-cell expiry-ok">03.08.2029</td>
+            <td><button class="btn btn-danger btn-sm">Löschen</button></td>
+          </tr>
+          <tr>
+            <td style="color:#94a3b8;font-size:12px">4</td>
+            <td><div class="company-name">Steuerberatung Kraft &amp; Partner</div></td>
+            <td class="date-cell">12.07.2026</td>
+            <td style="font-size:12px;color:#374151">Wettbewerber / kein Bedarf</td>
+            <td class="expiry-cell expiry-ok">12.07.2029</td>
+            <td><button class="btn btn-danger btn-sm">Löschen</button></td>
+          </tr>
+          <tr>
+            <td style="color:#94a3b8;font-size:12px">5</td>
+            <td><div class="company-name">Druckerei Böhm GmbH</div></td>
+            <td class="date-cell">20.05.2026</td>
+            <td style="font-size:12px;color:#374151">Kein Interesse (Anruf)</td>
+            <td class="expiry-cell expiry-ok">20.05.2029</td>
+            <td><button class="btn btn-danger btn-sm">Löschen</button></td>
+          </tr>
+          <tr style="background:#fffbeb">
+            <td style="color:#94a3b8;font-size:12px">6</td>
+            <td><div class="company-name">Elektroanlagen Heinz GmbH</div></td>
+            <td class="date-cell">10.11.2023</td>
+            <td style="font-size:12px;color:#374151">Kein Interesse (Anruf)</td>
+            <td class="expiry-cell expiry-soon">⚠️ 10.11.2026 (in 18 Tagen!)</td>
+            <td><button class="btn btn-danger btn-sm">Löschen</button></td>
+          </tr>
+          <tr style="background:#fff1f2">
+            <td style="color:#94a3b8;font-size:12px">7</td>
+            <td><div class="company-name">Reinigungsservice Weiß &amp; Co.</div></td>
+            <td class="date-cell">05.08.2023</td>
+            <td style="font-size:12px;color:#374151">Kein Interesse (E-Mail)</td>
+            <td class="expiry-cell expiry-soon" style="color:#dc2626">⚠️ 05.08.2026 — ÜBERFÄLLIG</td>
+            <td><button class="btn btn-danger btn-sm" style="background:#dc2626;color:#fff">Jetzt löschen</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Info boxes -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="info-box danger">
+        <div class="info-box-title">
+          🔒 DSGVO-Datenschutz-Hinweise
+        </div>
+        <div class="info-box-text">
+          <strong>Art. 17 DSGVO — Recht auf Löschung:</strong> Nach 3 Jahren Aufbewahrungsfrist für Widerspruchs­dokumentation müssen alle Einträge vollständig gelöscht werden.<br><br>
+          <strong>§ 7 UWG — Unlautere Werbung:</strong> Jede erneute Kontaktaufnahme mit gesperrten Unternehmen ist rechtlich unzulässig und kann Abmahnungen auslösen.<br><br>
+          <strong>Kein Export:</strong> Die Sperrliste darf nicht exportiert oder an Dritte weitergegeben werden.
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-box-title">
+          ⚙️ Automatischer Workflow
+        </div>
+        <div class="workflow-step">
+          <span class="step-num">1</span>
+          <div class="step-text">Status wird auf <strong>"Kein Interesse"</strong> gesetzt</div>
+        </div>
+        <div class="workflow-step">
+          <span class="step-num red">2</span>
+          <div class="step-text"><strong>Automatisch gelöscht:</strong> alle Kontaktdaten, Notizen, Aktivitäten, Angebote, LinkedIn-Profil, Telefon, E-Mail</div>
+        </div>
+        <div class="workflow-step">
+          <span class="step-num">3</span>
+          <div class="step-text"><strong>Gespeichert (nur):</strong> Unternehmensname, Datum gesperrt, Grund, Aufbewahrungsfrist (3 Jahre)</div>
+        </div>
+        <div class="workflow-step">
+          <span class="step-num">4</span>
+          <div class="step-text">Nach 3 Jahren: <strong>vollständige Löschung</strong> aus CRM und Sperrliste</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="mockup-sprint-nav.js"></script>
+</body>
+</html>

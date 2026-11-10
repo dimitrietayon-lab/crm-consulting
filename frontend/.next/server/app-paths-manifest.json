@@ -1,1 +1,8 @@
-{}
+{
+  "/(protected)/page": "app/(protected)/page.js",
+  "/(protected)/contacts/[id]/page": "app/(protected)/contacts/[id]/page.js",
+  "/(protected)/sprint-targets/page": "app/(protected)/sprint-targets/page.js",
+  "/(protected)/sprint-targets/[id]/page": "app/(protected)/sprint-targets/[id]/page.js",
+  "/(protected)/sprint-targets/dashboard/page": "app/(protected)/sprint-targets/dashboard/page.js",
+  "/(protected)/sprint-targets/contacts/page": "app/(protected)/sprint-targets/contacts/page.js"
+}

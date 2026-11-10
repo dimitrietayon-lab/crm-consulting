@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projektvorschläge · AXA Konzern AG — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Chrome, buttons and badges come from mockup-sprint.css. */
+  * { margin: 0; padding: 0; }
+  body { display: flex; height: 100vh; overflow: hidden; background: #F5F5F5; }
+  .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  .btn.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* Topbar */
+  .pr-heading { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .pr-heading .breadcrumb { font-size: 11px; }
+  .pr-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  /* Content shell */
+  .pr-scroll { flex: 1; overflow-y: auto; }
+  .pr-wrap { max-width: 1180px; margin: 0 auto; padding: 20px 24px 32px; }
+
+  /* Summary */
+  .pr-summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 16px 20px; margin-bottom: 14px; }
+  .pr-sum-title { font-size: 17px; font-weight: 800; color: #111111; letter-spacing: -.01em; }
+  .pr-sum-sub { font-size: 11.5px; color: #94a3b8; margin-top: 2px; }
+  .pr-stats { display: flex; gap: 26px; }
+  .pr-stat { text-align: right; }
+  .pr-stat b { display: block; font-size: 19px; font-weight: 800; color: #111111; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .pr-stat b.green { color: #16a34a; }
+  .pr-stat span { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; }
+
+  /* Filters */
+  .pr-filters { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .pr-chip { padding: 5px 11px; border-radius: 20px; font-size: 11.5px; font-weight: 600; cursor: pointer; border: 1px solid #e2e8f0; background: #fff; color: #64748b; font-family: inherit; }
+  .pr-chip:hover { border-color: #cbd5e1; color: #111111; }
+  .pr-chip.active { background: #111111; border-color: #111111; color: #fff; }
+  .pr-chip b { margin-left: 4px; font-size: 10px; opacity: .65; }
+  .pr-filter-count { margin-left: auto; font-size: 11px; color: #94a3b8; }
+
+  /* Grid */
+  .pr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+
+  /* Card */
+  .pr-card { display: flex; flex-direction: column; background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); overflow: hidden; transition: box-shadow .2s, opacity .2s; }
+  .pr-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+  .pr-card.pr-p1 { box-shadow: inset 3px 0 0 #ef4444, 0 1px 3px rgba(0,0,0,.04); }
+  .pr-card.pr-p2 { box-shadow: inset 3px 0 0 #f59e0b, 0 1px 3px rgba(0,0,0,.04); }
+  .pr-card.unsel { opacity: .55; }
+  .pr-card-body { padding: 14px 16px 12px; flex: 1; }
+  .pr-card-toprow { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
+  .pr-title { font-size: 14px; font-weight: 700; color: #111111; line-height: 1.35; letter-spacing: -.01em; }
+  .pr-check { flex-shrink: 0; display: flex; align-items: center; padding-top: 2px; }
+  .pr-check input { width: 15px; height: 15px; accent-color: #F26722; cursor: pointer; }
+  .pr-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+  .pr-desc { font-size: 11.5px; color: #64748b; line-height: 1.5; }
+
+  .pr-b-impl { background: #dbeafe; color: #1d4ed8; }
+  .pr-b-add { background: #e0e7ff; color: #4338ca; }
+  .pr-b-strat { background: #f3e8ff; color: #7e22ce; }
+  .pr-b-p1 { background: #fee2e2; color: #dc2626; }
+  .pr-b-p2 { background: #fef3c7; color: #b45309; }
+  .pr-b-now { background: #dcfce7; color: #15803d; }
+  .pr-b-prep { background: #f1f5f9; color: #64748b; }
+
+  .pr-basis { padding: 9px 16px; background: #fafafa; border-top: 1px solid #f1f5f9; }
+  .pr-basis span { display: block; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; margin-bottom: 2px; }
+  .pr-basis p { font-size: 11px; color: #64748b; line-height: 1.45; }
+  .pr-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 16px; border-top: 1px solid #f1f5f9; }
+  .pr-value b { display: block; font-size: 16px; font-weight: 800; color: #16a34a; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .pr-value small { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+  .pr-btn { padding: 4px 10px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; color: #374151; text-decoration: none; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .pr-btn:hover { background: #f8fafc; border-color: #cbd5e1; color: #111111; }
+
+  /* Banner */
+  .pr-banner { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; background: #111111; border-radius: 10px; padding: 16px 20px; margin-top: 18px; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+  .pr-banner-title { font-size: 14.5px; font-weight: 700; color: #fff; }
+  .pr-banner-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+  .pr-banner-right { display: flex; align-items: center; gap: 18px; }
+  .pr-banner-total { text-align: right; }
+  .pr-banner-total b { display: block; font-size: 20px; font-weight: 800; color: #4ade80; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .pr-banner-total span { font-size: 10px; color: #64748b; }
+
+  @media (max-width: 900px) {
+    .pr-summary { flex-direction: column; align-items: flex-start; }
+    .pr-stats { width: 100%; justify-content: space-between; }
+    .pr-stat { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="proposals"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="pr-heading">
+      <div class="breadcrumb">
+        <a href="mockup-sprint-kanban.html">Sprint-Vertrieb</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="mockup-sprint-detail.html">AXA Konzern AG</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">Projektvorschläge</span>
+      </div>
+      <span class="page-title">Projektvorschläge</span>
+    </div>
+    <div class="pr-actions">
+      <a class="btn btn-ghost btn-sm" href="mockup-sprint-assessment.html">Assessment ansehen</a>
+      <button class="btn btn-ghost btn-sm" id="btn-pdf" type="button">PDF exportieren</button>
+      <a class="btn btn-primary btn-sm" href="mockup-sprint-angebot-neu.html">Angebot erstellen</a>
+    </div>
+  </header>
+
+  <div class="pr-scroll">
+    <div class="pr-wrap">
+
+      <!-- Summary -->
+      <section class="pr-summary">
+        <div>
+          <div class="pr-sum-title">Projektvorschläge · AXA Konzern AG</div>
+          <div class="pr-sum-sub">KI-Assessment v2 · 18.10.2026 · 4 Vorschläge identifiziert</div>
+        </div>
+        <div class="pr-stats">
+          <div class="pr-stat"><b>4</b><span>Vorschläge</span></div>
+          <div class="pr-stat"><b>2</b><span>Sofort umsetzbar</span></div>
+          <div class="pr-stat"><b id="st-selected">4</b><span>Ausgewählt</span></div>
+          <div class="pr-stat"><b class="green" id="st-sum">€ 310.000</b><span>Auswahl-Potenzial</span></div>
+        </div>
+      </section>
+
+      <!-- Filters -->
+      <div class="pr-filters" id="pr-filters">
+        <span class="pr-filter-count" id="pr-filter-count"></span>
+      </div>
+
+      <!-- Cards -->
+      <div class="pr-grid" id="pr-grid"></div>
+
+      <!-- Banner -->
+      <section class="pr-banner">
+        <div>
+          <div class="pr-banner-title">Bereit für das Angebot?</div>
+          <div class="pr-banner-sub">Die ausgewählten Vorschläge werden als Positionen in das Angebot übernommen.</div>
+        </div>
+        <div class="pr-banner-right">
+          <div class="pr-banner-total">
+            <b id="bn-sum">€ 310.000</b>
+            <span id="bn-count">4 von 4 Vorschlägen ausgewählt</span>
+          </div>
+          <a class="btn btn-primary btn-sm" href="mockup-sprint-angebot-neu.html">Angebot erstellen</a>
+        </div>
+      </section>
+
+    </div><!-- /wrap -->
+  </div><!-- /scroll -->
+</div><!-- /main-wrapper -->
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var PROPOSALS = [
+    {
+      t: 'Intelligente Schadensprognose', cat: 'impl', prio: 1, feas: 'now', val: 95000,
+      d: 'Entwicklung eines ML-Modells zur Vorhersage von Schadenshöhe und -häufigkeit auf Basis von 10+ Jahren historischer Policen- und Schadensdaten. Integration in das bestehende Schadensmanagementsystem über REST-API.',
+      bl: 'Datenbasis', bt: 'Strukturierte Schadensdaten (2014–2026), Policendaten, Kundenprofildaten. Datenqualität: hoch.'
+    },
+    {
+      t: 'Dokumenten-KI für Vertragsanalyse', cat: 'impl', prio: 1, feas: 'prep', val: 120000,
+      d: 'LLM-basierte Pipeline zur automatischen Extraktion und Klassifikation von Vertragsklauseln, Risikoklauseln und Haftungsausschlüssen. Ziel: 80 % Reduktion manueller Prüfzeit.',
+      bl: 'Voraussetzung', bt: 'Digitalisierung verbleibender Papierdokumente (~15 %). Datenschutzkonzept für LLM-Einsatz erforderlich.'
+    },
+    {
+      t: 'KI-Strategie & Roadmap', cat: 'strat', prio: 2, feas: 'now', val: 45000,
+      d: 'Entwicklung einer unternehmensweiten KI-Strategie mit Use-Case-Priorisierung (ROI-Matrix), Governance-Rahmen, Kompetenzaufbauplan und 18-Monats-Roadmap. Workshop-basierter Ansatz mit C-Level und Fachbereichen.',
+      bl: 'Format', bt: '3 ganztägige Workshops + Dokumentation + Ergebnispräsentation. Dauer: 4–6 Wochen.'
+    },
+    {
+      t: 'MLOps-Plattform Aufbau', cat: 'add', prio: 2, feas: 'prep', val: 50000,
+      d: 'Einrichtung einer skalierbaren MLOps-Infrastruktur auf Azure ML inkl. CI/CD-Pipelines für Modell-Training, Versionierung und automatisiertes Monitoring. Basis für alle zukünftigen KI-Projekte.',
+      bl: 'Voraussetzung', bt: 'Bestehende Azure-Infrastruktur vorhanden. Abstimmung mit IT-Security und Cloud-Team erforderlich.'
+    }
+  ];
+
+  var CATS = {
+    all: 'Alle', impl: 'Implementierung', add: 'Zusatzpaket', strat: 'Strategie'
+  };
+  var CAT_CLASS = { impl: 'pr-b-impl', add: 'pr-b-add', strat: 'pr-b-strat' };
+  var FEAS = {
+    now: { l: 'Sofort umsetzbar', c: 'pr-b-now' },
+    prep: { l: 'Nach Vorbereitung', c: 'pr-b-prep' }
+  };
+  var PRIO = { 1: { l: 'P1 · Hoch', c: 'pr-b-p1' }, 2: { l: 'P2 · Mittel', c: 'pr-b-p2' } };
+
+  var state = { cat: 'all' };
+  var sel = PROPOSALS.map(function () { return true; });
+
+  function fmt(n) { return '€ ' + n.toLocaleString('de-DE'); }
+
+  function countCat(cat) {
+    return cat === 'all' ? PROPOSALS.length : PROPOSALS.filter(function (p) { return p.cat === cat; }).length;
+  }
+
+  function cardHtml(p, i) {
+    return '<article class="pr-card pr-p' + p.prio + '" data-cat="' + p.cat + '" data-i="' + i + '">' +
+      '<div class="pr-card-body">' +
+        '<div class="pr-card-toprow">' +
+          '<div class="pr-title">' + p.t + '</div>' +
+          '<label class="pr-check"><input type="checkbox" data-i="' + i + '" aria-label="Vorschlag auswählen"' + (sel[i] ? ' checked' : '') + '></label>' +
+        '</div>' +
+        '<div class="pr-badges">' +
+          '<span class="badge ' + CAT_CLASS[p.cat] + '">' + CATS[p.cat] + '</span>' +
+          '<span class="badge ' + PRIO[p.prio].c + '">' + PRIO[p.prio].l + '</span>' +
+          '<span class="badge ' + FEAS[p.feas].c + '">' + FEAS[p.feas].l + '</span>' +
+        '</div>' +
+        '<div class="pr-desc">' + p.d + '</div>' +
+      '</div>' +
+      '<div class="pr-basis"><span>' + p.bl + '</span><p>' + p.bt + '</p></div>' +
+      '<div class="pr-foot">' +
+        '<div class="pr-value"><b>' + fmt(p.val) + '</b><small>Geschätzter Projektwert</small></div>' +
+        '<a class="pr-btn" href="mockup-sprint-angebot-neu.html">Angebot</a>' +
+      '</div>' +
+    '</article>';
+  }
+
+  function updateTotals() {
+    var sum = 0, n = 0;
+    PROPOSALS.forEach(function (p, i) { if (sel[i]) { sum += p.val; n++; } });
+    document.getElementById('st-selected').textContent = n;
+    document.getElementById('st-sum').textContent = fmt(sum);
+    document.getElementById('bn-sum').textContent = fmt(sum);
+    document.getElementById('bn-count').textContent = n + ' von ' + PROPOSALS.length + ' Vorschlägen ausgewählt';
+  }
+
+  function renderChips() {
+    var html = '';
+    Object.keys(CATS).forEach(function (key) {
+      html += '<button class="pr-chip' + (state.cat === key ? ' active' : '') + '" type="button" data-cat="' + key + '">' +
+        CATS[key] + '<b>' + countCat(key) + '</b></button>';
+    });
+    var box = document.getElementById('pr-filters');
+    var countHTML = '<span class="pr-filter-count" id="pr-filter-count">' + countCat(state.cat) + ' von ' + PROPOSALS.length + ' Vorschlägen</span>';
+    box.innerHTML = html + countHTML;
+  }
+
+  function render() {
+    renderChips();
+    var visible = PROPOSALS
+      .map(function (p, i) { return { p: p, i: i }; })
+      .filter(function (o) { return state.cat === 'all' || o.p.cat === state.cat; })
+      .map(function (o) { return cardHtml(o.p, o.i); })
+      .join('');
+    var grid = document.getElementById('pr-grid');
+    grid.innerHTML = visible;
+    PROPOSALS.forEach(function (p, i) {
+      if (!sel[i]) {
+        var card = grid.querySelector('.pr-card[data-i="' + i + '"]');
+        if (card) card.classList.add('unsel');
+      }
+    });
+    updateTotals();
+  }
+
+  document.getElementById('pr-filters').addEventListener('click', function (e) {
+    var chip = e.target.closest('.pr-chip');
+    if (!chip) return;
+    e.stopPropagation();
+    state.cat = chip.getAttribute('data-cat');
+    render();
+  });
+
+  document.getElementById('pr-grid').addEventListener('change', function (e) {
+    var cb = e.target.closest('.pr-check input');
+    if (!cb) return;
+    var i = parseInt(cb.getAttribute('data-i'), 10);
+    sel[i] = cb.checked;
+    var card = cb.closest('.pr-card');
+    if (card) card.classList.toggle('unsel', !cb.checked);
+    updateTotals();
+  });
+
+  function toast(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1900);
+  }
+
+  document.getElementById('btn-pdf').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('PDF-Export wird vorbereitet (Demo)');
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

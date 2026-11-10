@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abdeckung · App vs. Mockup — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Chrome, buttons and badges come from mockup-sprint.css. */
+  * { margin: 0; padding: 0; }
+  body { display: flex; height: 100vh; overflow: hidden; background: #F5F5F5; }
+  .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  .btn.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* Topbar */
+  .ab-heading { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .ab-heading .breadcrumb { font-size: 11px; }
+  .ab-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+  /* Content shell */
+  .ab-scroll { flex: 1; overflow-y: auto; }
+  .ab-wrap { max-width: 1240px; margin: 0 auto; padding: 20px 24px 32px; }
+
+  /* KPI row */
+  .ab-kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 14px; }
+  .ab-kpi { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 12px 14px; }
+  .ab-kpi-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; margin-bottom: 5px; }
+  .ab-kpi-value { font-size: 22px; font-weight: 800; color: #111111; letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .ab-kpi-delta { font-size: 10.5px; color: #94a3b8; margin-top: 3px; }
+  .ab-kpi-value.green { color: #15803d; }
+  .ab-kpi-value.amber { color: #b45309; }
+  .ab-kpi-value.gray { color: #64748b; }
+
+  /* Cards */
+  .ab-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 16px 18px; margin-bottom: 14px; }
+  .ab-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+  .ab-card-title { font-size: 12.5px; font-weight: 800; color: #111111; letter-spacing: -.01em; }
+  .ab-card-sub { font-size: 10.5px; color: #94a3b8; }
+
+  /* Coverage progress */
+  .ab-prog-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 9px; }
+  .ab-prog-top b { font-size: 20px; font-weight: 800; color: #111111; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .ab-prog-top b span { color: #94a3b8; font-size: 12px; font-weight: 600; }
+  .ab-prog { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: #f1f5f9; }
+  .ab-prog-seg { height: 100%; }
+  .ab-prog-seg.done { background: #22c55e; }
+  .ab-prog-seg.partial { background: #f59e0b; }
+  .ab-prog-seg.open { background: #cbd5e1; }
+  .ab-legend { display: flex; align-items: center; gap: 18px; margin-top: 10px; flex-wrap: wrap; }
+  .ab-leg { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #475569; }
+  .ab-leg-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+  .ab-leg b { color: #111111; font-variant-numeric: tabular-nums; }
+  .ab-leg-note { margin-left: auto; font-size: 10.5px; color: #94a3b8; }
+
+  /* Toolbar */
+  .ab-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .ab-search { flex: 1; min-width: 200px; max-width: 320px; padding: 7px 11px; border: 1px solid #e2e8f0; border-radius: 7px; font-size: 12.5px; outline: none; background: #fff; }
+  .ab-search:focus { border-color: #F26722; }
+  .ab-select { padding: 6px 9px; border: 1px solid #e2e8f0; border-radius: 7px; font-size: 12px; background: #fff; cursor: pointer; outline: none; color: #334155; }
+  .ab-count { margin-left: auto; font-size: 11.5px; color: #94a3b8; font-variant-numeric: tabular-nums; }
+
+  /* Table */
+  .ab-table-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); overflow: hidden; }
+  .ab-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .ab-table th { padding: 9px 14px; text-align: left; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; background: #fafafa; border-bottom: 1px solid #f1f5f9; }
+  .ab-table th.c-screen { width: 218px; }
+  .ab-table th.c-group { width: 132px; }
+  .ab-table th.c-route { width: 196px; }
+  .ab-table th.c-status { width: 108px; }
+  .ab-table th.c-links { width: 128px; }
+  .ab-table td { padding: 11px 14px; font-size: 12px; color: #334155; border-bottom: 1px solid #f8fafc; vertical-align: top; }
+  .ab-table tr:last-child td { border-bottom: none; }
+  .ab-table tbody tr:hover td { background: #fafbfc; }
+  .ab-screen-name { font-size: 12.5px; font-weight: 700; color: #111111; }
+  .ab-screen-file { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9.5px; color: #94a3b8; margin-top: 2px; }
+  .ab-group { display: inline-block; padding: 2px 8px; border-radius: 4px; background: #f1f5f9; color: #475569; font-size: 10.5px; font-weight: 600; white-space: nowrap; }
+  .ab-route { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: #1d4ed8; word-break: break-all; text-decoration: none; }
+  .ab-route:hover { text-decoration: underline; }
+  .ab-route-none { font-size: 11.5px; color: #cbd5e1; }
+  .ab-note { font-size: 11.5px; color: #64748b; line-height: 1.45; }
+
+  /* Status badges */
+  .ab-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 12px; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+  .ab-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .ab-badge.done { background: #dcfce7; color: #15803d; }
+  .ab-badge.partial { background: #fef3c7; color: #b45309; }
+  .ab-badge.open { background: #f1f5f9; color: #64748b; }
+
+  /* Comparison links */
+  .ab-links { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+  .ab-link { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+  .ab-link.mock { color: #1d4ed8; }
+  .ab-link.mock:hover { text-decoration: underline; }
+  .ab-link.app { color: #F26722; }
+  .ab-link.app:hover { text-decoration: underline; }
+  .ab-link.none { color: #cbd5e1; font-weight: 500; }
+
+  .ab-empty { padding: 28px 16px; text-align: center; color: #94a3b8; font-size: 12.5px; }
+  .ab-foot { font-size: 10.5px; color: #94a3b8; margin-top: 12px; text-align: center; }
+
+  @media (max-width: 1100px) {
+    .ab-kpis { grid-template-columns: repeat(3, 1fr); }
+    .ab-table { table-layout: auto; }
+    .ab-table th.c-route, .ab-table th.c-links { width: auto; }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="abdeckung"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="ab-heading">
+      <div class="breadcrumb">
+        <a href="mockup-sprint-kanban.html">Sprint-Vertrieb</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="mockup-sprint-reporting.html">Reporting</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">Abdeckung</span>
+      </div>
+      <span class="page-title">Abdeckung App &#8596; Mockup</span>
+    </div>
+    <div class="ab-actions">
+      <button class="btn btn-ghost btn-sm" id="btn-csv" type="button">CSV exportieren</button>
+      <a class="btn btn-primary btn-sm" href="http://localhost:3000/sprint-targets" target="_blank" rel="noopener">App öffnen</a>
+    </div>
+  </header>
+
+  <div class="ab-scroll">
+    <div class="ab-wrap">
+
+      <!-- KPIs -->
+      <div class="ab-kpis">
+        <div class="ab-kpi">
+          <div class="ab-kpi-label">Mockup-Screens</div>
+          <div class="ab-kpi-value" id="ab-k-total">22</div>
+          <div class="ab-kpi-delta">Sprint-Vertrieb gesamt</div>
+        </div>
+        <div class="ab-kpi">
+          <div class="ab-kpi-label">Umgesetzt</div>
+          <div class="ab-kpi-value green" id="ab-k-done">22</div>
+          <div class="ab-kpi-delta">in der App vorhanden</div>
+        </div>
+        <div class="ab-kpi">
+          <div class="ab-kpi-label">Teilweise</div>
+          <div class="ab-kpi-value amber" id="ab-k-partial">0</div>
+          <div class="ab-kpi-delta">allgemein, nicht Sprint-spezifisch</div>
+        </div>
+        <div class="ab-kpi">
+          <div class="ab-kpi-label">Offen</div>
+          <div class="ab-kpi-value gray" id="ab-k-open">0</div>
+          <div class="ab-kpi-delta">noch nicht in der App</div>
+        </div>
+        <div class="ab-kpi">
+          <div class="ab-kpi-label">Abdeckung</div>
+          <div class="ab-kpi-value" id="ab-k-cov">100 %</div>
+          <div class="ab-kpi-delta">gewichtet: voll 100 %, teilweise 50 %</div>
+        </div>
+      </div>
+
+      <!-- Abdeckungsgrad -->
+      <div class="ab-card">
+        <div class="ab-prog-top">
+          <span class="ab-card-title">Abdeckungsgrad der App gegenüber den Mockups</span>
+          <b><span id="ab-cov-big">100</span> %</b>
+        </div>
+        <div class="ab-prog">
+          <div class="ab-prog-seg done" id="ab-seg-done" style="width:100%"></div>
+          <div class="ab-prog-seg partial" id="ab-seg-partial" style="width:0%"></div>
+          <div class="ab-prog-seg open" id="ab-seg-open" style="width:0%"></div>
+        </div>
+        <div class="ab-legend">
+          <div class="ab-leg"><span class="ab-leg-dot" style="background:#22c55e"></span> Umgesetzt <b id="ab-lg-done">22</b></div>
+          <div class="ab-leg"><span class="ab-leg-dot" style="background:#f59e0b"></span> Teilweise <b id="ab-lg-partial">0</b></div>
+          <div class="ab-leg"><span class="ab-leg-dot" style="background:#cbd5e1"></span> Offen <b id="ab-lg-open">0</b></div>
+          <span class="ab-leg-note">Stand 29.10.2026 · Vergleich statischer Mockup-Prototyp mit der Next.js-App</span>
+        </div>
+      </div>
+
+      <!-- Filter -->
+      <div class="ab-toolbar">
+        <input class="ab-search" id="ab-search" type="text" placeholder="Screen, Route oder Hinweis suchen …" aria-label="Suche">
+        <select class="ab-select" id="ab-status" aria-label="Status">
+          <option value="all">Alle Status</option>
+          <option value="done">Umgesetzt</option>
+          <option value="partial">Teilweise</option>
+          <option value="open">Offen</option>
+        </select>
+        <select class="ab-select" id="ab-group" aria-label="Bereich">
+          <option value="all">Alle Bereiche</option>
+          <option value="Kernprozess">Kernprozess</option>
+          <option value="Assessment &amp; Angebot">Assessment &amp; Angebot</option>
+          <option value="Vertrieb">Vertrieb</option>
+          <option value="Steuerung">Steuerung</option>
+          <option value="Verwaltung">Verwaltung</option>
+        </select>
+        <span class="ab-count" id="ab-count">22 von 22 Screens</span>
+      </div>
+
+      <!-- Comparison table -->
+      <div class="ab-table-card">
+        <table class="ab-table">
+          <thead>
+            <tr>
+              <th class="c-screen">Mockup-Screen</th>
+              <th class="c-group">Bereich</th>
+              <th class="c-route">App-Route</th>
+              <th class="c-status">Status</th>
+              <th>Abweichung / Umfang</th>
+              <th class="c-links">Vergleich</th>
+            </tr>
+          </thead>
+          <tbody id="ab-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="ab-foot">22 Mockup-Screens · App: Next.js auf localhost:3000 · Mockups: statische HTML-Prototypen · Stand 29.10.2026</div>
+
+    </div>
+  </div>
+</div>
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  var SCREENS = [
+    { n:'Sprint-Dashboard', g:'Kernprozess', st:'done', f:'mockup-sprint-dashboard.html', app:'/sprint-targets/dashboard', route:'/sprint-targets/dashboard',
+      note:'Sprint-Banner, Tagesagenda, Team-Auslastung und Top-Zielkunden über /dashboard/summary.' },
+    { n:'Zielkunden Kanban', g:'Kernprozess', st:'done', f:'mockup-sprint-kanban.html', app:'/sprint-targets', route:'/sprint-targets',
+      note:'DnD über 8 Status, Suche, Prioritäts-Chips, Zuweisungen und letzte Aktivität je Karte.' },
+    { n:'Listenansicht', g:'Kernprozess', st:'done', f:'mockup-sprint-zielkunden-liste.html', app:'/sprint-targets', route:'/sprint-targets · Liste',
+      note:'Umschalter Kanban/Liste mit Mehrfachfiltern, Sortierung, Pagination, Zeilenaktionen und CSV-Export.' },
+    { n:'Zielkunde anlegen', g:'Kernprozess', st:'done', f:'mockup-sprint-zielkunde-neu.html', app:'/sprint-targets', route:'/sprint-targets · Modal',
+      note:'Als Modal „Neuer Zielkunde“ im Kanban umgesetzt.' },
+    { n:'Zielkunden-Detail', g:'Kernprozess', st:'done', f:'mockup-sprint-detail.html', app:'/sprint-targets', route:'/sprint-targets/:id',
+      note:'Hero-Kacheln, Phasen-Stepper, Next-Step-Karte, Aktivitäten, Angebot und Übergabe verlinkt.' },
+
+    { n:'KI-Assessment', g:'Assessment & Angebot', st:'done', f:'mockup-sprint-assessment.html', app:'/sprint-targets', route:'/sprint-targets/:id/assessment',
+      note:'6-Dimensionen-Analyse, KI-Generierung, Use Cases, Versions-Chips und PDF.' },
+    { n:'Projektvorschläge', g:'Assessment & Angebot', st:'done', f:'mockup-sprint-proposals.html', app:'/sprint-targets', route:'/sprint-targets/:id/proposals',
+      note:'Use-Case-Auswahl, Summen-KPI und „Angebot aus Auswahl“ (übergibt an den Angebots-Wizard).' },
+    { n:'Angebote (Liste)', g:'Assessment & Angebot', st:'done', f:'mockup-sprint-angebote-liste.html', app:'/sprint-targets/offers', route:'/sprint-targets/offers',
+      note:'Angebotsnummer SP-Jahr-0001, Status, Gültigkeit, Wert und PDF-Download.' },
+    { n:'Angebot (Detail)', g:'Assessment & Angebot', st:'done', f:'mockup-sprint-angebot.html', app:'/sprint-targets/offers', route:'/sprint-targets/offers/:id',
+      note:'Positionen editierbar, Summen, Gültigkeit, senden/annehmen/ablehnen/verlängern, PDF; BAFA-Nachweis auf eigener Seite.' },
+    { n:'Angebot erstellen', g:'Assessment & Angebot', st:'done', f:'mockup-sprint-angebot-neu.html', app:'/sprint-targets/offers/new', route:'/sprint-targets/offers/new',
+      note:'Wizard mit Paketpreisen aus den Einstellungen, Positionen, Gültigkeit und Live-Summe.' },
+
+    { n:'Kontakte', g:'Vertrieb', st:'done', f:'mockup-sprint-kontakte.html', app:'/sprint-targets/contacts', route:'/sprint-targets/contacts',
+      note:'Ansprechpartner je Zielkunde inkl. Einwilligungen (E-Mail/Telefon) und Hauptkontakt-Markierung.' },
+    { n:'Outreach', g:'Vertrieb', st:'done', f:'mockup-sprint-outreach.html', app:'/sprint-targets/outreach', route:'/sprint-targets/outreach',
+      note:'Wochenquote, LinkedIn-Anfragen; Vorlagen je Kanal mit Platzhaltern, Auswahl beim Loggen.' },
+    { n:'Aktivitäten', g:'Vertrieb', st:'done', f:'mockup-sprint-aktivitaeten.html', app:'/sprint-targets/activities', route:'/sprint-targets/activities',
+      note:'Sprint-Filter, Statistikleiste, Kanal-/Zeitraumfilter, Gruppierung nach Tag und CSV-Export.' },
+    { n:'Aktivität protokollieren', g:'Vertrieb', st:'done', f:'mockup-sprint-aktivitaet-loggen.html', app:'/sprint-targets/activities', route:'/sprint-targets/activities · Modal',
+      note:'Gemeinsames Modal mit Vorlagenauswahl, Platzhalter-Ersetzung und UWG-Anrufzähler.' },
+
+    { n:'Reporting', g:'Steuerung', st:'done', f:'mockup-sprint-reporting.html', app:'/sprint-targets/reporting', route:'/sprint-targets/reporting',
+      note:'Funnel, Win-Rate, Umsatzfortschritt, Verlustgründe, Kanäle, Team-Performance, Zeitraumfilter, CSV/PDF.' },
+    { n:'Team-Performance', g:'Steuerung', st:'done', f:'mockup-sprint-team.html', app:'/sprint-targets/team', route:'/sprint-targets/team',
+      note:'Team & Kapazität, Kundenzuweisung je Rolle, Engpass-Banner, Mitglied anlegen, Entlasten.' },
+    { n:'Planung', g:'Steuerung', st:'done', f:'mockup-sprint-planung.html', app:'/sprint-targets/capacity', route:'/sprint-targets/capacity',
+      note:'Zeitbedarf auf Basis echter Team-Kapazität (Mitglieder × h/Woche) und Prioritätsbestand.' },
+
+    { n:'BAFA-Förderung', g:'Verwaltung', st:'done', f:'mockup-sprint-bafa.html', app:'/sprint-targets/bafa', route:'/sprint-targets/bafa',
+      note:'Deadline-Banner, Nachweis-Checkliste, Fördersummen-Rechner und PDF.' },
+    { n:'Übergabe', g:'Verwaltung', st:'done', f:'mockup-sprint-uebergabe.html', app:'/sprint-targets', route:'/sprint-targets/:id/handover',
+      note:'6-Punkte-Checkliste, Termine, Format, Teilnehmer, EM-Zuweisung; Bestätigen nur bei 6/6.' },
+    { n:'Listen-Import', g:'Verwaltung', st:'done', f:'mockup-sprint-import.html', app:'/sprint-targets/import', route:'/sprint-targets/import',
+      note:'CSV-Vorschau mit Sperrlisten-/Dublettenprüfung, WZ-2008-Zuordnung und Entscheidung je Zeile.' },
+    { n:'Sperrliste', g:'Verwaltung', st:'done', f:'mockup-sprint-sperrliste.html', app:'/sprint-targets/blocklist', route:'/sprint-targets/blocklist',
+      note:'Automatisch gepflegte Do-not-contact-Liste, KPI-Kopf, Filter, DSGVO-Hinweis und Export.' },
+    { n:'Einstellungen', g:'Verwaltung', st:'done', f:'mockup-sprint-einstellungen.html', app:'/sprint-targets/settings', route:'/sprint-targets/settings',
+      note:'Quoten, Sprint-Info, Pakete/Preise, Branchen, Benachrichtigungen, BAFA, LinkedIn, Paket-Rollen, Reset.' }
+  ];
+
+  var LABEL = { done: 'Umgesetzt', partial: 'Teilweise', open: 'Offen' };
+  var APP_BASE = 'http://localhost:3000';
+
+  function toast(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1900);
+  }
+
+  function badge(st) {
+    return '<span class="ab-badge ' + st + '"><span class="dot"></span>' + LABEL[st] + '</span>';
+  }
+
+  function routeCell(s) {
+    if (!s.route) return '<span class="ab-route-none">—</span>';
+    var txt = s.route;
+    if (s.app) {
+      return '<a class="ab-route" href="' + APP_BASE + s.app + '" target="_blank" rel="noopener" title="In der App öffnen">' + txt + '</a>';
+    }
+    return '<span class="ab-route" style="color:#334155">' + txt + '</span>';
+  }
+
+  function linksCell(s) {
+    var html = '<div class="ab-links">';
+    html += '<a class="ab-link mock" href="' + s.f + '">Mockup ansehen</a>';
+    if (s.app) {
+      html += '<a class="ab-link app" href="' + APP_BASE + s.app + '" target="_blank" rel="noopener">App ansehen</a>';
+    } else {
+      html += '<span class="ab-link none">Keine App-Route</span>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function matches(s) {
+    var q = document.getElementById('ab-search').value.trim().toLowerCase();
+    var st = document.getElementById('ab-status').value;
+    var gr = document.getElementById('ab-group').value;
+    if (st !== 'all' && s.st !== st) return false;
+    if (gr !== 'all' && s.g !== gr) return false;
+    if (!q) return true;
+    var hay = (s.n + ' ' + s.g + ' ' + s.route + ' ' + s.note + ' ' + s.f).toLowerCase();
+    return hay.indexOf(q) !== -1;
+  }
+
+  function render() {
+    var tbody = document.getElementById('ab-tbody');
+    var rows = SCREENS.filter(matches);
+    var html = '';
+
+    rows.forEach(function (s) {
+      html += '<tr>' +
+        '<td><div class="ab-screen-name">' + s.n + '</div><div class="ab-screen-file">' + s.f + '</div></td>' +
+        '<td><span class="ab-group">' + s.g + '</span></td>' +
+        '<td>' + routeCell(s) + '</td>' +
+        '<td>' + badge(s.st) + '</td>' +
+        '<td><div class="ab-note">' + s.note + '</div></td>' +
+        '<td>' + linksCell(s) + '</td>' +
+        '</tr>';
+    });
+
+    if (!rows.length) {
+      html = '<tr><td colspan="6"><div class="ab-empty">Keine Screens für diese Filter gefunden.</div></td></tr>';
+    }
+
+    tbody.innerHTML = html;
+    document.getElementById('ab-count').textContent = rows.length + ' von ' + SCREENS.length + ' Screens';
+  }
+
+  // Summary values
+  var total = SCREENS.length;
+  var cDone = SCREENS.filter(function (s) { return s.st === 'done'; }).length;
+  var cPartial = SCREENS.filter(function (s) { return s.st === 'partial'; }).length;
+  var cOpen = SCREENS.filter(function (s) { return s.st === 'open'; }).length;
+  var coverage = Math.round(((cDone + cPartial * 0.5) / total) * 100);
+  var pct = function (v) { return (v / total * 100).toFixed(1) + '%'; };
+
+  document.getElementById('ab-k-total').textContent = total;
+  document.getElementById('ab-k-done').textContent = cDone;
+  document.getElementById('ab-k-partial').textContent = cPartial;
+  document.getElementById('ab-k-open').textContent = cOpen;
+  document.getElementById('ab-k-cov').textContent = coverage + ' %';
+  document.getElementById('ab-cov-big').textContent = coverage;
+  document.getElementById('ab-lg-done').textContent = cDone;
+  document.getElementById('ab-lg-partial').textContent = cPartial;
+  document.getElementById('ab-lg-open').textContent = cOpen;
+  document.getElementById('ab-seg-done').style.width = pct(cDone);
+  document.getElementById('ab-seg-partial').style.width = pct(cPartial);
+  document.getElementById('ab-seg-open').style.width = pct(cOpen);
+
+  // Filters
+  document.getElementById('ab-search').addEventListener('input', render);
+  document.getElementById('ab-status').addEventListener('change', render);
+  document.getElementById('ab-group').addEventListener('change', render);
+
+  document.getElementById('btn-csv').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('CSV-Export der Abdeckung wird erstellt …');
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

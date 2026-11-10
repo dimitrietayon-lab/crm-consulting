@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outreach &amp; Vorlagen · Sprint-Vertrieb — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Chrome, buttons and badges come from mockup-sprint.css. */
+  * { margin: 0; padding: 0; }
+  body { display: flex; height: 100vh; overflow: hidden; background: #F5F5F5; }
+  .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  .btn.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* Topbar */
+  .ou-heading { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .ou-heading .breadcrumb { font-size: 11px; }
+  .ou-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  /* Content shell */
+  .ou-scroll { flex: 1; overflow-y: auto; }
+  .ou-wrap { padding: 16px 24px 28px; }
+
+  /* UWG notice */
+  .ou-notice { display: flex; gap: 10px; align-items: flex-start; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; }
+  .ou-notice-badge { flex-shrink: 0; font-size: 9px; font-weight: 800; letter-spacing: .04em; color: #c2410c; background: #ffedd5; border-radius: 5px; padding: 3px 6px; margin-top: 1px; }
+  .ou-notice p { font-size: 11.5px; color: #9a3412; line-height: 1.5; }
+  .ou-notice strong { font-weight: 700; }
+
+  /* Workspace */
+  .ou-workspace { display: grid; grid-template-columns: 258px minmax(0, 1fr) 290px; gap: 14px; align-items: start; }
+  .ou-panel { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); overflow: hidden; }
+
+  /* Left: template list */
+  .ou-list-head { padding: 11px 12px; border-bottom: 1px solid #f1f5f9; }
+  .ou-search { width: 100%; padding: 7px 10px; font-size: 12px; }
+  .ou-cats { padding: 8px; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 2px; }
+  .ou-cat { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 6px 9px; border: none; border-radius: 6px; background: none; color: #475569; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left; }
+  .ou-cat:hover { background: #f8fafc; color: #111111; }
+  .ou-cat.active { background: #fff4ed; color: #D4540A; }
+  .ou-cat b { font-size: 10px; font-weight: 700; color: #94a3b8; background: #f1f5f9; border-radius: 10px; padding: 1px 6px; }
+  .ou-cat.active b { background: #ffedd5; color: #c2410c; }
+  .ou-items { max-height: calc(100vh - 300px); min-height: 260px; overflow-y: auto; padding: 7px; }
+  .ou-item { display: block; width: 100%; padding: 9px 10px; border: 1px solid transparent; border-radius: 7px; background: none; font-family: inherit; text-align: left; cursor: pointer; margin-bottom: 2px; }
+  .ou-item:hover { background: #f8fafc; }
+  .ou-item.active { background: #fff4ed; border-color: #fed7aa; }
+  .ou-item-title { font-size: 12px; font-weight: 700; color: #111111; line-height: 1.35; margin-bottom: 4px; }
+  .ou-item.active .ou-item-title { color: #c2410c; }
+  .ou-item-meta { display: flex; align-items: center; gap: 7px; }
+  .ou-tag { font-size: 9.5px; font-weight: 700; padding: 1px 6px; border-radius: 4px; letter-spacing: .02em; }
+  .ou-tag.erst { background: #dbeafe; color: #1d4ed8; }
+  .ou-tag.follow { background: #dcfce7; color: #15803d; }
+  .ou-tag.nach { background: #f3e8ff; color: #7e22ce; }
+  .ou-tag.angebot { background: #ffedd5; color: #c2410c; }
+  .ou-item-stats { font-size: 10.5px; color: #94a3b8; font-variant-numeric: tabular-nums; }
+
+  /* Center: preview */
+  .ou-preview-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 13px 16px; border-bottom: 1px solid #f1f5f9; }
+  .ou-preview-title { font-size: 14px; font-weight: 700; color: #111111; letter-spacing: -.01em; }
+  .ou-preview-meta { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+  .ou-preview-tools { display: flex; gap: 5px; flex-shrink: 0; }
+  .ou-segs { display: flex; align-items: center; gap: 6px; padding: 9px 16px; border-bottom: 1px solid #f1f5f9; background: #fafafa; flex-wrap: wrap; }
+  .ou-segs-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; margin-right: 2px; }
+  .ou-seg { padding: 3px 10px; border-radius: 20px; border: 1px solid #e2e8f0; background: #fff; color: #64748b; font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer; }
+  .ou-seg:hover { border-color: #cbd5e1; color: #111111; }
+  .ou-seg.active { background: #111111; border-color: #111111; color: #fff; }
+  .ou-mailwrap { padding: 16px; background: #f8fafc; }
+  .ou-mail { max-width: 640px; margin: 0 auto; background: #fff; border: 1px solid #e8e8e8; border-radius: 9px; overflow: hidden; }
+  .ou-mail-head { padding: 12px 16px; background: #fafafa; border-bottom: 1px solid #f1f5f9; }
+  .ou-field { display: flex; gap: 8px; font-size: 12px; margin-bottom: 5px; }
+  .ou-field:last-child { margin-bottom: 0; }
+  .ou-field-label { width: 52px; flex-shrink: 0; font-weight: 700; color: #64748b; font-size: 11px; }
+  .ou-field-value { color: #334155; min-width: 0; word-break: break-word; }
+  .ou-ph { background: #fef3c7; color: #92400e; padding: 0 4px; border-radius: 3px; font-weight: 600; }
+  .ou-mail-body { padding: 18px 20px; font-size: 13px; color: #374151; line-height: 1.65; }
+  .ou-mail-body p { margin-bottom: 11px; }
+  .ou-mail-body p:last-child { margin-bottom: 0; }
+  .ou-sign { border-top: 1px solid #f1f5f9; margin-top: 14px !important; padding-top: 12px; font-size: 12px; color: #64748b; line-height: 1.55; }
+  .ou-sign strong { color: #111111; }
+
+  /* Right: settings */
+  .ou-side-sec { padding: 13px 15px; border-bottom: 1px solid #f1f5f9; }
+  .ou-side-sec:last-child { border-bottom: none; }
+  .ou-side-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; margin-bottom: 9px; }
+  .ou-stats { display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-bottom: 5px; }
+  .ou-stats:last-child { margin-bottom: 0; }
+  .ou-stats b { color: #111111; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .ou-stats b.green { color: #16a34a; }
+  .ou-field-row { margin-bottom: 9px; }
+  .ou-field-row:last-child { margin-bottom: 0; }
+  .ou-field-row label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #94a3b8; margin-bottom: 3px; }
+  .ou-field-row input, .ou-field-row select { width: 100%; padding: 6px 9px; font-size: 12px; }
+  .ou-targets { display: flex; flex-direction: column; gap: 5px; }
+  .ou-target { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid #e8e8e8; border-radius: 7px; cursor: pointer; }
+  .ou-target:hover { background: #fafafa; }
+  .ou-target input { width: 13px; height: 13px; accent-color: #F26722; margin: 0; flex-shrink: 0; }
+  .ou-target-name { font-size: 11.5px; font-weight: 600; color: #111111; }
+  .ou-target-sub { font-size: 10px; color: #94a3b8; }
+  .ou-send { padding: 13px 15px; }
+  .ou-send .btn { width: 100%; justify-content: center; }
+  .ou-send .btn + .btn { margin-top: 6px; }
+
+  @media (max-width: 1180px) {
+    .ou-workspace { grid-template-columns: 240px minmax(0, 1fr); }
+    .ou-side { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); }
+    .ou-side-sec { border-bottom: none; border-right: 1px solid #f1f5f9; }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="outreach"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="ou-heading">
+      <div class="breadcrumb">
+        <a href="mockup-sprint-kanban.html">Sprint-Vertrieb</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">Outreach</span>
+      </div>
+      <span class="page-title">Outreach &amp; Vorlagen</span>
+    </div>
+    <div class="ou-actions">
+      <button class="btn btn-ghost btn-sm" id="btn-new" type="button">Vorlage erstellen</button>
+      <button class="btn btn-primary btn-sm" id="btn-gen" type="button">KI-Vorlage generieren</button>
+    </div>
+  </header>
+
+  <div class="ou-scroll">
+    <div class="ou-wrap">
+
+      <div class="ou-notice">
+        <span class="ou-notice-badge">§ 7 UWG</span>
+        <p><strong>Keine Kalt-E-Mails.</strong> E-Mail-Vorlagen nur nach dokumentierter Einwilligung verwenden. Die Erstansprache läuft über LinkedIn oder Telefon mit konkretem Anlass.</p>
+      </div>
+
+      <div class="ou-workspace">
+
+        <!-- LEFT: Vorlagen -->
+        <div class="ou-panel">
+          <div class="ou-list-head">
+            <input class="ou-search" id="ou-search" type="text" placeholder="Vorlage suchen …" aria-label="Vorlagen durchsuchen">
+          </div>
+          <div class="ou-cats" id="ou-cats"></div>
+          <div class="ou-items" id="ou-items"></div>
+        </div>
+
+        <!-- CENTER: Vorschau -->
+        <div class="ou-panel">
+          <div class="ou-preview-head">
+            <div>
+              <div class="ou-preview-title" id="ou-title">—</div>
+              <div class="ou-preview-meta" id="ou-meta"></div>
+            </div>
+            <div class="ou-preview-tools">
+              <button class="btn btn-ghost btn-sm" id="btn-edit" type="button">Bearbeiten</button>
+              <button class="btn btn-ghost btn-sm" id="btn-copy" type="button">Kopieren</button>
+            </div>
+          </div>
+          <div class="ou-segs">
+            <span class="ou-segs-label">Branche</span>
+            <button class="ou-seg active" type="button" data-seg="Banken">Banken</button>
+            <button class="ou-seg" type="button" data-seg="Maschinenbau & Elektro">Maschinenbau & Elektro</button>
+            <button class="ou-seg" type="button" data-seg="Handel & Logistik">Handel & Logistik</button>
+            <button class="ou-seg" type="button" data-seg="Versicherungen & Finanzvermittler">Versicherungen & Finanzvermittler</button>
+          </div>
+          <div class="ou-mailwrap">
+            <div class="ou-mail">
+              <div class="ou-mail-head">
+                <div class="ou-field"><span class="ou-field-label">An</span><span class="ou-field-value" id="ou-to"></span></div>
+                <div class="ou-field"><span class="ou-field-label">Betreff</span><span class="ou-field-value" id="ou-subject"></span></div>
+              </div>
+              <div class="ou-mail-body" id="ou-body"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Einstellungen -->
+        <div class="ou-panel ou-side">
+          <div class="ou-side-sec">
+            <div class="ou-side-title">Vorlage-Statistiken</div>
+            <div class="ou-stats"><span>Gesendet</span><b id="st-used">0</b></div>
+            <div class="ou-stats"><span>Geöffnet</span><b class="green" id="st-open">0 %</b></div>
+            <div class="ou-stats"><span>Antworten</span><b id="st-reply">0 %</b></div>
+            <div class="ou-stats"><span>Meetings</span><b class="green" id="st-meet">0</b></div>
+          </div>
+
+          <div class="ou-side-sec">
+            <div class="ou-side-title">Personalisierung</div>
+            <div class="ou-field-row">
+              <label for="pf-anrede">Anrede</label>
+              <select id="pf-anrede">
+                <option value="Herr">Herr</option>
+                <option value="Frau">Frau</option>
+              </select>
+            </div>
+            <div class="ou-field-row">
+              <label for="pf-vorname">Vorname</label>
+              <input id="pf-vorname" type="text" value="Stefan">
+            </div>
+            <div class="ou-field-row">
+              <label for="pf-nachname">Nachname</label>
+              <input id="pf-nachname" type="text" value="Keller">
+            </div>
+            <div class="ou-field-row">
+              <label for="pf-unternehmen">Unternehmen</label>
+              <input id="pf-unternehmen" type="text" value="Volksbank Rhein-Main">
+            </div>
+            <div class="ou-field-row">
+              <label for="pf-kw">Kalenderwoche</label>
+              <input id="pf-kw" type="text" value="44">
+            </div>
+            <div class="ou-field-row">
+              <label for="pf-trigger">Trigger / Anlass</label>
+              <input id="pf-trigger" type="text" value="LinkedIn-Artikel zur KI-Initiative">
+            </div>
+          </div>
+
+          <div class="ou-side-sec">
+            <div class="ou-side-title">Zielkunden · Banken</div>
+            <div class="ou-targets" id="ou-targets"></div>
+          </div>
+
+          <div class="ou-send">
+            <button class="btn btn-primary btn-sm" id="btn-send" type="button">Senden (3 Empfänger)</button>
+            <button class="btn btn-ghost btn-sm" id="btn-check" type="button">Vorschau prüfen</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  var CATS = [
+    { id: 'all', label: 'Alle Vorlagen' },
+    { id: 'erst', label: 'Erstansprache' },
+    { id: 'follow', label: 'Follow-up' },
+    { id: 'nach', label: 'Nach Meeting' },
+    { id: 'angebot', label: 'Angebot' }
+  ];
+
+  var TEMPLATES = [
+    {
+      id: 'li-finance', cat: 'erst', title: 'LinkedIn-Erstansprache – Banken', used: 187, open: 34, reply: 18, meet: 8,
+      channel: 'LinkedIn',
+      subject: 'KI-Readiness bei {{Unternehmen}} – kurze Einschätzung?',
+      body: [
+        'Guten Tag {{Anrede}} {{Nachname}},',
+        'mein Name ist Dimitrie Tayon, ich bin KI-Strategieberater bei innolab Consulting. Ihr {{Trigger}} zur Digitalisierung bei {{Unternehmen}} hat mich aufmerksam gemacht.',
+        'Wir führen derzeit einen strukturierten KI-Readiness Sprint für {{Segment}}-Unternehmen in der DACH-Region durch. In 6 Dimensionen bewerten wir, wie gut ein Unternehmen für den praktischen KI-Einsatz aufgestellt ist: Datenverfügbarkeit, Tech-Stack, Prozessreife, KI-Kompetenz, Governance und KI-Strategie.',
+        'Das Ergebnis ist ein Assessment-Report mit priorisierten Use-Cases und einem klaren nächsten Schritt — maßgeschneidert auf {{Unternehmen}}, kein generisches Beratungsprodukt.',
+        'Hätten Sie 20 Minuten für ein kurzes Erstgespräch? Ich bin in KW {{KW}} flexibel.',
+        'SIGN'
+      ]
+    },
+    {
+      id: 'li-produktion', cat: 'erst', title: 'LinkedIn-Erstansprache – Maschinenbau & Elektro', used: 94, open: 29, reply: 14, meet: 4,
+      channel: 'LinkedIn',
+      subject: 'KI im Werk – 6-Punkte-Check für {{Unternehmen}}',
+      body: [
+        'Guten Tag {{Anrede}} {{Nachname}},',
+        'viele Maschinenbauunternehmen starten KI-Piloten, bevor die Daten- und Prozessbasis geklärt ist. Genau hier setzt unser KI-Readiness Sprint an.',
+        'In einem 20-minütigen Erstgespräch schauen wir gemeinsam auf Ihre Datenverfügbarkeit, den Tech-Stack und die Prozessreife — und identifizieren die zwei Use-Cases mit dem schnellsten Hebel für {{Unternehmen}}.',
+        'Passt Ihnen ein Termin in KW {{KW}}? Ihr {{Trigger}} klingt nach einem guten Aufhänger.',
+        'SIGN'
+      ]
+    },
+    {
+      id: 'li-trigger', cat: 'erst', title: 'LinkedIn-Trigger-Nachricht', used: 43, open: 41, reply: 23, meet: 5,
+      channel: 'LinkedIn',
+      subject: 'Kurze Frage zu {{Unternehmen}}',
+      body: [
+        'Guten Tag {{Anrede}} {{Nachname}},',
+        'ich habe gesehen, dass {{Unternehmen}} aktuell {{Trigger}} vorantreibt. Dazu habe ich eine kurze Frage: Ist die KI-Roadmap bereits an konkrete Use-Cases und eine belastbare Datenbasis geknüpft?',
+        'Falls nicht, lohnt sich ein Blick auf unseren KI-Readiness Sprint. In 2–3 Wochen steht ein priorisierter Maßnahmenplan mit Aufwand, Nutzen und Förderfähigkeit.',
+        'Hätten Sie diese oder nächste Woche 20 Minuten?',
+        'SIGN'
+      ]
+    },
+    {
+      id: 'follow-1', cat: 'follow', title: 'Follow-up 1 (5 Tage)', used: 112, open: 22, reply: 9, meet: 2,
+      channel: 'E-Mail',
+      subject: 'Re: KI-Readiness bei {{Unternehmen}}',
+      body: [
+        'Guten Tag {{Anrede}} {{Nachname}},',
+        'ich möchte meine Nachricht vom letzten Kontakt kurz nachhalten. Falls das Thema KI-Readiness bei {{Unternehmen}} gerade nicht Priorität hat, sagen Sie einfach Bescheid — ich melde mich dann später erneut.',
+        'Falls doch: Ein 20-minütiges Gespräch reicht, um einzuschätzen, ob der Sprint für Sie einen Hebel hat.',
+        'Beste Grüße',
+        'SIGN'
+      ]
+    },
+    {
+      id: 'follow-2', cat: 'follow', title: 'Follow-up 2 (14 Tage)', used: 78, open: 15, reply: 6, meet: 1,
+      channel: 'E-Mail',
+      subject: 'Letzte Nachricht: KI-Readiness {{Unternehmen}}',
+      body: [
+        'Guten Tag {{Anrede}} {{Nachname}},',
+        'dies ist meine letzte Nachricht zu diesem Thema. Sollte KI-Readiness für {{Unternehmen}} später relevant werden, melden Sie sich gern jederzeit.',
+        'Unsere Unterlagen zum KI-Readiness Sprint (Ablauf, 6 Dimensionen, BaFA-Förderung) sende ich auf Wunsch gern zu.',
+        'Beste Grüße',
+        'SIGN'
+      ]
+    },
+    {
+      id: 'nach-erst', cat: 'nach', title: 'Nach Erstgespräch', used: 38, open: 89, reply: 52, meet: 12,
+      channel: 'E-Mail',
+      subject: 'Zusammenfassung unseres Gesprächs – KI-Readiness {{Unternehmen}}',
+      body: [
+        'Guten Tag {{Anrede}} {{Nachname}},',
+        'vielen Dank für das offene Gespräch. Wie besprochen hier die wichtigsten Punkte: Fokus auf Datenverfügbarkeit und Prozessreife, erstes Zielbild KI-Strategie, Zeitrahmen ab KW {{KW}}.',
+        'Im nächsten Schritt starten wir das KI-Assessment mit dem Kickoff-Workshop. Die Agenda (90 Minuten, 6 Dimensionen, Use-Case-Sammlung) sende ich Ihnen bis Ende der Woche.',
+        'Beste Grüße',
+        'SIGN'
+      ]
+    },
+    {
+      id: 'nach-assess', cat: 'nach', title: 'Assessment-Ergebnisse teilen', used: 22, open: 95, reply: 61, meet: 9,
+      channel: 'E-Mail',
+      subject: 'Ihr KI-Readiness Assessment – Ergebnisse und nächste Schritte',
+      body: [
+        'Guten Tag {{Anrede}} {{Nachname}},',
+        'anbei das Ergebnis des KI-Readiness Assessments für {{Unternehmen}}: Gesamtscore 3,7 von 5,0 — eine solide Basis mit klarem Hebel bei KI-Strategie und Prozessreife.',
+        'Die Priorisierung der Use-Cases sowie die Aufwands- und Nutzenschätzung finden Sie in den Projektvorschlägen. Für Rückfragen stehe ich gern bereit.',
+        'Beste Grüße',
+        'SIGN'
+      ]
+    },
+    {
+      id: 'ang-geleit', cat: 'angebot', title: 'Angebot-Begleitmail', used: 31, open: 97, reply: 44, meet: 7,
+      channel: 'E-Mail',
+      subject: 'Angebot A-2026-047 – KI-Readiness Sprint {{Unternehmen}}',
+      body: [
+        'Guten Tag {{Anrede}} {{Nachname}},',
+        'wie besprochen erhalten Sie anbei unser Angebot über den KI-Readiness Sprint für {{Unternehmen}}. Das Nettoinvestement beträgt € 70.000, nach BaFA-Förderung € 66.500 zzgl. Umsatzsteuer.',
+        'Das Angebot ist bis zum 20.11.2026 gültig. Bei Fragen oder gewünschten Anpassungen — etwa beim Leistungsumfang — sprechen Sie mich gern direkt an.',
+        'Beste Grüße',
+        'SIGN'
+      ]
+    },
+    {
+      id: 'ang-follow', cat: 'angebot', title: 'Angebot-Follow-up', used: 24, open: 58, reply: 27, meet: 4,
+      channel: 'E-Mail',
+      subject: 'Re: Angebot A-2026-047 – KI-Readiness Sprint',
+      body: [
+        'Guten Tag {{Anrede}} {{Nachname}},',
+        'ich wollte mich nach dem Angebot zum KI-Readiness Sprint erkundigen. Haben Sie bereits Gelegenheit gehabt, die Unterlagen zu prüfen?',
+        'Gerne vereinbaren wir einen kurzen Termin, um offene Punkte — Leistungsumfang, Zeitplan oder Fördermittel — gemeinsam durchzugehen.',
+        'Beste Grüße',
+        'SIGN'
+      ]
+    }
+  ];
+
+  var TARGETS = [
+    { name: 'Volksbank Rhein-Main', sub: 'Banken · Bayern', on: true },
+    { name: 'Sparkasse Düsseldorf', sub: 'Banken · NRW', on: true },
+    { name: 'DATEV eG', sub: 'Banken · Bayern', on: true },
+    { name: 'BMW Financial Services', sub: 'Banken · Bayern', on: false }
+  ];
+
+  var SIGN = 'Dimitrie Tayon · KI-Strategieberater · innolab Consulting GmbH<br>d.tayon@innolab.de · +49 69 1234-567';
+
+  var state = {
+    cat: 'all',
+    query: '',
+    current: TEMPLATES[0],
+    seg: 'Banken'
+  };
+
+  function toast(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1900);
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function personal() {
+    return {
+      Anrede: document.getElementById('pf-anrede').value,
+      Vorname: document.getElementById('pf-vorname').value || '',
+      Nachname: document.getElementById('pf-nachname').value || '',
+      Unternehmen: document.getElementById('pf-unternehmen').value || '',
+      KW: document.getElementById('pf-kw').value || '',
+      Trigger: document.getElementById('pf-trigger').value || '',
+      Segment: state.seg
+    };
+  }
+
+  function fill(text) {
+    var vals = personal();
+    return esc(text).replace(/\{\{(\w+)\}\}/g, function (m, key) {
+      var v = vals[key] != null ? esc(vals[key]) : '';
+      return '<span class="ou-ph">' + v + '</span>';
+    });
+  }
+
+  function renderCats() {
+    var box = document.getElementById('ou-cats');
+    box.innerHTML = '';
+    CATS.forEach(function (c) {
+      var count = c.id === 'all' ? TEMPLATES.length : TEMPLATES.filter(function (t) { return t.cat === c.id; }).length;
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ou-cat' + (state.cat === c.id ? ' active' : '');
+      b.innerHTML = '<span>' + c.label + '</span><b>' + count + '</b>';
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        state.cat = c.id;
+        renderCats();
+        renderItems();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function visibleTemplates() {
+    var q = state.query.toLowerCase();
+    return TEMPLATES.filter(function (t) {
+      if (state.cat !== 'all' && t.cat !== state.cat) return false;
+      if (q && t.title.toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
+  }
+
+  function renderItems() {
+    var box = document.getElementById('ou-items');
+    var list = visibleTemplates();
+    box.innerHTML = '';
+    if (!list.length) {
+      box.innerHTML = '<div style="padding:20px 10px;text-align:center;font-size:11.5px;color:#94a3b8;">Keine Vorlage gefunden.</div>';
+      return;
+    }
+    list.forEach(function (t) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ou-item' + (state.current.id === t.id ? ' active' : '');
+      b.innerHTML =
+        '<div class="ou-item-title">' + esc(t.title) + '</div>' +
+        '<div class="ou-item-meta">' +
+          '<span class="ou-tag ' + t.cat + '">' + catLabel(t.cat) + '</span>' +
+          '<span class="ou-item-stats">' + t.used + '× · ' + t.open + '% offen</span>' +
+        '</div>';
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        state.current = t;
+        renderItems();
+        renderPreview();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function catLabel(id) {
+    for (var i = 0; i < CATS.length; i++) if (CATS[i].id === id) return CATS[i].label;
+    return id;
+  }
+
+  function renderPreview() {
+    var t = state.current;
+    var v = personal();
+
+    document.getElementById('ou-title').textContent = t.title;
+    document.getElementById('ou-meta').textContent = 'Verwendet: ' + t.used + '× · Öffnungsrate: ' + t.open + '% · Branche: ' + state.seg + ' · ' + t.channel;
+    document.getElementById('ou-to').innerHTML = '<span class="ou-ph">' + esc(v.Anrede + ' ' + v.Vorname + ' ' + v.Nachname) + '</span> · <span class="ou-ph">' + esc(v.Unternehmen) + '</span>';
+    document.getElementById('ou-subject').innerHTML = fill(t.subject);
+
+    var html = '';
+    t.body.forEach(function (p) {
+      if (p === 'SIGN') {
+        html += '<p class="ou-sign"><strong>Dimitrie Tayon</strong><br>' + SIGN + '</p>';
+      } else {
+        html += '<p>' + fill(p) + '</p>';
+      }
+    });
+    document.getElementById('ou-body').innerHTML = html;
+
+    document.getElementById('st-used').textContent = t.used;
+    document.getElementById('st-open').textContent = t.open + ' %';
+    document.getElementById('st-reply').textContent = t.reply + ' %';
+    document.getElementById('st-meet').textContent = t.meet;
+  }
+
+  function renderTargets() {
+    var box = document.getElementById('ou-targets');
+    box.innerHTML = '';
+    TARGETS.forEach(function (t) {
+      var label = document.createElement('label');
+      label.className = 'ou-target';
+      label.innerHTML =
+        '<input type="checkbox"' + (t.on ? ' checked' : '') + '>' +
+        '<div><div class="ou-target-name">' + esc(t.name) + '</div><div class="ou-target-sub">' + esc(t.sub) + '</div></div>';
+      label.querySelector('input').addEventListener('change', function (e) {
+        t.on = e.target.checked;
+        updateSend();
+      });
+      box.appendChild(label);
+    });
+    updateSend();
+  }
+
+  function updateSend() {
+    var n = TARGETS.filter(function (t) { return t.on; }).length;
+    var btn = document.getElementById('btn-send');
+    btn.textContent = 'Senden (' + n + ' Empfänger)';
+  }
+
+  document.getElementById('ou-search').addEventListener('input', function (e) {
+    state.query = e.target.value.trim();
+    renderItems();
+  });
+
+  document.querySelectorAll('.ou-seg').forEach(function (b) {
+    b.addEventListener('click', function (e) {
+      e.stopPropagation();
+      document.querySelectorAll('.ou-seg').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active');
+      state.seg = b.getAttribute('data-seg');
+      renderPreview();
+    });
+  });
+
+  ['pf-anrede', 'pf-vorname', 'pf-nachname', 'pf-unternehmen', 'pf-kw', 'pf-trigger'].forEach(function (id) {
+    document.getElementById(id).addEventListener('input', renderPreview);
+    document.getElementById(id).addEventListener('change', renderPreview);
+  });
+
+  document.getElementById('btn-send').addEventListener('click', function (e) {
+    e.stopPropagation();
+    var n = TARGETS.filter(function (t) { return t.on; }).length;
+    if (!n) { toast('Bitte mindestens einen Zielkunden auswählen.'); return; }
+    toast('Versand vorbereitet — ' + n + ' Empfänger, Einwilligung wird geprüft …');
+  });
+
+  document.getElementById('btn-check').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('Vorschau geprüft — keine offenen Platzhalter.');
+  });
+
+  document.getElementById('btn-edit').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('Vorlage „' + state.current.title + '“ wird geöffnet …');
+  });
+
+  document.getElementById('btn-copy').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('Vorlage in die Zwischenablage kopiert.');
+  });
+
+  document.getElementById('btn-new').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('Neue Vorlage — Editor wird geöffnet …');
+  });
+
+  document.getElementById('btn-gen').addEventListener('click', function (e) {
+    e.stopPropagation();
+    var btn = e.currentTarget;
+    var orig = btn.textContent;
+    btn.textContent = 'Wird generiert …';
+    btn.disabled = true;
+    setTimeout(function () {
+      btn.textContent = orig;
+      btn.disabled = false;
+      toast('KI-Vorlage erstellt — bitte prüfen und speichern.');
+    }, 1300);
+  });
+
+  renderCats();
+  renderItems();
+  renderPreview();
+  renderTargets();
+})();
+</script>
+</body>
+</html>

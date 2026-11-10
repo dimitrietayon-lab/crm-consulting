@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neuer Zielkunde — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; display: flex; height: 100vh; overflow: hidden; }
+
+/* Sidebar */
+.sidebar { width: 240px; background: #111111; color: #94a3b8; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+.brand { padding: 20px 16px 16px; border-bottom: 1px solid #1e293b; }
+.brand-name { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+.brand-sub { font-size: 11px; color: #F26722; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
+.sidebar-nav { padding: 12px 8px; flex: 1; }
+.nav-group { margin-bottom: 8px; }
+.nav-group-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; color: #475569; padding: 6px 8px 4px; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; color: #94a3b8; text-decoration: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .15s; }
+.nav-item:hover { background: #1e293b; color: #e2e8f0; }
+.nav-item.active { background: #1e3a5f; color: #60a5fa; }
+.nav-item .icon { font-size: 15px; }
+
+/* Layout */
+.main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.breadcrumb a { color: #64748b; text-decoration: none; }
+.breadcrumb a:hover { color: #F26722; }
+.breadcrumb-sep { color: #cbd5e1; }
+.breadcrumb-current { color: #111111; font-weight: 600; }
+main { flex: 1; overflow-y: auto; padding: 24px; display: flex; gap: 24px; align-items: flex-start; }
+
+/* Form card */
+.form-card { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; flex: 1; max-width: 700px; }
+.form-section { padding: 20px 24px; border-bottom: 1px solid #f1f5f9; }
+.form-section:last-of-type { border-bottom: none; }
+.section-title { font-size: 13px; font-weight: 700; color: #111111; margin-bottom: 4px; }
+.section-desc { font-size: 12px; color: #64748b; margin-bottom: 16px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid.cols-1 { grid-template-columns: 1fr; }
+.form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group.full { grid-column: 1 / -1; }
+label { font-size: 12px; font-weight: 500; color: #374151; }
+label .req { color: #ef4444; }
+input[type=text], input[type=email], input[type=url], input[type=number], select, textarea {
+  padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; font-family: inherit;
+  outline: none; transition: border-color .15s; background: #fff; color: #111111; }
+input:focus, select:focus, textarea:focus { border-color: #F26722; }
+textarea { resize: vertical; min-height: 70px; }
+.field-hint { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
+.radio-label { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; transition: border-color .15s; }
+.radio-label:hover { border-color: #F26722; }
+.radio-label input { accent-color: #F26722; }
+.radio-label.selected { border-color: #F26722; background: #f0f0ff; }
+
+/* Form footer */
+.form-footer { padding: 16px 24px; background: #f8fafc; border-top: 1px solid #f1f5f9; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 10px; }
+.btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+.btn-primary { background: #F26722; color: #fff; }
+.btn-primary:hover { background: #D4540A; }
+.btn-ghost { background: transparent; color: #64748b; border: 1px solid #e2e8f0; }
+.btn-ghost:hover { background: #f1f5f9; }
+
+/* Info panel */
+.info-panel { width: 280px; flex-shrink: 0; }
+.info-card { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; padding: 18px; margin-bottom: 14px; }
+.info-card-title { font-size: 12px; font-weight: 700; color: #111111; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .5px; }
+.info-item { display: flex; gap: 8px; margin-bottom: 10px; font-size: 12px; color: #475569; }
+.info-item-icon { font-size: 14px; margin-top: 1px; flex-shrink: 0; }
+
+/* Segment colors */
+.seg-badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block; }
+.seg-kmu { background: #dbeafe; color: #1d4ed8; }
+.seg-mittelstand { background: #dcfce7; color: #16a34a; }
+.seg-enterprise { background: #ede9fe; color: #7c3aed; }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="zielkunde-neu"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <a href="mockup-sprint-kanban.html">Zielkunden</a>
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current">Neuer Zielkunde</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="form-card">
+      <!-- Stammdaten -->
+      <div class="form-section">
+        <div class="section-title">Stammdaten</div>
+        <div class="section-desc">Grundlegende Unternehmensinformationen</div>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Unternehmensname <span class="req">*</span></label>
+            <input type="text" placeholder="z.B. Autohaus Schneider GmbH">
+          </div>
+          <div class="form-group">
+            <label>Branche <span class="req">*</span></label>
+            <select>
+              <option value="">— wählen —</option>
+              <option>Banken</option>
+              <option>Bau &amp; Immobilien</option>
+              <option>Bildung, Sport &amp; Kultur</option>
+              <option>Energie, Wasser &amp; Entsorgung</option>
+              <option>Gesundheit &amp; Soziales</option>
+              <option>Handel &amp; Logistik</option>
+              <option>Ingenieur- &amp; Architekturbüros</option>
+              <option>IT &amp; Telekommunikation</option>
+              <option>Marketing &amp; Medien</option>
+              <option>Maschinenbau &amp; Elektro</option>
+              <option>Personaldienstleister</option>
+              <option>Rechts- &amp; Steuerberatung, WP</option>
+              <option>Übrige Industrie</option>
+              <option>Versicherungen &amp; Finanzvermittler</option>
+              <option>Sonstige</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Mitarbeiteranzahl</label>
+            <input type="text" inputmode="numeric" placeholder="z.B. 250">
+          </div>
+          <div class="form-group full">
+            <label>Straße &amp; Hausnummer</label>
+            <input type="text" placeholder="z.B. Hauptstraße 12">
+          </div>
+          <div class="form-group">
+            <label>PLZ</label>
+            <input type="text" inputmode="numeric" placeholder="z.B. 50667">
+          </div>
+          <div class="form-group">
+            <label>Ort</label>
+            <input type="text" placeholder="z.B. Köln">
+          </div>
+          <div class="form-group">
+            <label>Jahresumsatz (ca.)</label>
+            <select>
+              <option>unter € 1 Mio.</option>
+              <option>€ 1–5 Mio.</option>
+              <option selected>€ 5–25 Mio.</option>
+              <option>€ 25–100 Mio.</option>
+              <option>über € 100 Mio.</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Website</label>
+            <input type="url" placeholder="https://…">
+          </div>
+          <div class="form-group">
+            <label>Bundesland</label>
+            <select>
+              <option value="">— wählen —</option>
+              <option>Baden-Württemberg</option>
+              <option>Bayern</option>
+              <option>Berlin</option>
+              <option>Brandenburg</option>
+              <option>Bremen</option>
+              <option>Hamburg</option>
+              <option>Hessen</option>
+              <option>Mecklenburg-Vorpommern</option>
+              <option>Niedersachsen</option>
+              <option selected>Nordrhein-Westfalen</option>
+              <option>Rheinland-Pfalz</option>
+              <option>Saarland</option>
+              <option>Sachsen</option>
+              <option>Sachsen-Anhalt</option>
+              <option>Schleswig-Holstein</option>
+              <option>Thüringen</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hauptkontakt -->
+      <div class="form-section">
+        <div class="section-title">Hauptkontakt</div>
+        <div class="section-desc">Ansprechpartner beim Zielkunden (kann später ergänzt werden)</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Vorname</label>
+            <input type="text" placeholder="Max">
+          </div>
+          <div class="form-group">
+            <label>Nachname</label>
+            <input type="text" placeholder="Mustermann">
+          </div>
+          <div class="form-group">
+            <label>Position / Titel</label>
+            <input type="text" placeholder="z.B. Geschäftsführer, IT-Leiter">
+          </div>
+          <div class="form-group">
+            <label>E-Mail</label>
+            <input type="email" placeholder="m.mustermann@firma.de">
+          </div>
+          <div class="form-group">
+            <label>Telefon</label>
+            <input type="text" placeholder="+49 211 …">
+          </div>
+          <div class="form-group">
+            <label>LinkedIn-Profil</label>
+            <input type="url" placeholder="https://linkedin.com/in/…">
+          </div>
+        </div>
+      </div>
+
+      <!-- Sprint-Einordnung -->
+      <div class="form-section">
+        <div class="section-title">Sprint-Einordnung</div>
+        <div class="section-desc">Wie dieser Zielkunde in den KI-Readiness Sprint eingeordnet wird</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Priorität</label>
+            <div class="radio-group">
+              <label class="radio-label"><input type="radio" name="prio"> Niedrig</label>
+              <label class="radio-label selected"><input type="radio" name="prio" checked> Mittel</label>
+              <label class="radio-label"><input type="radio" name="prio"> Hoch</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Zuständiger Berater</label>
+            <select>
+              <option>— zuweisen —</option>
+              <option selected>Anna Müller</option>
+              <option>Thomas Braun</option>
+              <option>Lea Schmidt</option>
+              <option>Michael Weber</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>BAFA-Förderung möglich</label>
+            <div class="radio-group">
+              <label class="radio-label selected"><input type="radio" name="bafa" checked> Ja</label>
+              <label class="radio-label"><input type="radio" name="bafa"> Nein</label>
+              <label class="radio-label"><input type="radio" name="bafa"> Prüfen</label>
+            </div>
+          </div>
+          <div class="form-group full">
+            <label>Quelle / Wie wurde der Kontakt hergestellt?</label>
+            <select>
+              <option value="">— wählen —</option>
+              <option>Bestandskunde</option>
+              <option>Empfehlung</option>
+              <option selected>Kaltakquise</option>
+              <option>LinkedIn</option>
+              <option>Messe / Event</option>
+              <option>Netzwerk</option>
+              <option>Recherche</option>
+              <option>Selbsttest</option>
+              <option>Vortrag</option>
+              <option>Webinar</option>
+              <option>Webseite-Anfrage</option>
+              <option>Sonstiges</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label>Notiz (optional)</label>
+            <textarea placeholder="Erste Einschätzung, besondere Hinweise, Gesprächsnotizen …"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Vertriebsdaten -->
+      <div class="form-section" style="background:#f0fdf4">
+        <div class="section-title">Vertriebsdaten &amp; Anruf-Tracking</div>
+        <div class="section-desc">UWG-konformer Anlass, Anrufversuche und E-Mail-Erlaubnis</div>
+
+        <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:16px;display:flex;gap:8px;align-items:flex-start">
+          <span style="font-size:16px">⚠️</span>
+          <div style="font-size:12px;color:#92400e"><strong>§ 7 UWG — Pflichtfeld:</strong> Ein konkreter, dokumentierter Anlass ist für jeden Kaltanruf rechtlich erforderlich. Ohne Anlass darf kein Anruf stattfinden.</div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Anlass-Typ <span class="req">*</span></label>
+            <select>
+              <option value="">— Anlass wählen —</option>
+              <option>Fusion / Übernahme</option>
+              <option>Neue Geschäftsführung</option>
+              <option>Stellenanzeige mit KI-Bezug</option>
+              <option>ERP-Projekt / Digitalisierung</option>
+              <option>Expansion / neuer Standort</option>
+              <option>AI Act Compliance</option>
+              <option>Förderprogramm (BAFA, Digitalisierung)</option>
+              <option>Branchennews / Pressebericht</option>
+              <option>Messeteilnahme</option>
+              <option>Sonstiger Anlass</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Datum des Anlasses</label>
+            <input type="date">
+          </div>
+          <div class="form-group full">
+            <label>Anlass (Freitext) <span class="req">*</span></label>
+            <textarea placeholder="z.B. Laut LinkedIn-Post vom 15.10.2026 hat das Unternehmen einen neuen Digitalverantwortlichen eingestellt und sucht KI-Expertise …"></textarea>
+            <div class="field-hint">Konkrete Begründung für den Anruf — muss dokumentiert sein</div>
+          </div>
+          <div class="form-group">
+            <label>Quelle des Anlasses</label>
+            <input type="text" placeholder="z.B. LinkedIn, Handelsblatt, Bundesanzeiger">
+          </div>
+        </div>
+
+        <!-- Anruf-Tracker -->
+        <div style="margin-top:16px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:14px">
+          <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:10px">Anruf-Tracker (max. 3 Versuche)</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div style="flex:1;min-width:160px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px">
+              <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px">① VERSUCH 1</div>
+              <input type="date" style="width:100%;padding:5px 8px;border:1px solid #e2e8f0;border-radius:5px;font-size:12px;font-family:inherit">
+              <select style="width:100%;margin-top:6px;padding:5px 8px;border:1px solid #e2e8f0;border-radius:5px;font-size:12px;font-family:inherit">
+                <option>— Ergebnis —</option>
+                <option>Erreicht</option>
+                <option>Nicht erreicht</option>
+                <option>Voicemail</option>
+              </select>
+            </div>
+            <div style="flex:1;min-width:160px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px">
+              <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px">② VERSUCH 2</div>
+              <input type="date" style="width:100%;padding:5px 8px;border:1px solid #e2e8f0;border-radius:5px;font-size:12px;font-family:inherit">
+              <select style="width:100%;margin-top:6px;padding:5px 8px;border:1px solid #e2e8f0;border-radius:5px;font-size:12px;font-family:inherit">
+                <option>— Ergebnis —</option>
+                <option>Erreicht</option>
+                <option>Nicht erreicht</option>
+                <option>Voicemail</option>
+              </select>
+            </div>
+            <div style="flex:1;min-width:160px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px">
+              <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px">③ VERSUCH 3</div>
+              <input type="date" style="width:100%;padding:5px 8px;border:1px solid #e2e8f0;border-radius:5px;font-size:12px;font-family:inherit">
+              <select style="width:100%;margin-top:6px;padding:5px 8px;border:1px solid #e2e8f0;border-radius:5px;font-size:12px;font-family:inherit">
+                <option>— Ergebnis —</option>
+                <option>Erreicht</option>
+                <option>Nicht erreicht</option>
+                <option>Voicemail</option>
+              </select>
+            </div>
+          </div>
+          <div style="font-size:11px;color:#94a3b8;margin-top:8px">Nach 3 erfolglosen Versuchen: Zielkunde zurückstellen oder Status wechseln</div>
+        </div>
+
+        <div class="form-grid" style="margin-top:14px">
+          <div class="form-group">
+            <label>E-Mail-Zustimmung erteilt am</label>
+            <input type="date">
+            <div class="field-hint">Nur ausfüllbar wenn Kontakt mündlich im Gespräch zugestimmt hat</div>
+          </div>
+          <div class="form-group">
+            <label>Übergabe an Engagement Manager</label>
+            <input type="date">
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 5: Angebots- und Ergebnis-Tracking -->
+      <div class="form-section">
+        <div class="section-title">Angebots- &amp; Ergebnis-Tracking</div>
+        <div class="section-desc">Angebotsdaten und Ergebnis dokumentieren — auch bei Verlust</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Angebot: Paket</label>
+            <select>
+              <option value="">— kein Angebot —</option>
+              <option>Compact</option>
+              <option>Standard</option>
+              <option>Premium</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Angebot: Wert (€)</label>
+            <input type="number" placeholder="z.B. 9990">
+          </div>
+          <div class="form-group">
+            <label>Angebot: Datum</label>
+            <input type="date">
+          </div>
+          <div class="form-group">
+            <label>Erstgespräch Datum</label>
+            <input type="date">
+          </div>
+          <div class="form-group full">
+            <label>Ergebnis &amp; Verlust-Dokumentation</label>
+            <select style="margin-bottom:8px">
+              <option value="">— kein Verlust —</option>
+              <option>Preis zu hoch</option>
+              <option>Wettbewerber gewonnen</option>
+              <option>Kein Budget</option>
+              <option>Kein Bedarf</option>
+              <option>Schlechtes Timing</option>
+              <option>Sonstiger Grund</option>
+            </select>
+            <textarea placeholder="Erläuterung zum Ergebnis oder Verlust-Grund (für Reporting und Lessons Learned) …"></textarea>
+            <div class="field-hint">Wird in der Gewinn/Verlust-Analyse im Reporting ausgewertet</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <a href="mockup-sprint-kanban.html" class="btn btn-ghost">Abbrechen</a>
+        <button class="btn btn-ghost">Speichern &amp; weiteres anlegen</button>
+        <button class="btn btn-primary">Zielkunde anlegen →</button>
+      </div>
+    </div>
+
+    <!-- Info panel -->
+    <div class="info-panel">
+      <div class="info-card">
+        <div class="info-card-title">Hinweise</div>
+        <div class="info-item"><span class="info-item-icon">📋</span> Pflichtfelder (markiert mit *) sind Unternehmensname und Branche.</div>
+        <div class="info-item"><span class="info-item-icon">🔍</span> Nach dem Anlegen kannst du direkt das KI-Assessment starten.</div>
+        <div class="info-item"><span class="info-item-icon">💶</span> BAFA-Förderung: Bei Interesse prüfen wir gemeinsam die Förderfähigkeit.</div>
+        <div class="info-item"><span class="info-item-icon">👤</span> Weitere Kontakte können jederzeit in der Detailansicht ergänzt werden.</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-title">Branchen</div>
+        <p style="font-size:12px;color:#64748b;margin-bottom:8px">Eine einheitliche Branchenliste für Erfassen, Filter, Import und Reporting:</p>
+        <div style="font-size:12px;color:#64748b;line-height:1.7">
+          Banken · Bau &amp; Immobilien · Bildung, Sport &amp; Kultur · Energie, Wasser &amp; Entsorgung ·
+          Gesundheit &amp; Soziales · Handel &amp; Logistik · Ingenieur- &amp; Architekturbüros ·
+          IT &amp; Telekommunikation · Marketing &amp; Medien · Maschinenbau &amp; Elektro ·
+          Personaldienstleister · Rechts- &amp; Steuerberatung, WP · Übrige Industrie ·
+          Versicherungen &amp; Finanzvermittler · Sonstige
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="mockup-sprint-nav.js"></script>
+</body>

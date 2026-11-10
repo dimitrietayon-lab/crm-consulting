@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zielkunden · Liste — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Chrome, buttons, badges and table basics come from mockup-sprint.css. */
+  * { margin: 0; padding: 0; }
+  body { display: flex; height: 100vh; overflow: hidden; }
+  .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  .top-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .page-sub { font-size: 11.5px; color: #94a3b8; margin-top: 2px; }
+  .btn.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* Filter bar */
+  .list-filterbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; row-gap: 8px; background: #fff; border-bottom: 1px solid #e8e8e8; padding: 9px 24px; flex-shrink: 0; }
+  .lf-search { position: relative; width: 250px; flex-shrink: 0; }
+  .lf-search .si { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: #94a3b8; }
+  .lf-search input { width: 100%; height: 32px; padding-left: 30px; background: #f8fafc; font-size: 12.5px; }
+  .list-filterbar select { height: 32px; padding: 0 26px 0 9px; font-size: 12px; background: #fff; color: #374151; }
+  .lf-count { margin-left: auto; font-size: 11.5px; color: #94a3b8; white-space: nowrap; }
+  .lf-count b { color: #111111; }
+  .lf-reset[hidden] { display: none; }
+
+  /* Summary */
+  .list-summary { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; row-gap: 6px; padding: 8px 24px; background: #f8fafc; border-bottom: 1px solid #e8e8e8; flex-shrink: 0; font-size: 12px; color: #374151; }
+  .ls-text b { color: #111111; }
+  .ls-chip { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .chip-red { background: #fee2e2; color: #dc2626; }
+  .chip-violet { background: #f3e8ff; color: #7e22ce; }
+  .chip-amber { background: #fef3c7; color: #b45309; }
+  .ls-sort { margin-left: auto; font-size: 11px; color: #94a3b8; }
+
+  /* Table area */
+  .list-area { flex: 1; display: flex; flex-direction: column; min-height: 0; background: #fff; }
+  .list-scroll { flex: 1; overflow: auto; }
+  table.list-table { width: 100%; min-width: 1180px; border-collapse: separate; border-spacing: 0; }
+  .list-table thead th { position: sticky; top: 0; z-index: 2; padding: 9px 12px; border-bottom: 1px solid #e8e8e8; cursor: default; }
+  .list-table th[data-sort] { cursor: pointer; }
+  .list-table th[data-sort]:hover { color: #111111; }
+  .sort-ind { margin-left: 2px; font-size: 10px; color: #F26722; }
+  .th-num { width: 42px; color: #94a3b8; }
+  .th-right { text-align: right; }
+  .th-actions { width: 150px; }
+  .list-table tbody td { padding: 9px 12px; }
+  td.td-right { text-align: right; }
+  tr.row-dim { opacity: .62; }
+
+  .company-name { font-weight: 600; color: #111111; text-decoration: none; font-size: 13px; }
+  .company-name:hover { color: #F26722; }
+  .company-region { margin-top: 1px; font-size: 10.5px; color: #94a3b8; }
+  .seg-text { font-size: 12px; color: #475569; }
+  .ma-num { font-size: 12px; color: #334155; font-variant-numeric: tabular-nums; }
+  .pkg-basic { background: #dbeafe; color: #1d4ed8; }
+  .pkg-advanced { background: #e0e7ff; color: #4338ca; }
+  .pkg-premium { background: #f5f3ff; color: #6d28d9; }
+  .badge-none { background: #f8fafc; color: #94a3b8; border: 1px dashed #cbd5e1; }
+  .badge-p1 { background: #fee2e2; color: #dc2626; }
+  .badge-p2 { background: #fef3c7; color: #b45309; }
+  .badge-p3 { background: #f1f5f9; color: #64748b; }
+  .st-offen { background: #f1f5f9; color: #64748b; }
+  .st-recherchiert { background: #dbeafe; color: #1d4ed8; }
+  .st-vernetzt { background: #e0e7ff; color: #4338ca; }
+  .st-kontaktiert { background: #ede9fe; color: #6d28d9; }
+  .st-qualifizierung { background: #f3e8ff; color: #7e22ce; }
+  .st-erstgespraech { background: #ccfbf1; color: #0f766e; }
+  .st-verlust { background: #ffe4e6; color: #be123c; }
+  .st-angebot { background: #fef3c7; color: #b45309; }
+  .st-gewonnen { background: #dcfce7; color: #16a34a; }
+  .st-kein { background: #fee2e2; color: #dc2626; }
+  .stage-age { margin-top: 3px; font-size: 10px; color: #94a3b8; }
+  .stage-age.stale { color: #d97706; font-weight: 600; }
+  .contact-name { font-size: 12px; color: #374151; }
+  .contact-empty { color: #cbd5e1; }
+  .date-cell { font-size: 12px; color: #64748b; font-variant-numeric: tabular-nums; }
+  .src-text { font-size: 12px; color: #64748b; }
+  .next-step { max-width: 190px; font-size: 12px; color: #374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .next-step.alert { color: #dc2626; }
+  .actions-cell { display: flex; gap: 4px; }
+  .action-btn { padding: 3px 8px; border: 1px solid #e2e8f0; border-radius: 5px; background: #fff; color: #374151; text-decoration: none; font-size: 11px; font-weight: 500; white-space: nowrap; font-family: inherit; }
+  .action-btn:hover { background: #f8fafc; }
+  .action-btn.primary { background: #F26722; border-color: #F26722; color: #fff; }
+  .action-btn.primary:hover { background: #D4540A; }
+  .empty-row td { padding: 36px 12px; text-align: center; color: #94a3b8; font-size: 12.5px; }
+
+  /* Footer / pager */
+  .list-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 24px; background: #fff; border-top: 1px solid #e8e8e8; flex-shrink: 0; font-size: 12px; color: #64748b; }
+  .pager { display: flex; gap: 4px; }
+  .page-btn { min-width: 30px; height: 28px; padding: 0 8px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; color: #475569; font-size: 12px; cursor: pointer; font-family: inherit; }
+  .page-btn:hover:not([disabled]) { background: #f8fafc; border-color: #cbd5e1; }
+  .page-btn.active { background: #F26722; border-color: #F26722; color: #fff; font-weight: 600; }
+  .page-btn[disabled] { opacity: .4; cursor: default; }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="liste"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div>
+      <div class="page-title">Zielkunden · Listenansicht</div>
+      <div class="page-sub" id="page-sub">Sprint-Pipeline · Q4 2026 · 47 Zielkunden</div>
+    </div>
+    <div class="top-actions">
+      <a class="btn btn-ghost btn-sm" href="mockup-sprint-kanban.html">Kanban</a>
+      <a class="btn btn-ghost btn-sm" href="mockup-sprint-import.html">⬇ CSV importieren</a>
+      <button class="btn btn-ghost btn-sm" id="btn-export" type="button">⬆ Exportieren</button>
+      <a class="btn btn-primary btn-sm" href="mockup-sprint-zielkunde-neu.html">＋ Neue Zielkunde</a>
+    </div>
+  </header>
+
+  <div class="list-filterbar">
+    <div class="lf-search">
+      🔍<input type="text" id="q" placeholder="Unternehmen, Kontakt oder Ort suchen…" autocomplete="off">
+    </div>
+    <select id="f-seg"></select>
+    <select id="f-status"></select>
+    <select id="f-prio"></select>
+    <select id="f-region"></select>
+    <select id="f-pkg"></select>
+    <select id="f-src"></select>
+    <button class="btn btn-ghost btn-sm lf-reset" id="btn-reset" type="button" hidden>Zurücksetzen</button>
+    <span class="lf-count" id="filter-count">47 Einträge</span>
+  </div>
+
+  <div class="list-summary">
+    <span class="ls-text"><b id="sum-total">47</b> Zielkunden</span>
+    <span class="ls-chip chip-red" id="sum-p1">35 Priorität 1</span>
+    <span class="ls-chip chip-violet" id="sum-decision">13 in Entscheidungsphase</span>
+    <span class="ls-chip chip-amber" id="sum-nocontact">21 ohne Ansprechpartner</span>
+    <span class="ls-sort" id="sum-sort">Sortiert nach Priorität P1 zuerst</span>
+  </div>
+
+  <div class="list-area">
+    <div class="list-scroll">
+      <table class="list-table">
+        <thead>
+          <tr>
+            <th class="th-num">#</th>
+            <th data-sort="name">Unternehmen <span class="sort-ind"></span></th>
+            <th>Branche</th>
+            <th data-sort="prio">Priorität <span class="sort-ind"></span></th>
+            <th data-sort="ma" class="th-right">MA <span class="sort-ind"></span></th>
+            <th>Paket</th>
+            <th data-sort="status">Status <span class="sort-ind"></span></th>
+            <th>Herkunft</th>
+            <th>Ansprechpartner</th>
+            <th data-sort="contact">Letzte Aktivität <span class="sort-ind"></span></th>
+            <th>Nächster Schritt</th>
+            <th class="th-actions">Aktionen</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="list-footer">
+      <span id="page-info">Zeige 1–10 von 47</span>
+      <div class="pager" id="pager"></div>
+    </div>
+  </div>
+</div>
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  var COLUMNS = [
+    { key: 'offen',          label: 'Offen' },
+    { key: 'recherchiert',   label: 'Recherchiert' },
+    { key: 'vernetzt',       label: 'Vernetzt' },
+    { key: 'kontaktiert',    label: 'Kontaktiert' },
+    { key: 'qualifizierung', label: 'Qualifizierungsgespräch' },
+    { key: 'erstgespraech',  label: 'Erstgespräch' },
+    { key: 'angebot',        label: 'Angebot' },
+    { key: 'gewonnen',       label: 'Gewonnen' },
+    { key: 'verlust',        label: 'Verlust' },
+    { key: 'kein',           label: 'Kein Interesse' }
+  ];
+  var SEGMENTS = [
+    'Banken', 'Bau & Immobilien', 'Bildung, Sport & Kultur', 'Energie, Wasser & Entsorgung',
+    'Gesundheit & Soziales', 'Handel & Logistik', 'Ingenieur- & Architekturbüros',
+    'IT & Telekommunikation', 'Marketing & Medien', 'Maschinenbau & Elektro',
+    'Personaldienstleister', 'Rechts- & Steuerberatung, WP', 'Übrige Industrie',
+    'Versicherungen & Finanzvermittler', 'Sonstige'
+  ];
+  var SOURCES = [
+    'Bestandskunde', 'Empfehlung', 'Kaltakquise', 'LinkedIn', 'Messe / Event', 'Netzwerk',
+    'Recherche', 'Selbsttest', 'Vortrag', 'Webinar', 'Webseite-Anfrage', 'Sonstiges'
+  ];
+  var PAGE_SIZE = 10;
+
+  var DATA = [
+    // Offen (9)
+    { n: 'Volksbank Rhein-Main', seg: 'Banken', reg: 'Bayern', ma: '420 MA', prio: 3, st: 'offen', o: 'AM' },
+    { n: 'Sparkasse Düsseldorf', seg: 'Banken', reg: 'NRW', ma: '280 MA', prio: 2, st: 'offen', o: 'AM' },
+    { n: 'Signal Iduna', seg: 'Versicherungen & Finanzvermittler', reg: 'Hamburg', ma: '1.200 MA', prio: 1, st: 'offen', o: 'AM' },
+    { n: 'R+V Versicherung', seg: 'Versicherungen & Finanzvermittler', reg: 'Hessen', ma: '8.900 MA', prio: 3, st: 'offen', o: 'AM' },
+    { n: 'DATEV eG', seg: 'Banken', reg: 'Bayern', ma: '7.500 MA', prio: 2, st: 'offen', o: 'AM' },
+    { n: 'HUK-COBURG', seg: 'Versicherungen & Finanzvermittler', reg: 'Bayern', ma: '9.500 MA', prio: 1, st: 'offen', o: 'AM' },
+    { n: 'Miele & Cie. KG', seg: 'Übrige Industrie', reg: 'NRW', ma: '23k MA', prio: 2, st: 'offen', o: 'TB' },
+    { n: 'Hugo Boss AG', seg: 'Handel & Logistik', reg: 'Baden-Württemberg', ma: '19k MA', prio: 1, st: 'offen', o: 'MW' },
+    { n: 'Krones AG', seg: 'Maschinenbau & Elektro', reg: 'Bayern', ma: '18k MA', prio: 2, st: 'offen', o: 'LS' },
+
+    // Recherchiert (7)
+    { n: 'BMW Financial Services', seg: 'Banken', reg: 'Bayern', ma: '2.400 MA', prio: 3, st: 'recherchiert', pkg: 'Basic', o: 'AM' },
+    { n: 'Wacker Chemie AG', seg: 'Übrige Industrie', reg: 'Bayern', ma: '16k MA', prio: 2, st: 'recherchiert', o: 'LS' },
+    { n: 'DB Cargo AG', seg: 'Handel & Logistik', reg: 'Hessen', ma: '29k MA', prio: 1, st: 'recherchiert', o: 'TB' },
+    { n: 'Beiersdorf AG', seg: 'Übrige Industrie', reg: 'Hamburg', ma: '22k MA', prio: 2, st: 'recherchiert', o: 'TB' },
+    { n: 'Otto Group', seg: 'Handel & Logistik', reg: 'Hamburg', ma: '43k MA', prio: 3, st: 'recherchiert', pkg: 'Advanced', o: 'MW' },
+    { n: 'EnBW AG', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', ma: '27k MA', prio: 2, st: 'recherchiert', o: 'TB' },
+    { n: 'Fresenius SE', seg: 'Übrige Industrie', reg: 'Hessen', ma: '180k MA', prio: 3, st: 'recherchiert', o: 'TB' },
+
+    // Vernetzt (5)
+    { n: 'Freudenberg SE', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', ma: '11k MA', prio: 2, st: 'vernetzt', o: 'TB' },
+    { n: 'Heidelberg Materials', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', ma: '27k MA', prio: 1, st: 'vernetzt', o: 'TB' },
+    { n: 'Zalando SE', seg: 'Handel & Logistik', reg: 'Berlin', ma: '17k MA', prio: 3, st: 'vernetzt', pkg: 'Advanced', o: 'MW' },
+    { n: 'Kühne + Nagel', seg: 'Handel & Logistik', reg: 'Hamburg', ma: '79k MA', prio: 2, st: 'vernetzt', o: 'TB' },
+    { n: 'SWM Services GmbH', seg: 'Übrige Industrie', reg: 'Bayern', ma: '9.800 MA', prio: 1, st: 'vernetzt', o: 'TB' },
+
+    // Kontaktiert (4)
+    { n: 'Aldi Süd IT GmbH', seg: 'Handel & Logistik', reg: 'Bayern', ma: '650 MA', prio: 3, st: 'kontaktiert', c: 'M. Roth', calls: 1, o: 'MW' },
+    { n: 'Lanxess AG', seg: 'Übrige Industrie', reg: 'NRW', ma: '14k MA', prio: 2, st: 'kontaktiert', c: 'Dr. A. Klein', calls: 2, o: 'LS' },
+    { n: 'Gothaer Versicherung', seg: 'Versicherungen & Finanzvermittler', reg: 'NRW', ma: '3.100 MA', prio: 2, st: 'kontaktiert', c: 'M. Klein', calls: 2, o: 'AM' },
+    { n: 'Südzucker AG', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', ma: '19k MA', prio: 1, st: 'kontaktiert', c: 'S. Wolf', calls: 1, o: 'TB' },
+
+    // Qualifizierungsgespräch (6) + Erstgespräch (2)
+    { n: 'Münchener Rück AG', seg: 'Versicherungen & Finanzvermittler', reg: 'Bayern', ma: '32k MA', prio: 3, st: 'qualifizierung', pkg: 'Premium', c: 'K. Müller', calls: 3, o: 'AM' },
+    { n: 'DHL Supply Chain', seg: 'Handel & Logistik', reg: 'Hamburg', ma: '12k MA', prio: 2, st: 'qualifizierung', pkg: 'Advanced', c: 'P. Schmidt', calls: 2, o: 'TB' },
+    { n: 'Würth Gruppe', seg: 'Handel & Logistik', reg: 'Baden-Württemberg', ma: '82k MA', prio: 3, st: 'qualifizierung', pkg: 'Premium', c: 'T. Bauer', calls: 2, o: 'MW' },
+    { n: 'Bosch Rexroth', seg: 'Maschinenbau & Elektro', reg: 'Baden-Württemberg', ma: '8.500 MA', prio: 3, st: 'qualifizierung', pkg: 'Advanced', c: 'T. Weber', calls: 1, o: 'LS' },
+    { n: 'SAP SE', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', ma: '107k MA', prio: 3, st: 'qualifizierung', pkg: 'Premium', c: 'L. Hoffmann', calls: 3, o: 'TB' },
+    { n: 'Deutsche Bahn AG', seg: 'Handel & Logistik', reg: 'Berlin', ma: '340k MA', prio: 2, st: 'erstgespraech', c: 'F. Meier', calls: 1, o: 'TB' },
+    { n: 'Continental AG', seg: 'Maschinenbau & Elektro', reg: 'Niedersachsen', ma: '199k MA', prio: 2, st: 'qualifizierung', c: 'J. Braun', calls: 2, o: 'LS' },
+    { n: 'Zürich Versicherung', seg: 'Versicherungen & Finanzvermittler', reg: 'Hessen', ma: '5.400 MA', prio: 1, st: 'erstgespraech', c: 'C. Vogel', calls: 1, o: 'AM' },
+
+    // Angebot (5) — Pipeline 420.000 €
+    { n: 'Siemens Financial', seg: 'Banken', reg: 'Bayern', ma: '2.400 MA', prio: 3, st: 'angebot', pkg: 'Premium', val: 85000, c: 'K. Maier', o: 'AM' },
+    { n: 'BASF Digital GmbH', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', ma: '110k MA', prio: 2, st: 'angebot', pkg: 'Advanced', val: 120000, c: 'D. Weber', o: 'LS' },
+    { n: 'Metro AG Digital', seg: 'Handel & Logistik', reg: 'NRW', ma: '95k MA', prio: 1, st: 'angebot', val: 65000, c: 'S. König', o: 'MW' },
+    { n: 'AXA Konzern AG', seg: 'Versicherungen & Finanzvermittler', reg: 'NRW', ma: '5.600 MA', prio: 2, st: 'angebot', pkg: 'Premium', val: 70000, c: 'R. Lehmann', o: 'AM' },
+    { n: 'E.ON Digital', seg: 'Übrige Industrie', reg: 'NRW', ma: '75k MA', prio: 3, st: 'angebot', pkg: 'Advanced', val: 80000, c: 'H. Fischer', o: 'TB' },
+
+    // Gewonnen (6) — 156.000 € Umsatz
+    { n: 'Commerzbank AG', seg: 'Banken', reg: 'Hamburg', ma: '32k MA', prio: 3, st: 'gewonnen', pkg: 'Premium', val: 42000, o: 'AM' },
+    { n: 'Knorr-Bremse AG', seg: 'Maschinenbau & Elektro', reg: 'Bayern', ma: '31k MA', prio: 3, st: 'gewonnen', pkg: 'Advanced', val: 28000, o: 'LS' },
+    { n: 'Rheinmetall AG', seg: 'Maschinenbau & Elektro', reg: 'NRW', ma: '28k MA', prio: 2, st: 'gewonnen', pkg: 'Advanced', val: 31000, o: 'LS' },
+    { n: 'Bechtle AG', seg: 'Übrige Industrie', reg: 'Baden-Württemberg', ma: '14k MA', prio: 2, st: 'gewonnen', pkg: 'Basic', val: 22000, o: 'TB' },
+    { n: 'Jungheinrich AG', seg: 'Handel & Logistik', reg: 'Hamburg', ma: '20k MA', prio: 2, st: 'gewonnen', pkg: 'Advanced', val: 18000, o: 'TB' },
+    { n: 'Pfeiffer Vacuum', seg: 'Maschinenbau & Elektro', reg: 'Hessen', ma: '4.500 MA', prio: 1, st: 'gewonnen', pkg: 'Basic', val: 15000, o: 'LS' },
+
+    // Kein Interesse (3)
+    { n: 'Rewe Digital', seg: 'Handel & Logistik', reg: 'Bayern', ma: '90k MA', prio: 2, st: 'kein', o: 'MW' },
+    { n: 'Heraeus GmbH', seg: 'Übrige Industrie', reg: 'Hessen', ma: '15k MA', prio: 1, st: 'kein', o: 'TB' },
+    { n: 'Nordzucker AG', seg: 'Übrige Industrie', reg: 'Niedersachsen', ma: '3.900 MA', prio: 2, st: 'kein', o: 'TB' }
+  ];
+
+  DATA.forEach(function (z, i) {
+    z.src = SOURCES[i % SOURCES.length];
+    z.d = (i * 5 + z.n.length) % 38 + 1;
+    z.lastAgo = (i * 7 + z.n.length) % 16 + 1;
+  });
+
+  var state = { seg: '', status: '', prio: '', region: '', pkg: '', src: '', q: '' };
+  var sort = { key: 'prio', dir: -1 };
+  var page = 1;
+  var PAGE = PAGE_SIZE;
+
+  var rowsEl = document.getElementById('rows');
+  var pagerEl = document.getElementById('pager');
+  var searchEl = document.getElementById('q');
+  var resetBtn = document.getElementById('btn-reset');
+  var footerInfo = document.getElementById('page-info');
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function statusLabel(key) {
+    for (var i = 0; i < COLUMNS.length; i++) if (COLUMNS[i].key === key) return COLUMNS[i].label;
+    return key;
+  }
+  function statusIdx(key) {
+    for (var i = 0; i < COLUMNS.length; i++) if (COLUMNS[i].key === key) return i;
+    return 99;
+  }
+  function maNum(z) {
+    var s = String(z.ma).replace(/\s*MA\s*$/i, '').trim();
+    if (/k$/i.test(s)) return parseFloat(s.replace(/k$/i, '').replace(/\./g, '')) * 1000;
+    return parseFloat(s.replace(/\./g, '')) || 0;
+  }
+  function fmtDate(d) {
+    return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + d.getFullYear();
+  }
+  function daysAgo(n) {
+    var d = new Date();
+    d = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    d.setTime(d.getTime() - n * 86400000);
+    return d;
+  }
+  function toast(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1900);
+  }
+
+  function nextStep(z) {
+    switch (z.st) {
+      case 'offen': return 'Recherche starten';
+      case 'recherchiert': return 'LinkedIn-Anfrage senden';
+      case 'vernetzt': return 'Erstanruf mit Anlass';
+      case 'kontaktiert': return z.calls >= 2 ? 'Anrufversuch 3 (max.)' : '2. Anrufversuch planen';
+      case 'qualifizierung': return 'Bedarf klären & Termin';
+      case 'erstgespraech': return 'Erstgespräch führen';
+      case 'angebot': return 'Angebot nachfassen';
+      case 'gewonnen': return 'Übergabe & Onboarding';
+      case 'verlust': return 'Verlustgrund im Reporting';
+      case 'kein': return 'Auf Sperrliste setzen';
+    }
+    return '';
+  }
+  function mainAction(z) {
+    if (z.st === 'angebot') return { label: 'Angebot', href: 'mockup-sprint-angebot.html' };
+    if (z.st === 'gewonnen') return { label: 'Übergabe', href: 'mockup-sprint-uebergabe.html' };
+    if (z.st === 'kein') return { label: 'Sperrliste', href: 'mockup-sprint-sperrliste.html' };
+    return { label: 'Loggen', href: 'mockup-sprint-aktivitaet-loggen.html' };
+  }
+
+  function rowHtml(z, idx) {
+    var action = mainAction(z);
+    var pkgHtml = z.pkg
+      ? '<span class="badge pkg-' + z.pkg.toLowerCase() + '">' + z.pkg + '</span>'
+      : '<span class="badge badge-none">—</span>';
+    var prioCls = z.prio === 3 ? 'badge-p1' : (z.prio === 2 ? 'badge-p2' : 'badge-p3');
+    var contact = z.c ? '<div class="contact-name">' + esc(z.c) + '</div>' : '<span class="contact-empty">—</span>';
+    var last = z.st === 'offen' ? '<span class="contact-empty">—</span>' : fmtDate(daysAgo(z.lastAgo));
+    var step = nextStep(z);
+    return '<tr' + (z.st === 'kein' ? ' class="row-dim"' : '') + '>' +
+      '<td style="color:#94a3b8;font-size:11.5px;">' + idx + '</td>' +
+      '<td><a class="company-name" href="mockup-sprint-detail.html">' + esc(z.n) + '</a>' +
+        '<div class="company-region">' + esc(z.reg) + '</div></td>' +
+      '<td><span class="seg-text">' + esc(z.seg) + '</span></td>' +
+      '<td><span class="badge ' + prioCls + '">P' + (4 - z.prio) + '</span></td>' +
+      '<td class="td-right"><span class="ma-num">' + esc(z.ma.replace(/\s*MA$/, '')) + '</span></td>' +
+      '<td>' + pkgHtml + '</td>' +
+      '<td><span class="badge st-' + z.st + '">' + statusLabel(z.st) + '</span>' +
+        '<div class="stage-age' + (z.d > 30 ? ' stale' : '') + '">seit ' + z.d + ' T</div></td>' +
+      '<td><span class="src-text">' + esc(z.src) + '</span></td>' +
+      '<td class="contact-cell">' + contact + '</td>' +
+      '<td><span class="date-cell">' + last + '</span></td>' +
+      '<td><div class="next-step' + (z.st === 'kein' ? ' alert' : '') + '">' + esc(step) + '</div></td>' +
+      '<td><div class="actions-cell">' +
+        '<a class="action-btn" href="' + action.href + '">' + action.label + '</a>' +
+        '<a class="action-btn primary" href="mockup-sprint-detail.html">Details</a>' +
+      '</div></td>' +
+    '</tr>';
+  }
+
+  // ── Filters ────────────────────────────────────────────────
+  function fillSelect(id, allLabel, items) {
+    var el = document.getElementById(id);
+    var html = '<option value="">' + allLabel + '</option>';
+    items.forEach(function (it) {
+      html += '<option value="' + esc(it.v) + '">' + esc(it.l) + '</option>';
+    });
+    el.innerHTML = html;
+  }
+  function unique(key) {
+    var out = [];
+    DATA.forEach(function (z) {
+      var v = key === 'pkg' ? (z.pkg || '') : z[key];
+      if (v && out.indexOf(v) === -1) out.push(v);
+    });
+    return out.sort(function (a, b) { return a.localeCompare(b, 'de'); });
+  }
+
+  function initFilters() {
+    fillSelect('f-seg', 'Alle Branchen', SEGMENTS.map(function (s) { return { v: s, l: s }; }));
+    fillSelect('f-status', 'Alle Status', COLUMNS.map(function (c) { return { v: c.key, l: c.label }; }));
+    fillSelect('f-prio', 'Alle Prioritäten', [
+      { v: 'P1', l: 'Priorität 1' },
+      { v: 'P2', l: 'Priorität 2' },
+      { v: 'P3', l: 'Priorität 3' }
+    ]);
+    fillSelect('f-region', 'Alle Regionen', unique('reg').map(function (s) { return { v: s, l: s }; }));
+    fillSelect('f-pkg', 'Alle Pakete', ['Basic', 'Advanced', 'Premium'].map(function (s) { return { v: s, l: s }; })
+      .concat([{ v: '__none', l: 'Ohne Paket' }]));
+    fillSelect('f-src', 'Alle Herkünfte', SOURCES.map(function (s) { return { v: s, l: s }; }));
+  }
+
+  function readFilters() {
+    state.seg = document.getElementById('f-seg').value;
+    state.status = document.getElementById('f-status').value;
+    state.prio = document.getElementById('f-prio').value;
+    state.region = document.getElementById('f-region').value;
+    state.pkg = document.getElementById('f-pkg').value;
+    state.src = document.getElementById('f-src').value;
+    state.q = searchEl.value.trim();
+  }
+  function hasFilter() {
+    return !!(state.seg || state.status || state.prio || state.region || state.pkg || state.src || state.q);
+  }
+
+  function matches(z) {
+    if (state.seg && z.seg !== state.seg) return false;
+    if (state.status && z.st !== state.status) return false;
+    if (state.region && z.reg !== state.region) return false;
+    if (state.src && z.src !== state.src) return false;
+    if (state.prio) {
+      var want = state.prio === 'P1' ? 3 : (state.prio === 'P2' ? 2 : 1);
+      if (z.prio !== want) return false;
+    }
+    if (state.pkg === '__none') {
+      if (z.pkg) return false;
+    } else if (state.pkg && z.pkg !== state.pkg) return false;
+    if (state.q) {
+      var hay = (z.n + ' ' + z.seg + ' ' + z.reg + ' ' + (z.c || '') + ' ' + z.src).toLowerCase();
+      if (hay.indexOf(state.q.toLowerCase()) === -1) return false;
+    }
+    return true;
+  }
+
+  // ── Sorting ────────────────────────────────────────────────
+  function cmp(a, b) {
+    var r = 0;
+    if (sort.key === 'name') r = a.n.localeCompare(b.n, 'de');
+    else if (sort.key === 'prio') r = a.prio - b.prio;
+    else if (sort.key === 'ma') r = maNum(a) - maNum(b);
+    else if (sort.key === 'status') r = statusIdx(a.st) - statusIdx(b.st);
+    else if (sort.key === 'contact') r = a.lastAgo - b.lastAgo;
+    if (r === 0) return a.n.localeCompare(b.n, 'de');
+    return r * sort.dir;
+  }
+  var DEFAULT_DIR = { name: 1, prio: -1, ma: -1, status: 1, contact: 1 };
+
+  function sortLabel() {
+    var desc = sort.dir === -1;
+    if (sort.key === 'name') return 'Unternehmen ' + (desc ? 'Z–A' : 'A–Z');
+    if (sort.key === 'prio') return 'Priorität ' + (desc ? 'P1 zuerst' : 'P3 zuerst');
+    if (sort.key === 'ma') return 'Mitarbeiterzahl ' + (desc ? 'größte zuerst' : 'kleinste zuerst');
+    if (sort.key === 'status') return 'Pipeline-Reihenfolge' + (desc ? ' umgekehrt' : '');
+    if (sort.key === 'contact') return 'Letzte Aktivität ' + (desc ? 'älteste zuerst' : 'neueste zuerst');
+    return '';
+  }
+
+  function updateSortMarks() {
+    var ths = document.querySelectorAll('.list-table th[data-sort]');
+    for (var i = 0; i < ths.length; i++) {
+      var th = ths[i];
+      var ind = th.querySelector('.sort-ind');
+      ind.textContent = th.getAttribute('data-sort') === sort.key ? (sort.dir === 1 ? '↑' : '↓') : '';
+    }
+  }
+
+  // ── Render ─────────────────────────────────────────────────
+  function updateSummary(list) {
+    var p1 = list.filter(function (z) { return z.prio === 3; }).length;
+    var decision = list.filter(function (z) { return z.st === 'qualifizierung' || z.st === 'erstgespraech' || z.st === 'angebot'; }).length;
+    var noContact = list.filter(function (z) { return !z.c; }).length;
+    document.getElementById('sum-total').textContent = list.length;
+    document.getElementById('sum-p1').textContent = p1 + ' Priorität 1';
+    document.getElementById('sum-decision').textContent = decision + ' in Entscheidungsphase';
+    document.getElementById('sum-nocontact').textContent = noContact + ' ohne Ansprechpartner';
+    document.getElementById('sum-sort').textContent = 'Sortiert nach ' + sortLabel();
+  }
+
+  function renderPager(pages) {
+    var html = '<button class="page-btn" type="button" data-page="prev"' + (page === 1 ? ' disabled' : '') + '>‹</button>';
+    for (var p = 1; p <= pages; p++) {
+      html += '<button class="page-btn' + (p === page ? ' active' : '') + '" type="button" data-page="' + p + '">' + p + '</button>';
+    }
+    html += '<button class="page-btn" type="button" data-page="next"' + (page === pages ? ' disabled' : '') + '>›</button>';
+    pagerEl.innerHTML = html;
+  }
+
+  function render() {
+    readFilters();
+    var list = DATA.filter(matches).sort(cmp);
+    var total = list.length;
+    var pages = Math.max(1, Math.ceil(total / PAGE));
+    if (page > pages) page = pages;
+    var start = (page - 1) * PAGE;
+    var slice = list.slice(start, start + PAGE);
+
+    rowsEl.innerHTML = slice.length
+      ? slice.map(function (z, i) { return rowHtml(z, start + i + 1); }).join('')
+      : '<tr class="empty-row"><td colspan="12">Keine Zielkunden für diese Filter.</td></tr>';
+
+    updateSortMarks();
+    updateSummary(list);
+
+    footerInfo.textContent = total
+      ? 'Zeige ' + (start + 1) + '–' + (start + slice.length) + ' von ' + total + ' Einträgen'
+      : 'Keine Einträge';
+    renderPager(total ? pages : 1);
+
+    document.getElementById('filter-count').innerHTML = hasFilter()
+      ? '<b>' + total + '</b> von ' + DATA.length + ' Einträgen'
+      : '<b>' + DATA.length + '</b> Einträge';
+    document.getElementById('page-sub').textContent = 'Sprint-Pipeline · Q4 2026 · ' + DATA.length + ' Zielkunden';
+    resetBtn.hidden = !hasFilter();
+  }
+
+  // ── Events ─────────────────────────────────────────────────
+  ['f-seg', 'f-status', 'f-prio', 'f-region', 'f-pkg', 'f-src'].forEach(function (id) {
+    document.getElementById(id).addEventListener('change', function () {
+      page = 1;
+      render();
+    });
+  });
+
+  searchEl.addEventListener('input', function () {
+    page = 1;
+    render();
+  });
+
+  resetBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    ['f-seg', 'f-status', 'f-prio', 'f-region', 'f-pkg', 'f-src'].forEach(function (id) {
+      document.getElementById(id).value = '';
+    });
+    searchEl.value = '';
+    page = 1;
+    render();
+  });
+
+  document.querySelector('.list-table thead').addEventListener('click', function (e) {
+    var th = e.target.closest ? e.target.closest('th[data-sort]') : null;
+    if (!th) return;
+    var key = th.getAttribute('data-sort');
+    if (sort.key === key) {
+      sort.dir = -sort.dir;
+    } else {
+      sort.key = key;
+      sort.dir = DEFAULT_DIR[key];
+    }
+    render();
+  });
+
+  pagerEl.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('.page-btn') : null;
+    if (!btn || btn.disabled) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var p = btn.getAttribute('data-page');
+    if (p === 'prev') page = Math.max(1, page - 1);
+    else if (p === 'next') page = page + 1;
+    else page = parseInt(p, 10);
+    render();
+  });
+
+  document.getElementById('btn-export').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('Zielkunden-Export wird vorbereitet (Demo)');
+  });
+
+  // ── Init ───────────────────────────────────────────────────
+  initFilters();
+  render();
+})();
+</script>
+</body>
+</html>

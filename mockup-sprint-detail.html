@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXA Konzern AG — Zielkunde · KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Chrome, buttons and badges come from mockup-sprint.css. */
+  * { margin: 0; padding: 0; }
+  body { display: flex; height: 100vh; overflow: hidden; background: #F5F5F5; }
+  .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  .btn.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* Topbar */
+  .dt-heading { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .dt-heading .breadcrumb { font-size: 11px; }
+  .dt-title-row { display: flex; align-items: center; gap: 8px; }
+  .dt-stage-pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 700; background: #fef3c7; color: #b45309; }
+  .dt-stage-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .dt-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  /* Content shell */
+  .dt-scroll { flex: 1; overflow-y: auto; }
+  .dt-wrap { max-width: 1180px; margin: 0 auto; padding: 20px 24px 32px; }
+
+  /* Hero */
+  .dt-hero { display: flex; align-items: center; justify-content: space-between; gap: 20px; background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 18px 22px; margin-bottom: 14px; }
+  .dt-hero-main { display: flex; align-items: center; gap: 16px; min-width: 0; }
+  .dt-avatar { width: 54px; height: 54px; border-radius: 12px; background: linear-gradient(135deg, #F26722, #D4540A); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 800; letter-spacing: .02em; flex-shrink: 0; }
+  .dt-hero-name { font-size: 21px; font-weight: 800; color: #111111; letter-spacing: -.01em; }
+  .dt-hero-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .dt-hero-badges { display: flex; align-items: center; gap: 7px; margin-top: 8px; flex-wrap: wrap; }
+  .dt-badge-prio { background: #fef3c7; color: #b45309; }
+  .dt-badge-premium { background: #f5f3ff; color: #6d28d9; }
+  .dt-badge-src { background: #eff6ff; color: #1d4ed8; }
+  .dt-owner { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: #374151; }
+  .dt-owner-av { width: 18px; height: 18px; border-radius: 50%; background: #F26722; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 8.5px; font-weight: 800; }
+
+  .dt-hero-metrics { display: flex; align-items: center; gap: 18px; flex-shrink: 0; }
+  .dt-metric { text-align: right; }
+  .dt-metric-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; margin-bottom: 2px; }
+  .dt-metric-value { font-size: 18px; font-weight: 800; color: #111111; letter-spacing: -.02em; white-space: nowrap; }
+  .dt-metric-value.green { color: #16a34a; }
+  .dt-metric-div { width: 1px; height: 30px; background: #f1f5f9; }
+
+  /* Stepper */
+  .dt-steps-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 13px 20px 10px; margin-bottom: 16px; }
+  .dt-steps-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .dt-steps-title { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; }
+  .dt-status-select { height: 28px; padding: 0 24px 0 9px; font-size: 11.5px; font-weight: 600; border-radius: 6px; color: #b45309; background: #fef3c7; border: 1px solid #fde68a; cursor: pointer; }
+  .dt-steps { display: flex; align-items: flex-start; overflow-x: auto; padding-bottom: 2px; }
+  .dt-step { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 58px; }
+  .dt-step-dot { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; border: 2px solid #e2e8f0; background: #fff; color: #94a3b8; }
+  .dt-step.done .dt-step-dot { background: #F26722; border-color: #F26722; color: #fff; }
+  .dt-step.current .dt-step-dot { background: #111111; border-color: #111111; color: #fff; box-shadow: 0 0 0 4px rgba(242,103,34,.16); }
+  .dt-step-label { font-size: 10.5px; font-weight: 600; color: #94a3b8; white-space: nowrap; }
+  .dt-step.done .dt-step-label, .dt-step.current .dt-step-label { color: #111111; }
+  .dt-step-line { flex: 1; height: 2px; background: #e2e8f0; margin-top: 12px; min-width: 10px; }
+  .dt-step-line.done { background: #F26722; }
+
+  /* Grid */
+  .dt-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+
+  /* Cards */
+  .dt-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); overflow: hidden; margin-bottom: 16px; }
+  .dt-card-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid #f1f5f9; }
+  .dt-card-title { font-size: 13px; font-weight: 700; color: #111111; letter-spacing: -.01em; }
+  .dt-card-body { padding: 16px 18px; }
+  .dt-card-body-flush { padding: 4px 18px; }
+  .dt-card-foot { padding: 10px 18px; border-top: 1px solid #f1f5f9; }
+
+  /* Fields */
+  .dt-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; }
+  .dt-flabel { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; margin-bottom: 3px; }
+  .dt-fvalue { font-size: 13px; font-weight: 500; color: #111111; }
+  .dt-fvalue.muted { color: #64748b; font-weight: 400; }
+  .dt-fvalue.green { color: #16a34a; font-weight: 700; }
+  .dt-fvalue.link { color: #F26722; cursor: pointer; text-decoration: none; }
+  .dt-fvalue.link:hover { text-decoration: underline; }
+
+  .dt-calls { display: flex; align-items: center; gap: 4px; }
+  .dt-call-dot { width: 10px; height: 10px; border-radius: 50%; background: #F26722; }
+  .dt-call-dot.off { background: #e2e8f0; }
+  .dt-calls-num { margin-left: 4px; font-size: 11px; color: #64748b; font-weight: 500; }
+
+  .dt-badge-green { background: #dcfce7; color: #15803d; }
+  .dt-badge-amber { background: #fef3c7; color: #b45309; }
+  .dt-badge-slate { background: #f1f5f9; color: #64748b; }
+
+  /* Result block */
+  .dt-result-note { margin-top: 12px; padding: 9px 11px; border-radius: 7px; background: #f8fafc; border: 1px dashed #e2e8f0; font-size: 11.5px; color: #94a3b8; }
+  .dt-result .status-select { height: 32px; padding: 0 26px 0 9px; font-size: 12px; }
+  select:disabled { opacity: .55; cursor: not-allowed; }
+
+  /* Next step */
+  .dt-next { background: #111111; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+  .dt-next-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #F26722; margin-bottom: 6px; }
+  .dt-next-title { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.4; }
+  .dt-next-meta { font-size: 11px; color: #94a3b8; margin: 6px 0 12px; }
+  .dt-next .btn { width: 100%; justify-content: center; }
+
+  /* Assessment */
+  .dt-assess { background: linear-gradient(135deg, #1a0800 0%, #8B2E00 58%, #D4540A 100%); border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; color: #fff; }
+  .dt-assess-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .dt-assess-head span:first-child { font-size: 12.5px; font-weight: 700; }
+  .dt-assess-date { font-size: 10px; color: rgba(255,255,255,.6); }
+  .dt-assess-score { display: flex; align-items: center; gap: 14px; }
+  .dt-ring { width: 62px; height: 62px; border-radius: 50%; border: 3px solid rgba(255,255,255,.22); border-top-color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+  .dt-ring b { font-size: 18px; font-weight: 800; line-height: 1; }
+  .dt-ring small { font-size: 8px; color: rgba(255,255,255,.6); margin-top: 1px; }
+  .dt-assess-dims { flex: 1; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .dt-dim { display: flex; align-items: center; gap: 7px; font-size: 10px; }
+  .dt-dim span:first-child { width: 76px; color: rgba(255,255,255,.82); }
+  .dt-dim-bar { flex: 1; height: 4px; background: rgba(255,255,255,.16); border-radius: 2px; overflow: hidden; }
+  .dt-dim-fill { height: 100%; background: rgba(255,255,255,.85); border-radius: 2px; }
+  .dt-dim b { width: 22px; text-align: right; font-weight: 700; }
+  .dt-assess-link { display: inline-block; margin-top: 12px; font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,.85); text-decoration: none; }
+  .dt-assess-link:hover { color: #fff; text-decoration: underline; }
+
+  /* Activity timeline */
+  .dt-tl-item { display: flex; gap: 10px; padding: 11px 0; border-bottom: 1px solid #f1f5f9; }
+  .dt-tl-item:last-child { border-bottom: none; }
+  .dt-tl-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .dt-tl-icon .si { width: 14px; height: 14px; }
+  .dt-tl-icon.meeting { background: #eef2ff; color: #4338ca; }
+  .dt-tl-icon.call { background: #ecfdf5; color: #16a34a; }
+  .dt-tl-icon.email { background: #eff6ff; color: #1d4ed8; }
+  .dt-tl-icon.note { background: #fffbeb; color: #b45309; }
+  .dt-tl-body { flex: 1; min-width: 0; }
+  .dt-tl-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 2px; }
+  .dt-tl-type { font-size: 11px; font-weight: 700; color: #374151; }
+  .dt-tl-date { font-size: 10px; color: #94a3b8; white-space: nowrap; }
+  .dt-tl-text { font-size: 11.5px; color: #64748b; line-height: 1.45; }
+  .dt-tl-next { font-size: 10.5px; color: #F26722; font-weight: 600; margin-top: 3px; }
+  .dt-all-link { font-size: 11.5px; font-weight: 600; color: #F26722; text-decoration: none; }
+  .dt-all-link:hover { text-decoration: underline; }
+
+  @media (max-width: 980px) {
+    .dt-grid { grid-template-columns: 1fr; }
+    .dt-hero { flex-direction: column; align-items: flex-start; }
+    .dt-hero-metrics { width: 100%; justify-content: space-between; }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="detail"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="dt-heading">
+      <div class="breadcrumb">
+        <a href="mockup-sprint-kanban.html">Sprint-Vertrieb</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="mockup-sprint-zielkunden-liste.html">Zielkunden</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">AXA Konzern AG</span>
+      </div>
+      <div class="dt-title-row">
+        <span class="page-title">AXA Konzern AG</span>
+        <span class="dt-stage-pill" id="dt-stage-pill">Angebot</span>
+      </div>
+    </div>
+    <div class="dt-actions">
+      <button class="btn btn-ghost btn-sm" id="btn-edit" type="button">Bearbeiten</button>
+      <a class="btn btn-ghost btn-sm" href="mockup-sprint-uebergabe.html">Übergabe</a>
+      <a class="btn btn-ghost btn-sm" href="mockup-sprint-proposals.html">Projektvorschläge</a>
+      <a class="btn btn-primary btn-sm" href="mockup-sprint-assessment.html">KI-Assessment</a>
+    </div>
+  </header>
+
+  <div class="dt-scroll">
+    <div class="dt-wrap">
+
+      <!-- Hero -->
+      <section class="dt-hero">
+        <div class="dt-hero-main">
+          <div class="dt-avatar">AX</div>
+          <div>
+            <div class="dt-hero-name">AXA Konzern AG</div>
+            <div class="dt-hero-sub">Versicherungen &amp; Finanzvermittler · Nordrhein-Westfalen · 5.600 Mitarbeiter · Köln</div>
+            <div class="dt-hero-badges">
+              <span class="badge dt-badge-prio">P2 · Mittel</span>
+              <span class="badge dt-badge-premium">Premium-Paket</span>
+              <span class="badge dt-badge-src">Herkunft: LinkedIn</span>
+              <span class="dt-owner"><span class="dt-owner-av">AM</span> Anna Müller</span>
+            </div>
+          </div>
+        </div>
+        <div class="dt-hero-metrics">
+          <div class="dt-metric">
+            <div class="dt-metric-label">Angebotswert</div>
+            <div class="dt-metric-value green">€ 70.000</div>
+          </div>
+          <div class="dt-metric-div"></div>
+          <div class="dt-metric">
+            <div class="dt-metric-label">Tage im Sprint</div>
+            <div class="dt-metric-value" id="dt-days">23</div>
+          </div>
+          <div class="dt-metric-div"></div>
+          <div class="dt-metric">
+            <div class="dt-metric-label">Phase</div>
+            <div class="dt-metric-value" id="dt-phase-num">7 / 10</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Stepper -->
+      <section class="dt-steps-card">
+        <div class="dt-steps-head">
+          <span class="dt-steps-title">Sprint-Phase</span>
+          <select id="dt-status" class="dt-status-select" aria-label="Phase ändern">
+            <option value="offen">Offen</option>
+            <option value="recherchiert">Recherchiert</option>
+            <option value="vernetzt">Vernetzt</option>
+            <option value="kontaktiert">Kontaktiert</option>
+            <option value="qualifizierung">Qualifizierungsgespräch</option>
+            <option value="erstgespraech">Erstgespräch</option>
+            <option value="angebot" selected>Angebot</option>
+            <option value="gewonnen">Gewonnen</option>
+            <option value="verlust">Verlust</option>
+            <option value="kein-interesse">Kein Interesse</option>
+          </select>
+        </div>
+        <div class="dt-steps" id="dt-steps"></div>
+      </section>
+
+      <div class="dt-grid">
+
+        <!-- LEFT COLUMN -->
+        <div>
+
+          <!-- Stammdaten -->
+          <section class="dt-card">
+            <div class="dt-card-head"><div class="dt-card-title">Stammdaten</div></div>
+            <div class="dt-card-body">
+              <div class="dt-fields">
+                <div class="dt-field">
+                  <div class="dt-flabel">Branche</div>
+                  <div class="dt-fvalue">Versicherungen &amp; Finanzvermittler</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Bundesland</div>
+                  <div class="dt-fvalue">Nordrhein-Westfalen</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Mitarbeiter</div>
+                  <div class="dt-fvalue">5.600</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Ort</div>
+                  <div class="dt-fvalue muted">Köln</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Quelle</div>
+                  <div class="dt-fvalue">LinkedIn</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Sprint-Beitritt</div>
+                  <div class="dt-fvalue muted">01.10.2026</div>
+                </div>
+                <div class="dt-field" style="grid-column: 1 / -1;">
+                  <div class="dt-flabel">Adresse</div>
+                  <div class="dt-fvalue">Wilhelmsplatz 1, 50667 Köln</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Sprint-Tracking -->
+          <section class="dt-card">
+            <div class="dt-card-head"><div class="dt-card-title">Sprint-Tracking</div></div>
+            <div class="dt-card-body">
+              <div class="dt-fields">
+                <div class="dt-field">
+                  <div class="dt-flabel">Ansprechpartner</div>
+                  <div class="dt-fvalue">R. Lehmann</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Position</div>
+                  <div class="dt-fvalue muted">Leiter IT-Strategie</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">E-Mail</div>
+                  <div class="dt-fvalue link" data-demo-link="E-Mail-Client">r.lehmann@axa.de</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">LinkedIn</div>
+                  <div class="dt-fvalue link" data-demo-link="LinkedIn-Profil">Profil öffnen ↗</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Anrufversuche</div>
+                  <div class="dt-calls">
+                    <span class="dt-call-dot"></span>
+                    <span class="dt-call-dot"></span>
+                    <span class="dt-call-dot"></span>
+                    <span class="dt-calls-num">3 / 3</span>
+                  </div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">E-Mail erlaubt (UWG)</div>
+                  <div class="dt-fvalue"><span class="badge dt-badge-green">Ja</span></div>
+                </div>
+                <div class="dt-field" style="grid-column: 1 / -1;">
+                  <div class="dt-flabel">Anruf-Trigger</div>
+                  <div class="dt-fvalue muted">KI-Initiative in Fachpublikation veröffentlicht</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Datenschutz & Einwilligungen -->
+          <section class="dt-card">
+            <div class="dt-card-head"><div class="dt-card-title">Datenschutz &amp; Einwilligungen</div></div>
+            <div class="dt-card-body">
+              <div class="dt-fields">
+                <div class="dt-field">
+                  <div class="dt-flabel">Datenschutzhinweise übermittelt am</div>
+                  <div class="dt-fvalue">01.10.2026</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Weg</div>
+                  <div class="dt-fvalue muted">E-Mail</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Einwilligung E-Mail: erteilt am</div>
+                  <div class="dt-fvalue">03.10.2026</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Weg</div>
+                  <div class="dt-fvalue muted">Gespräch</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Einwilligung widerrufen am</div>
+                  <div class="dt-fvalue muted">—</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Einwilligung Telefon: erteilt am</div>
+                  <div class="dt-fvalue">03.10.2026</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Selbsttest -->
+          <section class="dt-card">
+            <div class="dt-card-head"><div class="dt-card-title">Selbsttest</div></div>
+            <div class="dt-card-body">
+              <div class="dt-fields">
+                <div class="dt-field">
+                  <div class="dt-flabel">Score</div>
+                  <div class="dt-fvalue">68 / 100</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Datum</div>
+                  <div class="dt-fvalue muted">28.09.2026</div>
+                </div>
+                <div class="dt-field" style="grid-column: 1 / -1;">
+                  <div class="dt-flabel">Link zum Ergebnis</div>
+                  <div class="dt-fvalue link" data-demo-link="Selbsttest-Ergebnis">Ergebnis öffnen ↗</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Angebot & Förderung -->
+          <section class="dt-card">
+            <div class="dt-card-head"><div class="dt-card-title">Angebot &amp; Förderung</div></div>
+            <div class="dt-card-body">
+              <div class="dt-fields">
+                <div class="dt-field">
+                  <div class="dt-flabel">Übergabedatum</div>
+                  <div class="dt-fvalue">05.10.2026</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Erstgespräch</div>
+                  <div class="dt-fvalue">14.10.2026</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Angebotsdatum</div>
+                  <div class="dt-fvalue">20.10.2026</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Angebot gültig bis</div>
+                  <div class="dt-fvalue muted">20.11.2026</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Angebotswert</div>
+                  <div class="dt-fvalue green">€ 70.000</div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Angebots-Paket</div>
+                  <div class="dt-fvalue"><span class="badge dt-badge-premium">Premium</span></div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">BAFA-Förderung</div>
+                  <div class="dt-fvalue"><span class="badge dt-badge-amber">In Prüfung</span></div>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Förderpotenzial</div>
+                  <div class="dt-fvalue muted">bis zu 50 % der Beratungskosten</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Abschluss & Verlust -->
+          <section class="dt-card dt-result">
+            <div class="dt-card-head"><div class="dt-card-title">Abschluss &amp; Verlust</div></div>
+            <div class="dt-card-body">
+              <div class="dt-fields">
+                <div class="dt-field">
+                  <div class="dt-flabel">Ergebnis</div>
+                  <select id="dt-result" class="status-select">
+                    <option value="offen" selected>Offen</option>
+                    <option value="gewonnen">Gewonnen</option>
+                    <option value="verloren">Verloren</option>
+                  </select>
+                </div>
+                <div class="dt-field">
+                  <div class="dt-flabel">Entscheidungsdatum</div>
+                  <div class="dt-fvalue muted" id="dt-decision">—</div>
+                </div>
+                <div class="dt-field" style="grid-column: 1 / -1;">
+                  <div class="dt-flabel">Verlustgrund</div>
+                  <select id="dt-loss" class="status-select" style="width: 100%;" disabled>
+                    <option value="">— keinen Grund auswählen —</option>
+                    <option>Preis / Budget</option>
+                    <option>Timing / kein Bedarf jetzt</option>
+                    <option>Wettbewerber</option>
+                    <option>Intern entschieden</option>
+                    <option>Kein Entscheider erreicht</option>
+                    <option>Sonstiger Grund</option>
+                  </select>
+                </div>
+              </div>
+              <div class="dt-result-note">Der Verlustgrund wird erst bei Ergebnis „Verloren“ ausgefüllt.</div>
+            </div>
+          </section>
+
+        </div><!-- /left -->
+
+        <!-- RIGHT COLUMN -->
+        <div>
+
+          <!-- Nächster Schritt -->
+          <section class="dt-next">
+            <div class="dt-next-label">Nächster Schritt</div>
+            <div class="dt-next-title">Angebot nachfassen &amp; Assessment-Workshop abstimmen</div>
+            <div class="dt-next-meta">Fällig am 27.10.2026 · Anna Müller</div>
+            <a class="btn btn-primary btn-sm" href="mockup-sprint-aktivitaet-loggen.html">Aktivität loggen</a>
+          </section>
+
+          <!-- KI-Assessment -->
+          <section class="dt-assess">
+            <div class="dt-assess-head">
+              <span>KI-Assessment · v2</span>
+              <span class="dt-assess-date">18.10.2026</span>
+            </div>
+            <div class="dt-assess-score">
+              <div class="dt-ring"><b>3.7</b><small>/ 5.0</small></div>
+              <div class="dt-assess-dims">
+                <div class="dt-dim"><span>Daten</span><div class="dt-dim-bar"><div class="dt-dim-fill" style="width:84%"></div></div><b>4.2</b></div>
+                <div class="dt-dim"><span>Tech-Stack</span><div class="dt-dim-bar"><div class="dt-dim-fill" style="width:76%"></div></div><b>3.8</b></div>
+                <div class="dt-dim"><span>Prozesse</span><div class="dt-dim-bar"><div class="dt-dim-fill" style="width:72%"></div></div><b>3.6</b></div>
+                <div class="dt-dim"><span>KI-Kompetenz</span><div class="dt-dim-bar"><div class="dt-dim-fill" style="width:78%"></div></div><b>3.9</b></div>
+              </div>
+            </div>
+            <a class="dt-assess-link" href="mockup-sprint-assessment.html">Assessment öffnen →</a>
+          </section>
+
+          <!-- Aktivitäten -->
+          <section class="dt-card">
+            <div class="dt-card-head">
+              <div class="dt-card-title">Aktivitäten</div>
+              <a class="card-link" href="mockup-sprint-aktivitaet-loggen.html">+ Aktivität</a>
+            </div>
+            <div class="dt-card-body dt-card-body-flush">
+              <div class="dt-tl-item">
+                <div class="dt-tl-icon meeting">🤝</div>
+                <div class="dt-tl-body">
+                  <div class="dt-tl-top"><span class="dt-tl-type">Meeting</span><span class="dt-tl-date">21.10.2026</span></div>
+                  <div class="dt-tl-text">Angebotspräsentation mit R. Lehmann. Positive Resonanz, Budget für Q4 bestätigt.</div>
+                  <div class="dt-tl-next">→ Nächster Schritt: Workshop-Termin fixieren</div>
+                </div>
+              </div>
+              <div class="dt-tl-item">
+                <div class="dt-tl-icon call">📞</div>
+                <div class="dt-tl-body">
+                  <div class="dt-tl-top"><span class="dt-tl-type">Anruf</span><span class="dt-tl-date">14.10.2026</span></div>
+                  <div class="dt-tl-text">Erstgespräch geführt. Starkes Interesse an KI-Piloten, Prozessaufnahme vereinbart.</div>
+                  <div class="dt-tl-next">→ Nächster Schritt: Angebot vorbereiten</div>
+                </div>
+              </div>
+              <div class="dt-tl-item">
+                <div class="dt-tl-icon email">📧</div>
+                <div class="dt-tl-body">
+                  <div class="dt-tl-top"><span class="dt-tl-type">E-Mail</span><span class="dt-tl-date">10.10.2026</span></div>
+                  <div class="dt-tl-text">Follow-up mit KI-Sprint-Übersicht und Referenzen gesendet.</div>
+                </div>
+              </div>
+              <div class="dt-tl-item">
+                <div class="dt-tl-icon note">📝</div>
+                <div class="dt-tl-body">
+                  <div class="dt-tl-top"><span class="dt-tl-type">Notiz</span><span class="dt-tl-date">05.10.2026</span></div>
+                  <div class="dt-tl-text">Fachartikel zur KI-Initiative als Gesprächseinstieg genutzt.</div>
+                </div>
+              </div>
+            </div>
+            <div class="dt-card-foot">
+              <a class="dt-all-link" href="mockup-sprint-aktivitaeten.html">Alle Aktivitäten anzeigen →</a>
+            </div>
+          </section>
+
+        </div><!-- /right -->
+      </div><!-- /grid -->
+    </div><!-- /wrap -->
+  </div><!-- /scroll -->
+</div><!-- /main-wrapper -->
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ── Phase / Stepper ─────────────────────────────────────── */
+  var STAGES = [
+    { k: 'offen',           l: 'Offen',                    bg: '#f1f5f9', fg: '#64748b' },
+    { k: 'recherchiert',    l: 'Recherchiert',             bg: '#dbeafe', fg: '#1d4ed8' },
+    { k: 'vernetzt',        l: 'Vernetzt',                 bg: '#e0e7ff', fg: '#4338ca' },
+    { k: 'kontaktiert',     l: 'Kontaktiert',              bg: '#ede9fe', fg: '#6d28d9' },
+    { k: 'qualifizierung',  l: 'Qualifizierungsgespräch',  bg: '#f3e8ff', fg: '#7e22ce' },
+    { k: 'erstgespraech',   l: 'Erstgespräch',             bg: '#ccfbf1', fg: '#0f766e' },
+    { k: 'angebot',         l: 'Angebot',                  bg: '#fef3c7', fg: '#b45309' },
+    { k: 'gewonnen',        l: 'Gewonnen',                 bg: '#dcfce7', fg: '#15803d' },
+    { k: 'verlust',         l: 'Verlust',                  bg: '#fee2e2', fg: '#b91c1c' },
+    { k: 'kein-interesse',  l: 'Kein Interesse',           bg: '#fef2f2', fg: '#dc2626' }
+  ];
+  var current = 'angebot';
+
+  function stageIdx(key) {
+    for (var i = 0; i < STAGES.length; i++) if (STAGES[i].k === key) return i;
+    return 0;
+  }
+
+  function toast(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1900);
+  }
+
+  function renderSteps() {
+    var idx = stageIdx(current);
+    var html = '';
+    STAGES.forEach(function (s, i) {
+      var state = i < idx ? ' done' : (i === idx ? ' current' : '');
+      html += '<div class="dt-step' + state + '">' +
+                '<div class="dt-step-dot">' + (i < idx ? '\u2713' : (i + 1)) + '</div>' +
+                '<div class="dt-step-label">' + s.l + '</div>' +
+              '</div>';
+      if (i < STAGES.length - 1) html += '<div class="dt-step-line' + (i < idx ? ' done' : '') + '"></div>';
+    });
+    document.getElementById('dt-steps').innerHTML = html;
+  }
+
+  function updateStage(key) {
+    current = key;
+    var meta = STAGES[stageIdx(key)];
+    var pill = document.getElementById('dt-stage-pill');
+    pill.textContent = meta.l;
+    pill.style.background = meta.bg;
+    pill.style.color = meta.fg;
+    document.getElementById('dt-phase-num').textContent = (stageIdx(key) + 1) + ' / ' + STAGES.length;
+    var sel = document.getElementById('dt-status');
+    if (sel.value !== key) sel.value = key;
+    sel.style.background = meta.bg;
+    sel.style.color = meta.fg;
+    renderSteps();
+    toast('Phase geändert: ' + meta.l);
+  }
+
+  document.getElementById('dt-status').addEventListener('change', function (e) {
+    updateStage(e.target.value);
+  });
+
+  /* ── Abschluss & Verlust ─────────────────────────────────── */
+  function todayStr() {
+    var d = new Date();
+    return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + d.getFullYear();
+  }
+
+  var resultSel = document.getElementById('dt-result');
+  var lossSel = document.getElementById('dt-loss');
+  var decision = document.getElementById('dt-decision');
+
+  resultSel.addEventListener('change', function () {
+    var v = resultSel.value;
+    if (v === 'offen') {
+      lossSel.disabled = true;
+      lossSel.value = '';
+      decision.textContent = '—';
+      decision.classList.add('muted');
+    } else {
+      decision.textContent = todayStr();
+      decision.classList.remove('muted');
+      if (v === 'verloren') {
+        lossSel.disabled = false;
+      } else {
+        lossSel.disabled = true;
+        lossSel.value = '';
+      }
+    }
+    toast(v === 'offen' ? 'Ergebnis zurückgesetzt' : 'Ergebnis gespeichert: ' + (v === 'gewonnen' ? 'Gewonnen' : 'Verloren'));
+  });
+
+  lossSel.addEventListener('change', function () {
+    if (lossSel.value) toast('Verlustgrund gespeichert');
+  });
+
+  /* ── Demo links ──────────────────────────────────────────── */
+  document.querySelectorAll('[data-demo-link]').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      toast((el.getAttribute('data-demo-link')) + ' wird in der Demo nicht geöffnet');
+    });
+  });
+
+  var editBtn = document.getElementById('btn-edit');
+  if (editBtn) {
+    editBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      toast('Bearbeitungsmodus ist in der Demo nicht verfügbar');
+    });
+  }
+
+  /* ── Kennzahlen ──────────────────────────────────────────── */
+  var START = new Date(2026, 9, 1);
+  var days = Math.max(1, Math.floor((new Date() - START) / 86400000) + 1);
+  document.getElementById('dt-days').textContent = days;
+
+  renderSteps();
+})();
+</script>
+</body>
+</html>

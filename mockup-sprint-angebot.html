@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Angebot A-2026-047 · AXA Konzern AG — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Chrome, buttons, badges and tables come from mockup-sprint.css. */
+  * { margin: 0; padding: 0; }
+  body { display: flex; height: 100vh; overflow: hidden; background: #F5F5F5; }
+  .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  .btn.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* Topbar */
+  .of-heading { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .of-heading .breadcrumb { font-size: 11px; }
+  .of-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  /* Shell */
+  .of-scroll { flex: 1; overflow-y: auto; }
+  .of-wrap { max-width: 1120px; margin: 0 auto; padding: 20px 24px 32px; display: flex; gap: 16px; align-items: flex-start; }
+  .of-paper { flex: 1; min-width: 0; }
+  .of-side { width: 288px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
+
+  /* Document */
+  .of-doc { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.05); overflow: hidden; }
+  .of-doc-head { background: linear-gradient(135deg, #1a0800 0%, #8B2E00 58%, #D4540A 100%); padding: 24px 28px; color: #fff; }
+  .of-doc-kicker { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: rgba(255,255,255,.62); margin-bottom: 4px; }
+  .of-doc-title { font-size: 22px; font-weight: 800; letter-spacing: -.01em; }
+  .of-doc-sub { font-size: 12px; color: rgba(255,255,255,.75); margin-top: 3px; }
+  .of-doc-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 18px; }
+  .of-doc-meta .lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: rgba(255,255,255,.55); margin-bottom: 2px; }
+  .of-doc-meta .val { font-size: 12.5px; font-weight: 700; }
+
+  .of-body { padding: 22px 28px 26px; }
+  .of-section { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #94a3b8; margin-bottom: 9px; }
+  .of-section.gap { margin-top: 22px; }
+
+  .of-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .of-party { background: #fafafa; border: 1px solid #f1f5f9; border-radius: 8px; padding: 12px 14px; }
+  .of-party-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; margin-bottom: 4px; }
+  .of-party-name { font-size: 13px; font-weight: 700; color: #111111; margin-bottom: 3px; }
+  .of-party-detail { font-size: 11.5px; color: #64748b; line-height: 1.55; }
+
+  .of-bafa { display: flex; gap: 10px; align-items: flex-start; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 11px 14px; margin: 16px 0 0; }
+  .of-bafa b { font-size: 12px; font-weight: 700; color: #15803d; }
+  .of-bafa p { font-size: 11.5px; color: #166534; line-height: 1.5; margin-top: 1px; }
+
+  .of-table-wrap { border: 1px solid #f1f5f9; border-radius: 8px; overflow: hidden; }
+  .of-table { width: 100%; border-collapse: collapse; }
+  .of-table thead th { font-size: 9.5px; padding: 8px 12px; }
+  .of-table tbody td { font-size: 11.5px; padding: 10px 12px; }
+  .of-table .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .of-table .pos-title { font-size: 12px; font-weight: 700; color: #111111; }
+  .of-table .pos-detail { font-size: 11px; color: #64748b; line-height: 1.45; margin-top: 2px; }
+  .of-table .pos-total { font-weight: 700; color: #111111; }
+
+  .of-totals { width: 320px; margin-left: auto; margin-top: 14px; background: #fafafa; border: 1px solid #f1f5f9; border-radius: 8px; padding: 12px 14px; }
+  .of-trow { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; font-size: 11.5px; color: #475569; }
+  .of-trow .num { font-variant-numeric: tabular-nums; }
+  .of-trow.fund { color: #15803d; }
+  .of-trow.grand { border-top: 1px solid #e2e8f0; margin-top: 5px; padding-top: 9px; font-size: 13px; font-weight: 800; color: #111111; }
+  .of-trow.grand .num { color: #16a34a; font-size: 15px; }
+  .of-fineprint { font-size: 10px; color: #94a3b8; margin-top: 7px; text-align: right; }
+
+  .of-notes { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 14px; margin-top: 18px; }
+  .of-notes-lbl { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #b45309; margin-bottom: 3px; }
+  .of-notes p { font-size: 11.5px; color: #78350f; line-height: 1.55; }
+
+  /* Side rail */
+  .of-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 14px 16px; }
+  .of-card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; margin-bottom: 10px; }
+  .of-status-select { width: 100%; height: 32px; padding: 0 26px 0 10px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; }
+  .of-status-select.entwurf { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+  .of-status-select.versendet { background: #fef3c7; color: #b45309; border-color: #fde68a; }
+  .of-status-select.angenommen { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+  .of-status-select.abgelehnt { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+
+  .of-tl { margin-top: 12px; }
+  .of-tl-item { display: flex; gap: 9px; padding: 5px 0; }
+  .of-tl-dot { width: 8px; height: 8px; border-radius: 50%; background: #e2e8f0; margin-top: 4px; flex-shrink: 0; }
+  .of-tl-item.done .of-tl-dot { background: #16a34a; }
+  .of-tl-item.current .of-tl-dot { background: #F26722; box-shadow: 0 0 0 3px rgba(242,103,34,.15); }
+  .of-tl-text { font-size: 11.5px; color: #374151; line-height: 1.35; }
+  .of-tl-item:not(.done):not(.current) .of-tl-text { color: #94a3b8; }
+  .of-tl-date { font-size: 10px; color: #94a3b8; margin-top: 1px; }
+
+  .of-customer { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-bottom: 10px; }
+  .of-avatar { width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, #F26722, #D4540A); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+  .of-customer .name { font-size: 12.5px; font-weight: 700; color: #111111; }
+  .of-customer .sub { font-size: 10.5px; color: #94a3b8; }
+  .of-customer:hover .name { color: #F26722; }
+  .of-info-rows { display: flex; flex-direction: column; gap: 5px; }
+  .of-info-row { display: flex; justify-content: space-between; gap: 10px; font-size: 11px; }
+  .of-info-row span:first-child { color: #94a3b8; }
+  .of-info-row span:last-child { color: #374151; font-weight: 500; text-align: right; }
+
+  .of-side-actions { display: flex; flex-direction: column; gap: 6px; }
+
+  @media (max-width: 1000px) {
+    .of-wrap { flex-direction: column; }
+    .of-side { width: 100%; }
+    .of-doc-meta { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="angebot"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="of-heading">
+      <div class="breadcrumb">
+        <a href="mockup-sprint-kanban.html">Sprint-Vertrieb</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="mockup-sprint-detail.html">AXA Konzern AG</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">Angebot A-2026-047</span>
+      </div>
+      <span class="page-title">Angebot A-2026-047</span>
+    </div>
+    <div class="of-actions">
+      <a class="btn btn-ghost btn-sm" href="mockup-sprint-angebot-neu.html">Neues Angebot</a>
+      <button class="btn btn-ghost btn-sm" id="btn-pdf" type="button">PDF exportieren</button>
+      <button class="btn btn-primary btn-sm" id="btn-send" type="button">Angebot versenden</button>
+    </div>
+  </header>
+
+  <div class="of-scroll">
+    <div class="of-wrap">
+
+      <!-- Document -->
+      <div class="of-paper">
+        <div class="of-doc">
+          <div class="of-doc-head">
+            <div class="of-doc-kicker">Angebot</div>
+            <div class="of-doc-title">Angebot A-2026-047</div>
+            <div class="of-doc-sub">KI-Readiness Sprint · Premium-Paket</div>
+            <div class="of-doc-meta">
+              <div><div class="lbl">Angebotsdatum</div><div class="val">20.10.2026</div></div>
+              <div><div class="lbl">Gültig bis</div><div class="val">20.11.2026</div></div>
+              <div><div class="lbl">Erstellt von</div><div class="val">D. Tayon</div></div>
+              <div><div class="lbl">Paket</div><div class="val">Premium</div></div>
+            </div>
+          </div>
+
+          <div class="of-body">
+            <div class="of-section">Auftraggeber &amp; Auftragnehmer</div>
+            <div class="of-parties">
+              <div class="of-party">
+                <div class="of-party-lbl">Auftraggeber</div>
+                <div class="of-party-name">AXA Konzern AG</div>
+                <div class="of-party-detail">
+                  Colonia-Allee 10–20<br>
+                  51067 Köln<br>
+                  Ansprechpartner: R. Lehmann<br>
+                  r.lehmann@axa.de
+                </div>
+              </div>
+              <div class="of-party">
+                <div class="of-party-lbl">Auftragnehmer</div>
+                <div class="of-party-name">innolab Consulting GmbH</div>
+                <div class="of-party-detail">
+                  Neue Mainzer Str. 52<br>
+                  60311 Frankfurt am Main<br>
+                  Ansprechpartner: D. Tayon<br>
+                  d.tayon@innolab.de
+                </div>
+              </div>
+            </div>
+
+            <div class="of-bafa">
+              <div>
+                <b>BAFA-Förderung möglich</b>
+                <p>Dieses Projekt kann über das BAFA-Förderprogramm „Unternehmensberatung für KMU“ mit bis zu 50 % (max. 3.500 €) gefördert werden. Wir unterstützen Sie gerne bei der Antragstellung.</p>
+              </div>
+            </div>
+
+            <div class="of-section gap">Leistungspositionen</div>
+            <div class="of-table-wrap">
+              <table class="of-table">
+                <thead>
+                  <tr>
+                    <th>Leistung</th>
+                    <th class="num">Tage</th>
+                    <th class="num">Tagessatz</th>
+                    <th class="num">Gesamt</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="pos-title">KI-Readiness Assessment</div>
+                      <div class="pos-detail">6-dimensionale Analyse inkl. Daten, Tech-Stack, Prozessreife, KI-Kompetenz, Governance und Strategie. Bewertungsworkshop + Ergebnispräsentation.</div>
+                    </td>
+                    <td class="num">6</td>
+                    <td class="num">€ 1.750</td>
+                    <td class="num pos-total">€ 10.500</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="pos-title">KI-Strategie &amp; Roadmap</div>
+                      <div class="pos-detail">Ganztägige Strategie-Workshops mit C-Level &amp; Fachbereichen. Use-Case-Priorisierung, ROI-Matrix, 18-Monats-Roadmap, Governance-Rahmen.</div>
+                    </td>
+                    <td class="num">11</td>
+                    <td class="num">€ 1.750</td>
+                    <td class="num pos-total">€ 19.250</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="pos-title">Pilot: Intelligente Schadensprognose</div>
+                      <div class="pos-detail">Entwicklung &amp; Deployment eines ML-Modells für Schadensprognose. Inkl. Datenaufbereitung, Modelltraining, API-Integration und Monitoring-Setup.</div>
+                    </td>
+                    <td class="num">18</td>
+                    <td class="num">€ 1.750</td>
+                    <td class="num pos-total">€ 31.500</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="pos-title">Change Management &amp; KI-Training</div>
+                      <div class="pos-detail">Schulung von 3 Fachteams. Erstellung von Trainingsmaterial und Handlungsleitfäden für die KI-Adoption.</div>
+                    </td>
+                    <td class="num">5</td>
+                    <td class="num">€ 1.750</td>
+                    <td class="num pos-total">€ 8.750</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="of-totals">
+              <div class="of-trow"><span>Nettobetrag gesamt</span><span class="num">€ 70.000,00</span></div>
+              <div class="of-trow fund"><span>Mögliche BAFA-Förderung*</span><span class="num">− € 3.500,00</span></div>
+              <div class="of-trow"><span>Nettobetrag nach Förderung</span><span class="num">€ 66.500,00</span></div>
+              <div class="of-trow"><span>Umsatzsteuer (19 %)</span><span class="num">€ 12.635,00</span></div>
+              <div class="of-trow grand"><span>Gesamtbetrag (brutto)</span><span class="num">€ 79.135,00</span></div>
+            </div>
+            <div class="of-fineprint">* BAFA-Förderung vorbehaltlich Antragsgenehmigung.</div>
+
+            <div class="of-notes">
+              <div class="of-notes-lbl">Zahlungsbedingungen &amp; Hinweise</div>
+              <p>Zahlbar innerhalb von 30 Tagen nach Rechnungslegung. Abrechnung in 3 Raten: 30 % bei Projektstart, 40 % nach Assessment-Abschluss, 30 % bei Pilotabnahme. Reisekosten werden separat zu Selbstkosten abgerechnet.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side rail -->
+      <div class="of-side">
+
+        <div class="of-card">
+          <div class="of-card-title">Angebots-Status</div>
+          <select id="of-status" class="of-status-select versendet" aria-label="Angebotsstatus">
+            <option value="entwurf">Entwurf</option>
+            <option value="versendet" selected>Versendet</option>
+            <option value="angenommen">Angenommen</option>
+            <option value="abgelehnt">Abgelehnt</option>
+          </select>
+          <div class="of-tl">
+            <div class="of-tl-item done" data-step="0">
+              <div class="of-tl-dot"></div>
+              <div><div class="of-tl-text">Angebot erstellt</div><div class="of-tl-date">20.10.2026 · D. Tayon</div></div>
+            </div>
+            <div class="of-tl-item done" data-step="0">
+              <div class="of-tl-dot"></div>
+              <div><div class="of-tl-text">Positionen übernommen</div><div class="of-tl-date">20.10.2026 · automatisch</div></div>
+            </div>
+            <div class="of-tl-item" data-step="1">
+              <div class="of-tl-dot"></div>
+              <div><div class="of-tl-text" id="of-tl-send-text">Angebot versendet</div><div class="of-tl-date" id="of-tl-send-date">20.10.2026 · D. Tayon</div></div>
+            </div>
+            <div class="of-tl-item" data-step="2">
+              <div class="of-tl-dot"></div>
+              <div><div class="of-tl-text">Entscheidung Kunde</div><div class="of-tl-date">offen</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="of-card">
+          <div class="of-card-title">Zielkunde</div>
+          <a class="of-customer" href="mockup-sprint-detail.html">
+            <div class="of-avatar">AX</div>
+            <div>
+              <div class="name">AXA Konzern AG</div>
+              <div class="sub">Versicherung · Nordrhein-Westfalen</div>
+            </div>
+          </a>
+          <div class="of-info-rows">
+            <div class="of-info-row"><span>Kontakt</span><span>R. Lehmann</span></div>
+            <div class="of-info-row"><span>Position</span><span>Leiter IT-Strategie</span></div>
+            <div class="of-info-row"><span>E-Mail</span><span>r.lehmann@axa.de</span></div>
+            <div class="of-info-row"><span>Assessment</span><span>3.7 / 5.0</span></div>
+            <div class="of-info-row"><span>Angebotswert</span><span>€ 70.000</span></div>
+          </div>
+        </div>
+
+        <div class="of-side-actions">
+          <button class="btn btn-ghost btn-sm" id="btn-pdf-2" type="button">PDF generieren</button>
+          <a class="btn btn-ghost btn-sm" href="mockup-sprint-proposals.html">Vorschläge bearbeiten</a>
+        </div>
+
+      </div><!-- /side -->
+    </div><!-- /wrap -->
+  </div><!-- /scroll -->
+</div><!-- /main-wrapper -->
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var STEPS = { entwurf: 1, versendet: 2, angenommen: 3, abgelehnt: 3 };
+  var statusSel = document.getElementById('of-status');
+
+  function toast(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1900);
+  }
+
+  function render(status) {
+    statusSel.className = 'of-status-select ' + status;
+
+    var sendText = document.getElementById('of-tl-send-text');
+    var sendDate = document.getElementById('of-tl-send-date');
+    if (sendText && sendDate) {
+      var sent = status !== 'entwurf';
+      sendText.textContent = sent ? 'Angebot versendet' : 'Versand ausstehend';
+      sendDate.textContent = sent ? '20.10.2026 · D. Tayon' : 'offen';
+    }
+    document.querySelectorAll('.of-tl-item').forEach(function (item) {
+      var step = parseInt(item.getAttribute('data-step'), 10);
+      var active = STEPS[status];
+      item.classList.remove('done', 'current');
+      if (step < active || (status === 'angenommen' || status === 'abgelehnt') && step === 2) {
+        item.classList.add('done');
+      } else if (step === active && status !== 'angenommen' && status !== 'abgelehnt') {
+        item.classList.add('current');
+      }
+    });
+  }
+
+  statusSel.addEventListener('change', function () {
+    render(statusSel.value);
+    toast('Status geändert: ' + statusSel.options[statusSel.selectedIndex].text);
+  });
+
+  function setStatus(value, msg) {
+    if (statusSel.value === value) { toast('Status ist bereits „' + statusSel.options[statusSel.selectedIndex].text + '“'); return; }
+    statusSel.value = value;
+    render(value);
+    toast(msg);
+  }
+
+  document.getElementById('btn-send').addEventListener('click', function (e) {
+    e.stopPropagation();
+    setStatus('versendet', 'Angebot A-2026-047 versendet (Demo)');
+  });
+
+  function pdf(e) {
+    e.stopPropagation();
+    toast('PDF-Export wird vorbereitet (Demo)');
+  }
+  document.getElementById('btn-pdf').addEventListener('click', pdf);
+  document.getElementById('btn-pdf-2').addEventListener('click', pdf);
+
+  render(statusSel.value);
+})();
+</script>
+</body>
+</html>

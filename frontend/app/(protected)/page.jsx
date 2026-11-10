@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { getUser } from '@/lib/auth'
+import { isModuleHidden } from '@/lib/crmProfile'
 import { formatCurrency, formatDate, timeAgo } from '@/lib/utils'
 import Badge from '@/components/ui/Badge'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
@@ -396,10 +397,14 @@ function ConsultantDashboard({ user }) {
   const [selectedTask, setSelectedTask] = useState(null)
   const [allProjects, setAllProjects] = useState([])
   const [submitting, setSubmitting] = useState(false)
+  const [timesheetsHidden, setTimesheetsHidden] = useState(false)
+  const [leaveHidden, setLeaveHidden] = useState(false)
 
   const weekStart = getMonday()
 
   useEffect(() => {
+    setTimesheetsHidden(isModuleHidden('timesheets'))
+    setLeaveHidden(isModuleHidden('leave'))
     async function fetchAll() {
       setLoading(true)
       try {
@@ -493,7 +498,7 @@ function ConsultantDashboard({ user }) {
           <h1 className="text-2xl font-bold text-gray-900">{greeting()}, {user.name?.split(' ')[0]}!</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             {new Date().toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
-            {leaveRequests.length > 0 && (
+            {!leaveHidden && leaveRequests.length > 0 && (
               <span className="ml-3 text-amber-600 font-medium">· {leaveRequests.length} offene Urlaubsanfrage{leaveRequests.length !== 1 ? 'n' : ''}</span>
             )}
           </p>
@@ -505,20 +510,24 @@ function ConsultantDashboard({ user }) {
       </div>
 
       {/* KPI row */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className={`grid grid-cols-2 ${timesheetsHidden ? 'xl:grid-cols-2' : 'xl:grid-cols-4'} gap-4`}>
         <StatCard icon={Briefcase} label="Meine Projekte" value={myProjects.length}
           sub={`${myProjects.filter(p => p.status === 'Active').length} aktiv`}
           color="blue" href="/projects" />
         <StatCard icon={CheckSquare} label="Offene Aufgaben" value={openTasks.length}
           sub={overdueTasks.length > 0 ? `${overdueTasks.length} überfällig` : 'Alles im Zeitplan'}
           color={overdueTasks.length > 0 ? 'red' : 'green'} href="/tasks" />
-        <StatCard icon={Timer} label="Stunden diese Woche" value={`${hoursThisWeek.toFixed(1)}h`}
-          sub={`${billableThisWeek.toFixed(1)}h abrechenbar`}
-          color="teal" href="/timesheets" />
-        <StatCard icon={Clock} label="Zeiterfassung" value={timesheet ? tsStatusMap[timesheet.status]?.label : 'Kein Eintrag'}
-          sub={timesheet?.status === 'draft' ? 'Noch nicht eingereicht' : timesheet?.status === 'approved' ? 'Diese Woche genehmigt' : 'Diese Woche'}
-          color={timesheet?.status === 'returned' ? 'red' : timesheet?.status === 'approved' ? 'green' : 'yellow'}
-          href="/timesheets" />
+        {!timesheetsHidden && (
+          <>
+            <StatCard icon={Timer} label="Stunden diese Woche" value={`${hoursThisWeek.toFixed(1)}h`}
+              sub={`${billableThisWeek.toFixed(1)}h abrechenbar`}
+              color="teal" href="/timesheets" />
+            <StatCard icon={Clock} label="Zeiterfassung" value={timesheet ? tsStatusMap[timesheet.status]?.label : 'Kein Eintrag'}
+              sub={timesheet?.status === 'draft' ? 'Noch nicht eingereicht' : timesheet?.status === 'approved' ? 'Diese Woche genehmigt' : 'Diese Woche'}
+              color={timesheet?.status === 'returned' ? 'red' : timesheet?.status === 'approved' ? 'green' : 'yellow'}
+              href="/timesheets" />
+          </>
+        )}
       </div>
 
       {/* Main content: My Projects + My Tasks */}
@@ -627,6 +636,7 @@ function ConsultantDashboard({ user }) {
       </div>
 
       {/* Productivity chart + Timesheet status */}
+      {!timesheetsHidden && (
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Productivity chart */}
         <div className="card p-5 xl:col-span-2">
@@ -729,6 +739,7 @@ function ConsultantDashboard({ user }) {
           )}
         </div>
       </div>
+      )}
 
       {/* Upcoming activities */}
       {upcomingActivities.length > 0 && (

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporting · Sprint-Vertrieb — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Chrome, buttons and badges come from mockup-sprint.css. */
+  * { margin: 0; padding: 0; }
+  body { display: flex; height: 100vh; overflow: hidden; background: #F5F5F5; }
+  .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  .btn.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* Topbar */
+  .rp-heading { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .rp-heading .breadcrumb { font-size: 11px; }
+  .rp-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .rp-period { padding: 5px 9px; font-size: 12px; cursor: pointer; }
+
+  /* Content shell */
+  .rp-scroll { flex: 1; overflow-y: auto; }
+  .rp-wrap { max-width: 1180px; margin: 0 auto; padding: 20px 24px 32px; }
+
+  /* KPI row */
+  .rp-kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 14px; }
+  .rp-kpi { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 12px 14px; }
+  .rp-kpi-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; margin-bottom: 5px; }
+  .rp-kpi-value { font-size: 22px; font-weight: 800; color: #111111; letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .rp-kpi-delta { font-size: 10.5px; color: #94a3b8; margin-top: 3px; }
+  .rp-kpi-delta.up { color: #16a34a; font-weight: 600; }
+
+  /* Cards */
+  .rp-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 16px 18px; }
+  .rp-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .rp-card-title { font-size: 12.5px; font-weight: 800; color: #111111; letter-spacing: -.01em; }
+  .rp-card-sub { font-size: 10.5px; color: #94a3b8; }
+  .rp-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .rp-block { margin-bottom: 14px; }
+
+  /* Progress */
+  .rp-prog-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+  .rp-prog-top b { font-size: 15px; font-weight: 800; color: #111111; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+  .rp-prog-top b span { color: #F26722; }
+  .rp-prog-bar { height: 9px; background: #f1f5f9; border-radius: 5px; overflow: hidden; }
+  .rp-prog-fill { height: 100%; border-radius: 5px; background: #F26722; }
+  .rp-prog-label { display: flex; justify-content: space-between; font-size: 10.5px; color: #94a3b8; margin-top: 5px; }
+  .rp-prog-label strong { color: #16a34a; }
+
+  /* Funnel */
+  .rp-funnel { display: flex; flex-direction: column; gap: 7px; }
+  .rp-funnel-row { display: flex; align-items: center; gap: 10px; }
+  .rp-funnel-label { font-size: 11px; color: #475569; width: 150px; flex-shrink: 0; }
+  .rp-funnel-wrap { flex: 1; height: 22px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+  .rp-funnel-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 10.5px; font-weight: 700; color: #fff; }
+  .rp-funnel-count { width: 30px; text-align: right; font-size: 11.5px; font-weight: 700; color: #111111; font-variant-numeric: tabular-nums; }
+
+  /* Bars */
+  .rp-bars { display: flex; flex-direction: column; gap: 9px; }
+  .rp-bar-row { display: flex; align-items: center; gap: 10px; }
+  .rp-bar-label { font-size: 11px; color: #475569; width: 84px; flex-shrink: 0; text-align: right; }
+  .rp-bar-wrap { flex: 1; height: 16px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+  .rp-bar-fill { height: 100%; border-radius: 3px; }
+  .rp-bar-val { font-size: 10.5px; font-weight: 700; color: #374151; width: 30px; font-variant-numeric: tabular-nums; }
+  .rp-bar-foot { margin-top: 13px; padding-top: 11px; border-top: 1px solid #f1f5f9; font-size: 11px; color: #64748b; }
+  .rp-bar-foot strong { color: #111111; }
+
+  /* Deals */
+  .rp-deals { display: flex; flex-direction: column; }
+  .rp-deal { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f8fafc; }
+  .rp-deal:last-child { border-bottom: none; padding-bottom: 0; }
+  .rp-deal-main { flex: 1; min-width: 0; }
+  .rp-deal-name { font-size: 12.5px; font-weight: 700; color: #111111; }
+  .rp-deal-meta { font-size: 10.5px; color: #94a3b8; }
+  .rp-deal-value { font-size: 12.5px; font-weight: 800; color: #16a34a; font-variant-numeric: tabular-nums; }
+  .rp-deal-date { font-size: 10.5px; color: #94a3b8; width: 76px; text-align: right; }
+
+  /* Donut */
+  .rp-donut-row { display: flex; align-items: center; gap: 22px; }
+  .rp-donut { position: relative; flex-shrink: 0; }
+  .rp-donut-ring { width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(#ef4444 0 33.3%, #f59e0b 33.3% 66.7%, #3b82f6 66.7% 100%); }
+  .rp-donut-hole { position: absolute; inset: 26px; background: #fff; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .rp-donut-hole b { font-size: 21px; font-weight: 800; color: #111111; line-height: 1; }
+  .rp-donut-hole span { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+  .rp-legend { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .rp-legend-row { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #374151; }
+  .rp-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .rp-legend-row span:first-of-type { flex: 1; }
+  .rp-legend-row b { font-size: 12px; color: #111111; }
+  .rp-legend-row small { font-size: 10.5px; color: #94a3b8; width: 22px; text-align: right; }
+  .rp-avg { margin-top: 4px; padding-top: 9px; border-top: 1px solid #f1f5f9; }
+  .rp-avg span { display: block; font-size: 10.5px; color: #94a3b8; }
+  .rp-avg b { font-size: 17px; font-weight: 800; color: #111111; }
+
+  /* Channel */
+  .rp-channel-sub { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; margin-bottom: 8px; }
+  .rp-channel-bars { display: flex; flex-direction: column; gap: 8px; }
+  .rp-chan-row { display: flex; align-items: center; gap: 10px; }
+  .rp-chan-label { font-size: 11px; color: #475569; width: 82px; flex-shrink: 0; text-align: right; }
+  .rp-chan-wrap { flex: 1; }
+  .rp-chan-track { height: 13px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+  .rp-chan-fill { height: 100%; border-radius: 3px; background: #F26722; }
+  .rp-chan-track.won { height: 7px; margin-top: 2px; }
+  .rp-chan-fill.won { background: #22c55e; border-radius: 2px; }
+  .rp-chan-val { font-size: 10.5px; font-weight: 700; color: #374151; width: 46px; font-variant-numeric: tabular-nums; text-align: right; }
+  .rp-chan-val span { color: #16a34a; }
+  .rp-rel { margin-top: 12px; padding-top: 11px; border-top: 1px solid #f1f5f9; }
+  .rp-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .rp-chip { padding: 3px 9px; border-radius: 12px; font-size: 10.5px; font-weight: 600; background: #f1f5f9; color: #475569; }
+  .rp-chip b { margin-left: 3px; color: #F26722; }
+  .rp-chip.blue { background: #dbeafe; color: #1d4ed8; }
+  .rp-chip.blue b { color: #1d4ed8; }
+  .rp-chip.green { background: #dcfce7; color: #15803d; }
+  .rp-chip.green b { color: #15803d; }
+  .rp-chip.violet { background: #ede9fe; color: #6d28d9; }
+  .rp-chip.violet b { color: #6d28d9; }
+
+  /* Team table */
+  .rp-table-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); overflow: hidden; }
+  .rp-table-card .rp-card-head { padding: 14px 18px 0; margin-bottom: 10px; }
+  .rp-table { width: 100%; border-collapse: collapse; }
+  .rp-table th { padding: 9px 18px; text-align: left; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; background: #fafafa; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
+  .rp-table td { padding: 10px 18px; font-size: 12px; color: #334155; border-bottom: 1px solid #f8fafc; }
+  .rp-table tr:last-child td { border-bottom: none; }
+  .rp-table td b { color: #111111; font-variant-numeric: tabular-nums; }
+  .rp-av { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; margin-right: 7px; vertical-align: middle; }
+  .rp-rate-good { color: #16a34a; font-weight: 700; }
+  .rp-rate-mid { color: #b45309; font-weight: 700; }
+  .rp-rate-low { color: #94a3b8; font-weight: 700; }
+  .rp-foot { font-size: 10.5px; color: #94a3b8; margin-top: 12px; text-align: center; }
+
+  @media (max-width: 1060px) {
+    .rp-kpis { grid-template-columns: repeat(3, 1fr); }
+    .rp-rows { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="reporting"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="rp-heading">
+      <div class="breadcrumb">
+        <a href="mockup-sprint-kanban.html">Sprint-Vertrieb</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">Reporting</span>
+      </div>
+      <span class="page-title">Sprint-Reporting</span>
+    </div>
+    <div class="rp-actions">
+      <select class="rp-period" id="rp-period" aria-label="Zeitraum">
+        <option value="Gesamter Sprint (Okt–Dez 2026)">Gesamter Sprint (Okt–Dez 2026)</option>
+        <option value="Oktober 2026" selected>Oktober 2026</option>
+        <option value="September 2026">September 2026</option>
+        <option value="Q3 2026">Q3 2026</option>
+      </select>
+      <a class="btn btn-ghost btn-sm" href="mockup-sprint-abdeckung.html">Abdeckung</a>
+      <button class="btn btn-ghost btn-sm" id="btn-pdf" type="button">PDF exportieren</button>
+      <button class="btn btn-ghost btn-sm" id="btn-csv" type="button">CSV exportieren</button>
+      <button class="btn btn-primary btn-sm" id="btn-share" type="button">Bericht teilen</button>
+    </div>
+  </header>
+
+  <div class="rp-scroll">
+    <div class="rp-wrap">
+
+      <!-- KPIs -->
+      <div class="rp-kpis">
+        <div class="rp-kpi">
+          <div class="rp-kpi-label">Zielkunden</div>
+          <div class="rp-kpi-value">47</div>
+          <div class="rp-kpi-delta">9 offen · 7 recherchiert</div>
+        </div>
+        <div class="rp-kpi">
+          <div class="rp-kpi-label">Assessments</div>
+          <div class="rp-kpi-value">14</div>
+          <div class="rp-kpi-delta up">3 diese Woche</div>
+        </div>
+        <div class="rp-kpi">
+          <div class="rp-kpi-label">Angebote</div>
+          <div class="rp-kpi-value">11</div>
+          <div class="rp-kpi-delta">5 in Angebotsphase</div>
+        </div>
+        <div class="rp-kpi">
+          <div class="rp-kpi-label">Gewonnen</div>
+          <div class="rp-kpi-value">6</div>
+          <div class="rp-kpi-delta up">2 diese Woche</div>
+        </div>
+        <div class="rp-kpi">
+          <div class="rp-kpi-label">Win-Rate</div>
+          <div class="rp-kpi-value">55 %</div>
+          <div class="rp-kpi-delta">6 von 11 Angeboten</div>
+        </div>
+        <div class="rp-kpi">
+          <div class="rp-kpi-label">Umsatz gesichert</div>
+          <div class="rp-kpi-value">€ 156.000</div>
+          <div class="rp-kpi-delta up">Ziel: € 150.000 ✓</div>
+        </div>
+      </div>
+
+      <!-- Umsatzfortschritt -->
+      <div class="rp-card rp-block">
+        <div class="rp-prog-top">
+          <span class="rp-card-title">Umsatzfortschritt</span>
+          <b>€ 156.000 <span>/ € 150.000</span></b>
+        </div>
+        <div class="rp-prog-bar"><div class="rp-prog-fill" style="width:100%"></div></div>
+        <div class="rp-prog-label"><span>0</span><strong>Ziel erreicht ✓ (104 %)</strong><span>€ 150.000</span></div>
+      </div>
+
+      <!-- Charts row -->
+      <div class="rp-rows">
+        <div class="rp-card">
+          <div class="rp-card-head">
+            <span class="rp-card-title">Sales Funnel</span>
+            <span class="rp-card-sub">47 Zielkunden · Okt 2026</span>
+          </div>
+          <div class="rp-funnel">
+            <div class="rp-funnel-row">
+              <div class="rp-funnel-label">Offen</div>
+              <div class="rp-funnel-wrap"><div class="rp-funnel-bar" style="width:100%;background:#94a3b8">12</div></div>
+              <div class="rp-funnel-count">12</div>
+            </div>
+            <div class="rp-funnel-row">
+              <div class="rp-funnel-label">Recherchiert</div>
+              <div class="rp-funnel-wrap"><div class="rp-funnel-bar" style="width:67%;background:#60a5fa">8</div></div>
+              <div class="rp-funnel-count">8</div>
+            </div>
+            <div class="rp-funnel-row">
+              <div class="rp-funnel-label">Vernetzt</div>
+              <div class="rp-funnel-wrap"><div class="rp-funnel-bar" style="width:42%;background:#6366f1">5</div></div>
+              <div class="rp-funnel-count">5</div>
+            </div>
+            <div class="rp-funnel-row">
+              <div class="rp-funnel-label">Kontaktiert</div>
+              <div class="rp-funnel-wrap"><div class="rp-funnel-bar" style="width:33%;background:#8b5cf6">4</div></div>
+              <div class="rp-funnel-count">4</div>
+            </div>
+            <div class="rp-funnel-row">
+              <div class="rp-funnel-label">Qualifizierungsgespräch</div>
+              <div class="rp-funnel-wrap"><div class="rp-funnel-bar" style="width:25%;background:#a855f7">3</div></div>
+              <div class="rp-funnel-count">3</div>
+            </div>
+            <div class="rp-funnel-row">
+              <div class="rp-funnel-label">Erstgespräch</div>
+              <div class="rp-funnel-wrap"><div class="rp-funnel-bar" style="width:17%;background:#14b8a6">2</div></div>
+              <div class="rp-funnel-count">2</div>
+            </div>
+            <div class="rp-funnel-row">
+              <div class="rp-funnel-label">Angebot</div>
+              <div class="rp-funnel-wrap"><div class="rp-funnel-bar" style="width:42%;background:#f59e0b">5</div></div>
+              <div class="rp-funnel-count">5</div>
+            </div>
+            <div class="rp-funnel-row">
+              <div class="rp-funnel-label">Gewonnen</div>
+              <div class="rp-funnel-wrap"><div class="rp-funnel-bar" style="width:50%;background:#22c55e">6</div></div>
+              <div class="rp-funnel-count">6</div>
+            </div>
+            <div class="rp-funnel-row">
+              <div class="rp-funnel-label">Verlust</div>
+              <div class="rp-funnel-wrap"><div class="rp-funnel-bar" style="width:8%;background:#be123c">1</div></div>
+              <div class="rp-funnel-count">1</div>
+            </div>
+            <div class="rp-funnel-row">
+              <div class="rp-funnel-label">Kein Interesse</div>
+              <div class="rp-funnel-wrap"><div class="rp-funnel-bar" style="width:8%;background:#dc2626">1</div></div>
+              <div class="rp-funnel-count">1</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rp-card">
+          <div class="rp-card-head">
+            <span class="rp-card-title">Aktivitäten nach Typ</span>
+            <span class="rp-card-sub">Oktober 2026</span>
+          </div>
+          <div class="rp-bars">
+            <div class="rp-bar-row">
+              <div class="rp-bar-label">Anrufe</div>
+              <div class="rp-bar-wrap"><div class="rp-bar-fill" style="width:84%;background:#F26722"></div></div>
+              <div class="rp-bar-val">66</div>
+            </div>
+            <div class="rp-bar-row">
+              <div class="rp-bar-label">E-Mails</div>
+              <div class="rp-bar-wrap"><div class="rp-bar-fill" style="width:100%;background:#0891b2"></div></div>
+              <div class="rp-bar-val">79</div>
+            </div>
+            <div class="rp-bar-row">
+              <div class="rp-bar-label">Meetings</div>
+              <div class="rp-bar-wrap"><div class="rp-bar-fill" style="width:38%;background:#16a34a"></div></div>
+              <div class="rp-bar-val">30</div>
+            </div>
+            <div class="rp-bar-row">
+              <div class="rp-bar-label">Demos</div>
+              <div class="rp-bar-wrap"><div class="rp-bar-fill" style="width:22%;background:#d97706"></div></div>
+              <div class="rp-bar-val">17</div>
+            </div>
+            <div class="rp-bar-row">
+              <div class="rp-bar-label">LinkedIn</div>
+              <div class="rp-bar-wrap"><div class="rp-bar-fill" style="width:52%;background:#7c3aed"></div></div>
+              <div class="rp-bar-val">41</div>
+            </div>
+            <div class="rp-bar-row">
+              <div class="rp-bar-label">Assessments</div>
+              <div class="rp-bar-wrap"><div class="rp-bar-fill" style="width:18%;background:#dc2626"></div></div>
+              <div class="rp-bar-val">14</div>
+            </div>
+          </div>
+          <div class="rp-bar-foot">
+            Aktivitäten gesamt: <strong>247</strong> · Ø pro Werktag: <strong>11,2</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gewonnene Kunden -->
+      <div class="rp-card rp-block">
+        <div class="rp-card-head">
+          <span class="rp-card-title">Gewonnene Kunden (6)</span>
+          <span class="rp-card-sub">Gesamt € 156.000</span>
+        </div>
+        <div class="rp-deals">
+          <div class="rp-deal">
+            <div class="rp-deal-main"><div class="rp-deal-name">Commerzbank AG</div><div class="rp-deal-meta">Premium · Banken · Anna Müller</div></div>
+            <div class="rp-deal-value">€ 42.000</div>
+            <div class="rp-deal-date">21.10.2026</div>
+          </div>
+          <div class="rp-deal">
+            <div class="rp-deal-main"><div class="rp-deal-name">Knorr-Bremse AG</div><div class="rp-deal-meta">Advanced · Maschinenbau &amp; Elektro · Lea Schmidt</div></div>
+            <div class="rp-deal-value">€ 28.000</div>
+            <div class="rp-deal-date">18.10.2026</div>
+          </div>
+          <div class="rp-deal">
+            <div class="rp-deal-main"><div class="rp-deal-name">Rheinmetall AG</div><div class="rp-deal-meta">Advanced · Maschinenbau &amp; Elektro · Lea Schmidt</div></div>
+            <div class="rp-deal-value">€ 31.000</div>
+            <div class="rp-deal-date">15.10.2026</div>
+          </div>
+          <div class="rp-deal">
+            <div class="rp-deal-main"><div class="rp-deal-name">Bechtle AG</div><div class="rp-deal-meta">Basic · Übrige Industrie · Thomas Braun</div></div>
+            <div class="rp-deal-value">€ 22.000</div>
+            <div class="rp-deal-date">12.10.2026</div>
+          </div>
+          <div class="rp-deal">
+            <div class="rp-deal-main"><div class="rp-deal-name">Jungheinrich AG</div><div class="rp-deal-meta">Advanced · Handel &amp; Logistik · Thomas Braun</div></div>
+            <div class="rp-deal-value">€ 18.000</div>
+            <div class="rp-deal-date">08.10.2026</div>
+          </div>
+          <div class="rp-deal">
+            <div class="rp-deal-main"><div class="rp-deal-name">Pfeiffer Vacuum</div><div class="rp-deal-meta">Basic · Maschinenbau &amp; Elektro · Lea Schmidt</div></div>
+            <div class="rp-deal-value">€ 15.000</div>
+            <div class="rp-deal-date">02.10.2026</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Win/Loss + Kanal -->
+      <div class="rp-rows">
+        <div class="rp-card">
+          <div class="rp-card-head">
+            <span class="rp-card-title">Verlust-Gründe</span>
+            <span class="rp-card-sub">3 verlorene Deals</span>
+          </div>
+          <div class="rp-donut-row">
+            <div class="rp-donut">
+              <div class="rp-donut-ring"></div>
+              <div class="rp-donut-hole"><b>3</b><span>Verluste</span></div>
+            </div>
+            <div class="rp-legend">
+              <div class="rp-legend-row">
+                <div class="rp-legend-dot" style="background:#ef4444"></div>
+                <span>Preis zu hoch</span><b>33 %</b><small>(1)</small>
+              </div>
+              <div class="rp-legend-row">
+                <div class="rp-legend-dot" style="background:#f59e0b"></div>
+                <span>Wettbewerber</span><b>33 %</b><small>(1)</small>
+              </div>
+              <div class="rp-legend-row">
+                <div class="rp-legend-dot" style="background:#3b82f6"></div>
+                <span>Timing</span><b>33 %</b><small>(1)</small>
+              </div>
+              <div class="rp-avg">
+                <span>Ø Dauer Erstgespräch → Auftrag</span>
+                <b>24 Tage</b>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rp-card">
+          <div class="rp-card-head">
+            <span class="rp-card-title">Kanal-Analyse</span>
+            <span class="rp-card-sub">Herkunft der Zielkunden</span>
+          </div>
+          <div class="rp-channel-sub">Zielkunden → gewonnen</div>
+          <div class="rp-channel-bars">
+            <div class="rp-chan-row">
+              <div class="rp-chan-label">Recherche</div>
+              <div class="rp-chan-wrap">
+                <div class="rp-chan-track"><div class="rp-chan-fill" style="width:100%"></div></div>
+                <div class="rp-chan-track won"><div class="rp-chan-fill won" style="width:14%"></div></div>
+              </div>
+              <div class="rp-chan-val">22 / <span>3</span></div>
+            </div>
+            <div class="rp-chan-row">
+              <div class="rp-chan-label">LinkedIn</div>
+              <div class="rp-chan-wrap">
+                <div class="rp-chan-track"><div class="rp-chan-fill" style="width:68%"></div></div>
+                <div class="rp-chan-track won"><div class="rp-chan-fill won" style="width:7%"></div></div>
+              </div>
+              <div class="rp-chan-val">15 / <span>1</span></div>
+            </div>
+            <div class="rp-chan-row">
+              <div class="rp-chan-label">Netzwerk</div>
+              <div class="rp-chan-wrap">
+                <div class="rp-chan-track"><div class="rp-chan-fill" style="width:32%"></div></div>
+                <div class="rp-chan-track won"><div class="rp-chan-fill won" style="width:14%"></div></div>
+              </div>
+              <div class="rp-chan-val">7 / <span>1</span></div>
+            </div>
+            <div class="rp-chan-row">
+              <div class="rp-chan-label">Empfehlung</div>
+              <div class="rp-chan-wrap">
+                <div class="rp-chan-track"><div class="rp-chan-fill" style="width:14%"></div></div>
+                <div class="rp-chan-track won"><div class="rp-chan-fill won" style="width:33%"></div></div>
+              </div>
+              <div class="rp-chan-val">3 / <span>1</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team -->
+      <div class="rp-table-card">
+        <div class="rp-card-head">
+          <span class="rp-card-title">Team-Performance</span>
+          <span class="rp-card-sub">Okt 2026 · 4 Berater</span>
+        </div>
+        <table class="rp-table">
+          <thead>
+            <tr>
+              <th>Berater</th>
+              <th>Zielkunden</th>
+              <th>Aktivitäten</th>
+              <th>Angebote</th>
+              <th>Gewonnen</th>
+              <th>Win-Rate</th>
+              <th style="text-align:right">Umsatz</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="rp-av" style="background:#d97706">MW</span> Michael Weber</td>
+              <td>7</td>
+              <td>40</td>
+              <td>1</td>
+              <td>0</td>
+              <td class="rp-rate-low">0 %</td>
+              <td style="text-align:right"><b>€ 0</b></td>
+            </tr>
+            <tr>
+              <td><span class="rp-av" style="background:#F26722">AM</span> Anna Müller</td>
+              <td>13</td>
+              <td>86</td>
+              <td>3</td>
+              <td>1</td>
+              <td class="rp-rate-mid">33 %</td>
+              <td style="text-align:right"><b>€ 42.000</b></td>
+            </tr>
+            <tr>
+              <td><span class="rp-av" style="background:#0891b2">TB</span> Thomas Braun</td>
+              <td>18</td>
+              <td>74</td>
+              <td>3</td>
+              <td>2</td>
+              <td class="rp-rate-good">67 %</td>
+              <td style="text-align:right"><b>€ 40.000</b></td>
+            </tr>
+            <tr>
+              <td><span class="rp-av" style="background:#16a34a">LS</span> Lea Schmidt</td>
+              <td>9</td>
+              <td>47</td>
+              <td>4</td>
+              <td>3</td>
+              <td class="rp-rate-good">75 %</td>
+              <td style="text-align:right"><b>€ 74.000</b></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="rp-foot">Stand: 23.10.2026 · Daten aus Sprint-Vertrieb · automatisch aktualisiert</div>
+
+    </div>
+  </div>
+</div>
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  function toast(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1900);
+  }
+
+  document.getElementById('btn-pdf').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('PDF-Bericht wird erstellt …');
+  });
+
+  document.getElementById('btn-csv').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('CSV-Export wird erstellt …');
+  });
+
+  document.getElementById('btn-share').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toast('Bericht-Link kopiert — Zugriff für das Team freigegeben.');
+  });
+
+  document.getElementById('rp-period').addEventListener('change', function (e) {
+    toast('Zeitraum: ' + e.target.value);
+  });
+})();
+</script>
+</body>
+</html>

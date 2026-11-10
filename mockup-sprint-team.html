@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team — KI-Readiness Sprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; display: flex; height: 100vh; overflow: hidden; }
+
+/* Sidebar */
+.sidebar { width: 240px; background: #111111; color: #94a3b8; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+.brand { padding: 20px 16px 16px; border-bottom: 1px solid #1e293b; }
+.brand-name { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+.brand-sub { font-size: 11px; color: #F26722; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
+.sidebar-nav { padding: 12px 8px; flex: 1; }
+.nav-group { margin-bottom: 8px; }
+.nav-group-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; color: #475569; padding: 6px 8px 4px; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; color: #94a3b8; text-decoration: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .15s; }
+.nav-item:hover { background: #1e293b; color: #e2e8f0; }
+.nav-item.active { background: #1e3a5f; color: #60a5fa; }
+.nav-item .icon { font-size: 15px; }
+
+/* Layout */
+.main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 16px; }
+.page-title { font-size: 16px; font-weight: 600; color: #111111; }
+.page-sub { font-size: 11.5px; color: #94a3b8; margin-top: 2px; }
+main { flex: 1; overflow-y: auto; padding: 24px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Tabs */
+.tabs { display: flex; gap: 2px; background: #f1f5f9; border-radius: 8px; padding: 3px; margin-bottom: 22px; width: fit-content; }
+.tab { padding: 7px 18px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; color: #64748b; border: none; background: transparent; font-family: inherit; }
+.tab.active { background: #fff; color: #111111; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+
+/* KPI cards */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+.kpi-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; }
+.kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: #64748b; font-weight: 600; }
+.kpi-value { font-size: 22px; font-weight: 700; color: #111111; margin-top: 4px; }
+.kpi-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.kpi-sub.bad { color: #dc2626; }
+
+/* Team grid */
+.team-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.member-card { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; padding: 16px; display: flex; flex-direction: column; transition: box-shadow .15s, border-color .15s; }
+.member-card:hover { box-shadow: 0 4px 14px rgba(15,23,42,.07); border-color: #cbd5e1; }
+.member-top { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.member-name { font-size: 13.5px; font-weight: 600; color: #111111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.member-role { font-size: 11.5px; color: #64748b; margin-top: 1px; }
+.status-pill { margin-left: auto; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px; white-space: nowrap; }
+.status-pill.ok { background: #dcfce7; color: #16a34a; }
+.status-pill.warn { background: #fef3c7; color: #d97706; }
+.status-pill.over { background: #fee2e2; color: #dc2626; }
+.member-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; min-height: 20px; }
+.tag { font-size: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 2px 7px; color: #64748b; }
+.member-stats { margin-top: 14px; display: flex; gap: 0; border-top: 1px solid #f1f5f9; padding-top: 12px; }
+.mstat { display: flex; flex-direction: column; align-items: flex-start; flex: 1; }
+.mstat-val { font-size: 16px; font-weight: 700; color: #111111; }
+.mstat-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: .4px; }
+.capacity-label { display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-top: 14px; }
+.capacity-label strong { color: #111111; }
+.capacity-bar { width: 100%; height: 6px; background: #f1f5f9; border-radius: 3px; margin-top: 6px; overflow: hidden; }
+.capacity-fill { height: 100%; border-radius: 3px; }
+.cap-ok { background: #16a34a; }
+.cap-warn { background: #d97706; }
+.cap-over { background: #dc2626; }
+.member-actions { margin-top: 12px; display: flex; gap: 6px; }
+.btn-sm { padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: 500; cursor: pointer; border: 1px solid #e2e8f0; background: #fff; color: #64748b; font-family: inherit; }
+.btn-sm:hover { background: #f1f5f9; }
+.btn-sm.danger { color: #dc2626; border-color: #fca5a5; }
+.btn-sm.danger:hover { background: #fef2f2; }
+
+/* Section heading */
+.section-heading { font-size: 14px; font-weight: 700; color: #111111; margin: 4px 0 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+/* Tables */
+.matrix-card { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; overflow: hidden; }
+.matrix-table { width: 100%; border-collapse: collapse; }
+.matrix-table th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; white-space: nowrap; }
+.matrix-table td { padding: 11px 14px; font-size: 13px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+.matrix-table tbody tr:hover { background: #fafbfc; }
+.matrix-table tr:last-child td { border-bottom: none; }
+.company-cell { font-weight: 600; color: #111111; }
+.company-seg { font-size: 11px; color: #94a3b8; }
+.phase-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.ph-offen { background: #f1f5f9; color: #475569; }
+.ph-kontakt { background: #dbeafe; color: #1d4ed8; }
+.ph-assessment { background: #ede9fe; color: #7c3aed; }
+.ph-angebot { background: #fef3c7; color: #d97706; }
+.ph-verhandlung { background: #dcfce7; color: #16a34a; }
+.assignee-cell { display: flex; align-items: center; gap: 6px; }
+.assignee-av { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.unassigned { color: #94a3b8; font-style: italic; font-size: 12px; }
+.assign-btn { padding: 4px 8px; border: 1px dashed #cbd5e1; border-radius: 5px; font-size: 11px; color: #64748b; cursor: pointer; background: transparent; font-family: inherit; }
+.assign-btn:hover { border-color: #F26722; color: #F26722; }
+.prio-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+.prio-h { background: #ef4444; }
+.prio-m { background: #f59e0b; }
+.prio-l { background: #94a3b8; }
+.cap-table td .capacity-bar { margin-top: 0; width: 90px; display: inline-block; vertical-align: middle; }
+.cap-table .cap-pct { font-size: 12px; font-weight: 600; margin-left: 8px; }
+
+/* Add member */
+.add-member-card { background: #fff; border-radius: 10px; border: 2px dashed #e2e8f0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; color: #94a3b8; transition: border-color .15s, color .15s; min-height: 210px; }
+.add-member-card:hover { border-color: #F26722; color: #F26722; }
+.add-member-card .plus { font-size: 24px; line-height: 1; }
+.add-member-card span { font-size: 12px; font-weight: 500; }
+
+/* Recommendation */
+.rec-box { margin-top: 18px; padding: 14px 16px; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 12.5px; line-height: 1.55; color: #475569; }
+.rec-box strong { color: #111111; }
+.rec-box.warn { border-color: #fde68a; background: #fffbeb; color: #92400e; }
+.rec-box.warn strong { color: #92400e; }
+.rec-box.ok { border-color: #bbf7d0; background: #f0fdf4; color: #166534; }
+.rec-box.ok strong { color: #166534; }
+
+/* Btn */
+.btn { padding: 7px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-family: inherit; }
+.btn-primary { background: #F26722; color: #fff; }
+.btn-primary:hover { background: #D4540A; }
+.btn-ghost { background: transparent; color: #64748b; border: 1px solid #e2e8f0; }
+.btn-ghost:hover { background: #f8fafc; }
+.btn-ghost.active { background: #fff7ed; border-color: #F26722; color: #F26722; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 1000; display: none; align-items: center; justify-content: center; }
+.modal-box { background: #fff; border-radius: 12px; width: 460px; max-width: calc(100% - 32px); box-shadow: 0 24px 60px rgba(0,0,0,.3); }
+.modal-head { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+.modal-title { font-size: 14px; font-weight: 700; color: #111111; }
+.modal-close { cursor: pointer; color: #94a3b8; font-size: 20px; line-height: 1; }
+.modal-close:hover { color: #111111; }
+.modal-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; max-height: 62vh; overflow-y: auto; }
+.modal-foot { padding: 14px 20px; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 8px; }
+.form-row { display: flex; flex-direction: column; gap: 4px; }
+label { font-size: 12px; font-weight: 500; color: #374151; }
+input[type=text], input[type=email], select, textarea { padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; font-family: inherit; outline: none; }
+input:focus, select:focus { border-color: #F26722; }
+.field-desc { font-size: 11px; color: #94a3b8; }
+.profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.profile-item { background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 8px; padding: 10px 12px; }
+.profile-item .k { font-size: 10px; text-transform: uppercase; letter-spacing: .4px; color: #64748b; font-weight: 600; }
+.profile-item .v { font-size: 14px; font-weight: 700; color: #111111; margin-top: 2px; }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">KI-Readiness Sprint</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="team"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div>
+      <div class="page-title">Team &amp; Zuweisung</div>
+      <div class="page-sub" id="team-sub"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" id="btn-invite">Einladen</button>
+      <button class="btn btn-primary" id="btn-add-member">+ Mitglied hinzufügen</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="tabs">
+      <button class="tab active" data-tab="team">Team-Übersicht</button>
+      <button class="tab" data-tab="zuweisung">Kundenzuweisung</button>
+      <button class="tab" data-tab="kapazitaet">Kapazität</button>
+    </div>
+
+    <!-- Tab 1: team overview -->
+    <section class="tab-panel active" id="tab-team">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Mitglieder</div>
+          <div class="kpi-value" id="kpi-members">—</div>
+          <div class="kpi-sub" id="kpi-members-sub">Sprint-Team</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Betreute Zielkunden</div>
+          <div class="kpi-value" id="kpi-customers">—</div>
+          <div class="kpi-sub" id="kpi-customers-sub"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Ø Auslastung</div>
+          <div class="kpi-value" id="kpi-load">—</div>
+          <div class="kpi-sub">Zielkorridor 60–85 %</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Engpass</div>
+          <div class="kpi-value" id="kpi-over">—</div>
+          <div class="kpi-sub" id="kpi-over-sub"></div>
+        </div>
+      </div>
+
+      <div class="team-grid" id="team-grid"></div>
+    </section>
+
+    <!-- Tab 2: assignment -->
+    <section class="tab-panel" id="tab-zuweisung">
+      <div class="section-heading">
+        Kundenzuweisung
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" id="btn-filter" style="font-size:12px">Filter: offene Zuweisungen</button>
+          <button class="btn btn-ghost" id="btn-bulk" style="font-size:12px">Massenbearbeitung</button>
+        </div>
+      </div>
+      <div class="matrix-card">
+        <table class="matrix-table" id="matrix">
+          <thead>
+            <tr>
+              <th>Zielkunde</th>
+              <th>Phase</th>
+              <th>Priorität</th>
+              <th>Lead Berater</th>
+              <th>KI-Experte</th>
+              <th>Vertrieb</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-id="schneider">
+              <td><div class="company-cell">Autohaus Schneider GmbH</div><div class="company-seg">Handel & Logistik · KMU</div></td>
+              <td><span class="phase-badge ph-angebot">Angebot erstellt</span></td>
+              <td><span class="prio-dot prio-h"></span>Hoch</td>
+              <td class="role-cell" data-role="lead" data-member="am"></td>
+              <td class="role-cell" data-role="ki" data-member="ls"></td>
+              <td class="role-cell" data-role="sales" data-member="mw"></td>
+              <td><button class="assign-btn">Ändern</button></td>
+            </tr>
+            <tr data-id="medtech">
+              <td><div class="company-cell">MedTech Innovations AG</div><div class="company-seg">Gesundheit & Soziales · Mittelstand</div></td>
+              <td><span class="phase-badge ph-verhandlung">Verhandlung</span></td>
+              <td><span class="prio-dot prio-h"></span>Hoch</td>
+              <td class="role-cell" data-role="lead" data-member="tb"></td>
+              <td class="role-cell" data-role="ki" data-member="ls"></td>
+              <td class="role-cell" data-role="sales" data-member="mw"></td>
+              <td><button class="assign-btn">Ändern</button></td>
+            </tr>
+            <tr data-id="baeckerei">
+              <td><div class="company-cell">Bäckerei Müller &amp; Söhne</div><div class="company-seg">Übrige Industrie · KMU</div></td>
+              <td><span class="phase-badge ph-assessment">Assessment läuft</span></td>
+              <td><span class="prio-dot prio-m"></span>Mittel</td>
+              <td class="role-cell" data-role="lead" data-member="am"></td>
+              <td class="role-cell" data-role="ki" data-member="ls"></td>
+              <td class="role-cell" data-role="sales" data-member=""></td>
+              <td><button class="assign-btn">+ Zuweisen</button></td>
+            </tr>
+            <tr data-id="riedel">
+              <td><div class="company-cell">Logistik Riedel KG</div><div class="company-seg">Handel & Logistik · Mittelstand</div></td>
+              <td><span class="phase-badge ph-kontakt">Kontaktiert</span></td>
+              <td><span class="prio-dot prio-m"></span>Mittel</td>
+              <td class="role-cell" data-role="lead" data-member="tb"></td>
+              <td class="role-cell" data-role="ki" data-member=""></td>
+              <td class="role-cell" data-role="sales" data-member="mw"></td>
+              <td><button class="assign-btn">Ändern</button></td>
+            </tr>
+            <tr data-id="praxis">
+              <td><div class="company-cell">Dr. Weber Praxisnetz</div><div class="company-seg">Gesundheit & Soziales · KMU</div></td>
+              <td><span class="phase-badge ph-offen">Offen</span></td>
+              <td><span class="prio-dot prio-l"></span>Niedrig</td>
+              <td class="role-cell" data-role="lead" data-member=""></td>
+              <td class="role-cell" data-role="ki" data-member=""></td>
+              <td class="role-cell" data-role="sales" data-member="mw"></td>
+              <td><button class="assign-btn">+ Zuweisen</button></td>
+            </tr>
+            <tr data-id="fischer">
+              <td><div class="company-cell">Stahlbau Fischer GmbH</div><div class="company-seg">Maschinenbau & Elektro · Mittelstand</div></td>
+              <td><span class="phase-badge ph-angebot">Angebot erstellt</span></td>
+              <td><span class="prio-dot prio-h"></span>Hoch</td>
+              <td class="role-cell" data-role="lead" data-member="am"></td>
+              <td class="role-cell" data-role="ki" data-member="ls"></td>
+              <td class="role-cell" data-role="sales" data-member="mw"></td>
+              <td><button class="assign-btn">Ändern</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tab 3: capacity -->
+    <section class="tab-panel" id="tab-kapazitaet">
+      <div class="section-heading">Kapazität &amp; Auslastung</div>
+      <div class="matrix-card">
+        <table class="matrix-table cap-table">
+          <thead>
+            <tr>
+              <th>Mitglied</th>
+              <th>Rolle</th>
+              <th>Kunden</th>
+              <th>Kapazität (Kunden)</th>
+              <th>Auslastung</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="cap-body"></tbody>
+        </table>
+      </div>
+      <div class="rec-box" id="cap-rec"></div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title"></div>
+      <span class="modal-close" data-close>×</span>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
+  </div>
+</div>
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  // ── State ────────────────────────────────────────────────────
+  var MEMBERS = {
+    am: { id: 'am', name: 'Anna Müller', initials: 'AM', role: 'Lead Consultant', color: '#F26722', cust: 8, offers: 3, assessments: 1, cap: 10.7, seg: ['Handel & Logistik', 'Maschinenbau & Elektro'] },
+    tb: { id: 'tb', name: 'Thomas Braun', initials: 'TB', role: 'Senior Berater', color: '#0891b2', cust: 6, offers: 2, assessments: 2, cap: 6.5, seg: ['Handel & Logistik', 'Maschinenbau & Elektro'] },
+    ls: { id: 'ls', name: 'Lea Schmidt', initials: 'LS', role: 'KI-Expertin', color: '#16a34a', cust: 5, offers: 0, assessments: 4, cap: 8.3, seg: ['Handel & Logistik', 'Gesundheit & Soziales'] },
+    mw: { id: 'mw', name: 'Michael Weber', initials: 'MW', role: 'Vertrieb', color: '#d97706', cust: 10, offers: 5, assessments: 0, cap: 9.1, seg: ['Handel & Logistik'] }
+  };
+  var ROLE_LABEL = { lead: 'Lead Berater', ki: 'KI-Experte', sales: 'Vertrieb' };
+  var ROLE_ORDER = ['lead', 'ki', 'sales'];
+  var COLOR_POOL = ['#7c3aed', '#0ea5e9', '#ec4899', '#14b8a6', '#8b5cf6', '#f43f5e'];
+  var colorIdx = 0;
+
+  function list() {
+    return Object.keys(MEMBERS).map(function (id) { return MEMBERS[id]; });
+  }
+  function util(m) { return m.cap > 0 ? Math.round(m.cust / m.cap * 100) : 0; }
+  function statusOf(u) {
+    if (u > 100) return { label: 'Überlastet', cls: 'over', fill: 'cap-over', color: '#dc2626' };
+    if (u >= 85) return { label: 'Fast ausgelastet', cls: 'warn', fill: 'cap-warn', color: '#d97706' };
+    return { label: 'Verfügbar', cls: 'ok', fill: 'cap-ok', color: '#16a34a' };
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function toast(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:1100;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1800);
+  }
+
+  // ── Tabs ─────────────────────────────────────────────────────
+  var tabButtons = document.querySelectorAll('.tab[data-tab]');
+  function showTab(name) {
+    tabButtons.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tab') === name); });
+    document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.toggle('active', p.id === 'tab-' + name); });
+  }
+  tabButtons.forEach(function (b) {
+    b.addEventListener('click', function (e) {
+      e.stopPropagation();
+      showTab(b.getAttribute('data-tab'));
+    });
+  });
+
+  // ── KPI ──────────────────────────────────────────────────────
+  function renderKpis() {
+    var ms = list();
+    var total = ms.reduce(function (s, m) { return s + m.cust; }, 0);
+    var avg = ms.length ? Math.round(ms.reduce(function (s, m) { return s + util(m); }, 0) / ms.length) : 0;
+    var over = ms.filter(function (m) { return util(m) > 100; });
+    document.getElementById('kpi-members').textContent = ms.length;
+    document.getElementById('kpi-members-sub').textContent = 'Sprint SP-2026-04 · Q4/2026';
+    document.getElementById('kpi-customers').textContent = total;
+    document.getElementById('kpi-customers-sub').textContent = ms.length ? 'Ø ' + (total / ms.length).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' je Berater' : '';
+    document.getElementById('kpi-load').textContent = avg + ' %';
+    document.getElementById('kpi-over').textContent = over.length;
+    var overSub = document.getElementById('kpi-over-sub');
+    if (over.length) {
+      overSub.textContent = over.map(function (m) { return m.name + ' ' + util(m) + ' %'; }).join(', ');
+      overSub.className = 'kpi-sub bad';
+    } else {
+      overSub.textContent = 'Keine Überlastung';
+      overSub.className = 'kpi-sub';
+    }
+    document.getElementById('team-sub').textContent = ms.length + ' Mitglieder · ' + total + ' betreute Zielkunden';
+  }
+
+  // ── Team cards ───────────────────────────────────────────────
+  function renderTeam() {
+    var html = '';
+    list().forEach(function (m) {
+      var u = util(m), st = statusOf(u);
+      html += '<div class="member-card" data-member="' + m.id + '">' +
+        '<div class="member-top">' +
+          '<div class="avatar" style="background:' + m.color + '">' + esc(m.initials) + '</div>' +
+          '<div style="min-width:0"><div class="member-name">' + esc(m.name) + '</div><div class="member-role">' + esc(m.role) + '</div></div>' +
+          '<span class="status-pill ' + st.cls + '">' + st.label + '</span>' +
+        '</div>' +
+        '<div class="member-tags">' + m.seg.map(function (s) { return '<span class="tag">' + esc(s) + '</span>'; }).join('') + '</div>' +
+        '<div class="member-stats">' +
+          '<div class="mstat"><div class="mstat-val">' + m.cust + '</div><div class="mstat-label">Kunden</div></div>' +
+          '<div class="mstat"><div class="mstat-val">' + m.offers + '</div><div class="mstat-label">Angebote</div></div>' +
+          '<div class="mstat"><div class="mstat-val">' + m.assessments + '</div><div class="mstat-label">Assessments</div></div>' +
+        '</div>' +
+        '<div class="capacity-label"><span>Auslastung</span><strong style="color:' + st.color + '">' + u + ' %</strong></div>' +
+        '<div class="capacity-bar"><div class="capacity-fill ' + st.fill + '" style="width:' + Math.min(100, u) + '%"></div></div>' +
+        '<div class="member-actions">' +
+          '<button class="btn-sm" data-act="profile">Profil</button>' +
+          '<button class="btn-sm" data-act="assign">Zuweisen</button>' +
+          (u > 100 ? '<button class="btn-sm danger" data-act="relieve">Entlasten</button>' : '') +
+        '</div>' +
+      '</div>';
+    });
+    html += '<div class="add-member-card" data-act="add-member"><div class="plus">+</div><span>Mitglied hinzufügen</span></div>';
+    document.getElementById('team-grid').innerHTML = html;
+  }
+
+  document.getElementById('team-grid').addEventListener('click', function (e) {
+    var add = e.target.closest('[data-act="add-member"]');
+    if (add) { e.stopPropagation(); openMemberModal(false); return; }
+    var btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    e.stopPropagation();
+    var card = btn.closest('.member-card');
+    var m = card ? MEMBERS[card.dataset.member] : null;
+    if (!m) return;
+    var act = btn.dataset.act;
+    if (act === 'profile') openProfile(m);
+    else if (act === 'assign') showTab('zuweisung');
+    else if (act === 'relieve') relieve(m);
+  });
+
+  // ── Assignment matrix ────────────────────────────────────────
+  function cellHTML(m) {
+    if (!m) return '<div class="assignee-cell unassigned">— nicht zugewiesen —</div>';
+    return '<div class="assignee-cell"><div class="assignee-av" style="background:' + m.color + '">' + esc(m.initials) + '</div>' + esc(m.name) + '</div>';
+  }
+  function renderCells() {
+    document.querySelectorAll('#matrix .role-cell').forEach(function (td) {
+      td.innerHTML = cellHTML(MEMBERS[td.dataset.member] || null);
+    });
+    document.querySelectorAll('#matrix tbody tr').forEach(function (tr) {
+      var any = false;
+      tr.querySelectorAll('.role-cell').forEach(function (td) { if (td.dataset.member) any = true; });
+      var b = tr.querySelector('.assign-btn');
+      if (b) b.textContent = any ? 'Ändern' : '+ Zuweisen';
+    });
+  }
+  function setRoleCell(tr, role, newId) {
+    var td = tr.querySelector('.role-cell[data-role="' + role + '"]');
+    var oldId = td.dataset.member || '';
+    if (oldId === newId) return false;
+    if (oldId && MEMBERS[oldId]) MEMBERS[oldId].cust = Math.max(0, MEMBERS[oldId].cust - 1);
+    if (newId && MEMBERS[newId]) MEMBERS[newId].cust++;
+    td.dataset.member = newId;
+    return true;
+  }
+  function rowOpen(tr) {
+    var open = false;
+    tr.querySelectorAll('.role-cell').forEach(function (td) { if (!td.dataset.member) open = true; });
+    return open;
+  }
+
+  document.getElementById('matrix').addEventListener('click', function (e) {
+    var btn = e.target.closest('.assign-btn');
+    if (!btn) return;
+    e.stopPropagation();
+    openAssign(btn.closest('tr'));
+  });
+
+  var filterOn = false;
+  document.getElementById('btn-filter').addEventListener('click', function (e) {
+    e.stopPropagation();
+    filterOn = !filterOn;
+    this.classList.toggle('active', filterOn);
+    document.querySelectorAll('#matrix tbody tr').forEach(function (tr) {
+      tr.style.display = (filterOn && !rowOpen(tr)) ? 'none' : '';
+    });
+  });
+
+  document.getElementById('btn-bulk').addEventListener('click', function (e) {
+    e.stopPropagation();
+    openBulk();
+  });
+
+  // ── Capacity ─────────────────────────────────────────────────
+  function renderCapacity() {
+    var html = '';
+    list().forEach(function (m) {
+      var u = util(m), st = statusOf(u);
+      html += '<tr>' +
+        '<td><div class="assignee-cell"><div class="assignee-av" style="background:' + m.color + '">' + esc(m.initials) + '</div><strong>' + esc(m.name) + '</strong></div></td>' +
+        '<td style="color:#64748b">' + esc(m.role) + '</td>' +
+        '<td>' + m.cust + '</td>' +
+        '<td style="color:#64748b">' + m.cap.toLocaleString('de-DE') + '</td>' +
+        '<td><div class="capacity-bar"><div class="capacity-fill ' + st.fill + '" style="width:' + Math.min(100, u) + '%"></div></div><span class="cap-pct" style="color:' + st.color + '">' + u + ' %</span></td>' +
+        '<td><span class="status-pill ' + st.cls + '">' + st.label + '</span></td>' +
+      '</tr>';
+    });
+    document.getElementById('cap-body').innerHTML = html;
+
+    var ms = list();
+    var over = ms.filter(function (m) { return util(m) > 100; });
+    var box = document.getElementById('cap-rec');
+    if (over.length) {
+      var o = over[0];
+      var sameRole = ms.filter(function (m) { return m.id !== o.id && m.role === o.role; }).sort(function (a, b) { return util(a) - util(b); });
+      box.className = 'rec-box warn';
+      if (sameRole.length) {
+        box.innerHTML = '<strong>Engpass:</strong> ' + esc(o.name) + ' liegt bei ' + util(o) + ' % (' + o.cust + ' Kunden bei ' + o.cap.toLocaleString('de-DE') + ' Kapazität). ' +
+          '<strong>Entlastung:</strong> ' + esc(sameRole[0].name) + ' (' + esc(o.role) + ') hat in derselben Rolle die geringste Auslastung (' + util(sameRole[0]) + ' %). Über „Entlasten“ auf der Team-Karte wird eine Zuweisung übertragen.';
+      } else {
+        box.innerHTML = '<strong>Engpass:</strong> ' + esc(o.name) + ' liegt bei ' + util(o) + ' % (' + o.cust + ' Kunden bei ' + o.cap.toLocaleString('de-DE') + ' Kapazität). ' +
+          '<strong>Keine Umverteilung möglich:</strong> Die Rolle „' + esc(o.role) + '“ ist nur einfach besetzt — Kapazität erhöhen, Kunden durch Lead/KI abfedern oder ein Mitglied ergänzen.';
+      }
+    } else {
+      box.className = 'rec-box ok';
+      box.innerHTML = '<strong>Alle Berater im Zielkorridor.</strong> Keine Zuweisung muss verschoben werden.';
+    }
+  }
+
+  // ── Modal ────────────────────────────────────────────────────
+  var overlay = document.getElementById('modal-overlay');
+  function openModal(title, bodyHTML, footHTML) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-body').innerHTML = bodyHTML;
+    document.getElementById('modal-foot').innerHTML = footHTML;
+    overlay.style.display = 'flex';
+  }
+  function closeModal() { overlay.style.display = 'none'; }
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay || e.target.closest('[data-close]')) closeModal();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+  function optionsFor(selected, includeEmpty) {
+    var html = includeEmpty ? '<option value="">— nicht zugewiesen —</option>' : '';
+    list().forEach(function (m) {
+      html += '<option value="' + m.id + '"' + (m.id === selected ? ' selected' : '') + '>' + esc(m.name) + ' · ' + esc(m.role) + '</option>';
+    });
+    return html;
+  }
+
+  function openAssign(tr) {
+    var name = tr.querySelector('.company-cell').textContent;
+    var body = '<div class="field-desc">' + esc(name) + '</div>';
+    ROLE_ORDER.forEach(function (role) {
+      var cur = tr.querySelector('.role-cell[data-role="' + role + '"]').dataset.member || '';
+      body += '<div class="form-row"><label>' + ROLE_LABEL[role] + '</label><select id="assign-' + role + '">' + optionsFor(cur, true) + '</select></div>';
+    });
+    openModal('Zuweisung bearbeiten',
+      body,
+      '<button class="btn btn-ghost" data-close>Abbrechen</button><button class="btn btn-primary" id="assign-save">Speichern</button>');
+
+    document.getElementById('assign-save').addEventListener('click', function (e) {
+      e.stopPropagation();
+      var changed = false;
+      ROLE_ORDER.forEach(function (role) {
+        var val = document.getElementById('assign-' + role).value;
+        if (setRoleCell(tr, role, val)) changed = true;
+      });
+      closeModal();
+      if (changed) { renderAll(); toast('Zuweisung aktualisiert'); }
+    });
+  }
+
+  function openBulk() {
+    var body = '<div class="field-desc">Alle offenen Zuweisungen einer Rolle in einem Schritt vergeben.</div>' +
+      '<div class="form-row"><label>Rolle</label><select id="bulk-role">' +
+        ROLE_ORDER.map(function (r) { return '<option value="' + r + '">' + ROLE_LABEL[r] + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="form-row"><label>Mitglied</label><select id="bulk-member">' + optionsFor('', false) + '</select></div>';
+    openModal('Massenbearbeitung',
+      body,
+      '<button class="btn btn-ghost" data-close>Abbrechen</button><button class="btn btn-primary" id="bulk-save">Übergeben</button>');
+
+    document.getElementById('bulk-save').addEventListener('click', function (e) {
+      e.stopPropagation();
+      var role = document.getElementById('bulk-role').value;
+      var memberId = document.getElementById('bulk-member').value;
+      var count = 0;
+      document.querySelectorAll('#matrix tbody tr').forEach(function (tr) {
+        var td = tr.querySelector('.role-cell[data-role="' + role + '"]');
+        if (!td.dataset.member) {
+          if (setRoleCell(tr, role, memberId)) count++;
+        }
+      });
+      closeModal();
+      renderAll();
+      toast(count ? count + ' offene Zuweisung(en) übergeben' : 'Keine offenen Zuweisungen in dieser Rolle');
+    });
+  }
+
+  function openMemberModal(invite) {
+    var body = '<div class="form-row"><label>Name</label><input type="text" id="nm-name" placeholder="Vorname Nachname"></div>' +
+      (invite ? '<div class="form-row"><label>E-Mail</label><input type="email" id="nm-email" placeholder="name@innolab.de"></div>' : '') +
+      '<div class="form-row"><label>Rolle</label><select id="nm-role">' +
+        ['Lead Consultant', 'Senior Berater', 'KI-Expertin', 'Vertrieb', 'Engagement Manager'].map(function (r) { return '<option>' + r + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="form-row"><label>Schwerpunkte (kommagetrennt)</label><input type="text" id="nm-seg" placeholder="Handel & Logistik, Maschinenbau & Elektro"><div class="field-desc">Erscheint als Tag auf der Team-Karte.</div></div>';
+    openModal(invite ? 'Mitglied einladen' : 'Mitglied hinzufügen',
+      body,
+      '<button class="btn btn-ghost" data-close>Abbrechen</button><button class="btn btn-primary" id="nm-save">' + (invite ? 'Einladung senden' : 'Hinzufügen') + '</button>');
+
+    document.getElementById('nm-save').addEventListener('click', function (e) {
+      e.stopPropagation();
+      var name = document.getElementById('nm-name').value.trim();
+      if (!name) { toast('Bitte einen Namen angeben'); return; }
+      var role = document.getElementById('nm-role').value;
+      var seg = document.getElementById('nm-seg').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+      var initials = name.split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase();
+      var caps = { 'Lead Consultant': 10.7, 'Senior Berater': 6.5, 'KI-Expertin': 8.3, 'Vertrieb': 9.1, 'Engagement Manager': 8 };
+      var id = 'm' + Date.now();
+      MEMBERS[id] = {
+        id: id, name: name, initials: initials, role: role,
+        color: COLOR_POOL[colorIdx++ % COLOR_POOL.length],
+        cust: 0, offers: 0, assessments: 0,
+        cap: caps[role] || 8, seg: seg.length ? seg : ['Alle Branchen']
+      };
+      closeModal();
+      renderAll();
+      toast(invite ? 'Einladung gesendet (Demo)' : 'Mitglied hinzugefügt');
+    });
+  }
+
+  function openProfile(m) {
+    var u = util(m), st = statusOf(u);
+    var body = '<div style="display:flex;align-items:center;gap:12px">' +
+        '<div class="avatar" style="background:' + m.color + ';width:52px;height:52px;font-size:18px">' + esc(m.initials) + '</div>' +
+        '<div><div style="font-size:15px;font-weight:700">' + esc(m.name) + '</div><div class="member-role">' + esc(m.role) + '</div></div>' +
+        '<span class="status-pill ' + st.cls + '" style="margin-left:auto">' + st.label + '</span>' +
+      '</div>' +
+      '<div class="profile-grid">' +
+        '<div class="profile-item"><div class="k">Kunden</div><div class="v">' + m.cust + '</div></div>' +
+        '<div class="profile-item"><div class="k">Angebote</div><div class="v">' + m.offers + '</div></div>' +
+        '<div class="profile-item"><div class="k">Assessments</div><div class="v">' + m.assessments + '</div></div>' +
+        '<div class="profile-item"><div class="k">Auslastung</div><div class="v" style="color:' + st.color + '">' + u + ' %</div></div>' +
+      '</div>' +
+      '<div class="form-row"><label>Schwerpunkte</label><div class="member-tags">' + m.seg.map(function (s) { return '<span class="tag">' + esc(s) + '</span>'; }).join('') + '</div></div>';
+    openModal('Profil · ' + m.name,
+      body,
+      '<button class="btn btn-ghost" data-close>Schließen</button><button class="btn btn-primary" id="profile-assign">Zuweisungen ansehen</button>');
+    document.getElementById('profile-assign').addEventListener('click', function (e) {
+      e.stopPropagation();
+      closeModal();
+      showTab('zuweisung');
+    });
+  }
+
+  // ── Relieve ──────────────────────────────────────────────────
+  function relieve(m) {
+    if (util(m) <= 100) { toast('Keine Überlastung — keine Entlastung nötig'); return; }
+    var candidates = list().filter(function (x) { return x.id !== m.id && x.role === m.role; });
+    if (!candidates.length) {
+      toast('Rolle „' + m.role + '“ ist nur einfach besetzt — bitte Kapazität erhöhen oder Mitglied ergänzen');
+      return;
+    }
+    var target = candidates.sort(function (a, b) { return util(a) - util(b); })[0];
+    var moved = false;
+    document.querySelectorAll('#matrix tbody tr').forEach(function (tr) {
+      if (moved) return;
+      tr.querySelectorAll('.role-cell').forEach(function (td) {
+        if (moved || td.dataset.member !== m.id) return;
+        setRoleCell(tr, td.dataset.role, target.id);
+        moved = true;
+      });
+    });
+    if (!moved) { toast('Keine Zuweisung in der Liste gefunden'); return; }
+    renderAll();
+    toast('1 Kunde an ' + target.name + ' übergeben');
+  }
+
+  // ── Header actions ───────────────────────────────────────────
+  document.getElementById('btn-add-member').addEventListener('click', function (e) {
+    e.stopPropagation();
+    openMemberModal(false);
+  });
+  document.getElementById('btn-invite').addEventListener('click', function (e) {
+    e.stopPropagation();
+    openMemberModal(true);
+  });
+
+  // ── Render all ───────────────────────────────────────────────
+  function renderAll() {
+    renderKpis();
+    renderTeam();
+    renderCells();
+    renderCapacity();
+    if (filterOn) {
+      document.querySelectorAll('#matrix tbody tr').forEach(function (tr) {
+        tr.style.display = rowOpen(tr) ? '' : 'none';
+      });
+    }
+  }
+  renderAll();
+})();
+</script>
+</body>
+</html>

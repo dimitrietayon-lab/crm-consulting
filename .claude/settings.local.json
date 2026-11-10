@@ -29,7 +29,19 @@
       "Bash(git:*)",
       "mcp__ide__getDiagnostics",
       "Bash(::*)",
-      "mcp__claude_ai_Claude_Docs__batch"
+      "mcp__claude_ai_Claude_Docs__batch",
+      "mcp__claude_ai_Claude_Docs__guide",
+      "mcp__claude_ai_Claude_Docs__update",
+      "WebSearch",
+      "mcp__claude_ai_Claude_Docs__read",
+      "Bash(dir C:\\\\innolab\\\\crm-consulting:*)",
+      "Bash(dir C:\\\\innolab\\\\crm-consulting\\\\frontend\\\\app\\\\\\(protected\\):*)",
+      "WebFetch(domain:pon2ai.com)",
+      "Bash(/usr/bin/env node:*)",
+      "Bash(npm run:*)",
+      "WebFetch(domain:www.ponturo.com)",
+      "mcp__claude_ai_Claude_Docs__delete",
+      "Bash(echo exit:$?:*)"
     ]
   }
 }

@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM-Profil — Ponturo CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Page-local layout. Chrome, cards, buttons and icons come from mockup-sprint.css. */
+  * { margin: 0; padding: 0; }
+  body { display: flex; height: 100vh; overflow: hidden; }
+  .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  main { flex: 1; overflow-y: auto; padding: 24px; }
+  .page-sub { font-size: 11.5px; color: #94a3b8; margin-top: 2px; }
+  .top-actions { display: flex; gap: 8px; }
+
+  /* Banner */
+  .cr-banner {
+    background: #111111; color: #fff; border-radius: 14px;
+    padding: 20px 24px; display: flex; align-items: center;
+    justify-content: space-between; gap: 24px; margin-bottom: 18px;
+  }
+  .cr-banner-eyebrow { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: #F99755; font-weight: 700; }
+  .cr-banner-title { font-size: 19px; font-weight: 800; margin-top: 4px; }
+  .cr-banner-sub { font-size: 12.5px; color: #cbd5e1; margin-top: 6px; line-height: 1.55; max-width: 780px; }
+  .cr-banner .btn-ghost { color: #f1f5f9; border-color: rgba(255,255,255,.22); white-space: nowrap; }
+  .cr-banner .btn-ghost:hover { background: rgba(255,255,255,.08); color: #fff; }
+
+  /* KPIs */
+  .cr-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
+  .cr-kpi { padding: 14px 16px; }
+  .cr-kpi-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; font-weight: 700; }
+  .cr-kpi-value { font-size: 25px; font-weight: 800; color: #111; line-height: 1.2; }
+  .cr-kpi-sub { font-size: 11.5px; color: #94a3b8; margin-top: 2px; }
+
+  /* Sections */
+  .cr-section { margin-bottom: 24px; }
+  .cr-sec-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 10px; }
+  .cr-sec-title { font-size: 14px; font-weight: 800; color: #111; }
+  .cr-sec-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+  .cr-sec-count { font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; border-radius: 20px; padding: 3px 10px; white-space: nowrap; }
+
+  /* Visible module cards */
+  .cr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .cr-mod-card { padding: 14px 16px; }
+  .cr-mod-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 9px; border-bottom: 1px solid #f1f5f9; margin-bottom: 7px; }
+  .cr-mod-group { font-size: 12.5px; font-weight: 800; color: #111; }
+  .cr-mod-badge { font-size: 10px; font-weight: 700; color: #15803d; background: #dcfce7; border-radius: 20px; padding: 2px 8px; }
+  .cr-mod-row { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #334155; padding: 4px 0; }
+  .cr-mod-row .cr-check { color: #15803d; display: flex; flex-shrink: 0; }
+  .cr-mod-note { font-size: 10.5px; color: #94a3b8; margin-left: auto; }
+
+  /* Hidden modules table */
+  .cr-table-card { overflow: hidden; }
+  .cr-table-card th, .cr-table-card td { padding: 10px 16px; }
+  .cr-table-card td { font-size: 12.5px; vertical-align: middle; }
+  .cr-mod-name { font-weight: 700; color: #111; font-size: 12.5px; }
+  .cr-mod-route { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: #94a3b8; }
+  .cr-mod-reason { font-size: 11.5px; color: #64748b; }
+  .cr-td-state { text-align: right; white-space: nowrap; }
+  .cr-row-state { font-size: 11px; font-weight: 700; color: #94a3b8; margin-right: 10px; }
+  .cr-row-state.on { color: #15803d; }
+
+  /* Toggle */
+  .cr-toggle {
+    position: relative; width: 38px; height: 21px; border-radius: 20px;
+    border: none; background: #cbd5e1; cursor: pointer; flex-shrink: 0;
+    transition: background .15s; vertical-align: middle;
+  }
+  .cr-toggle::after {
+    content: ''; position: absolute; top: 2.5px; left: 2.5px;
+    width: 16px; height: 16px; border-radius: 50%; background: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,.2); transition: left .15s;
+  }
+  .cr-toggle.on { background: #F26722; }
+  .cr-toggle.on::after { left: 19.5px; }
+
+  /* Impact cards */
+  .cr-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .cr-note-card { padding: 15px 17px; }
+  .cr-note-title { font-size: 12.5px; font-weight: 800; color: #111; margin-bottom: 7px; }
+  .cr-note-list { list-style: none; }
+  .cr-note-list li { display: flex; gap: 8px; font-size: 12px; color: #475569; line-height: 1.65; }
+  .cr-note-list li::before { content: '–'; color: #94a3b8; flex-shrink: 0; }
+  .cr-note-foot { margin-top: 9px; padding-top: 9px; border-top: 1px solid #f1f5f9; font-size: 11.5px; color: #94a3b8; }
+
+  /* Action bar */
+  .cr-actionbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 14px 18px; border: 1px solid #e8e8e8; background: #fff;
+    border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .cr-actionbar-text { font-size: 12.5px; color: #64748b; }
+  .cr-actionbar-actions { display: flex; gap: 8px; }
+
+  @media (max-width: 1180px) {
+    .cr-grid { grid-template-columns: 1fr 1fr; }
+    .cr-kpis { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 860px) {
+    .cr-grid, .cr-two { grid-template-columns: 1fr; }
+    .cr-banner { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">innolab CRM</div>
+    <div class="brand-sub">Ponturo CRM · Profil</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="crm-nav" data-active="profil"></div>
+  </nav>
+  <div class="sidebar-user">
+    <div class="user-row">
+      <div class="user-avatar">DT</div>
+      <div>
+        <div class="user-name">D. Tayon</div>
+        <div class="user-role">Administrator</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div>
+      <div class="page-title">CRM-Profil</div>
+      <div class="page-sub">Ponturo Beratung · Mandant aktiv · Profil „CRM“</div>
+    </div>
+    <div class="top-actions">
+      <a class="btn btn-ghost" href="mockup-platform-mandant.html">Modul-Freigaben</a>
+      <button class="btn btn-primary" type="button" id="btn-save">Profil speichern</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Banner -->
+    <section class="cr-banner">
+      <div>
+        <div class="cr-banner-eyebrow">Profil aktiv · Ponturo Beratung</div>
+        <div class="cr-banner-title">Nur was zur Kundenbeziehung passt</div>
+        <div class="cr-banner-sub">
+          Das CRM-Profil steuert Navigation, Startseite und Dashboard. Finanz-, Personal- und
+          Zeitwirtschafts-Module werden ausgeblendet — Daten, Endpunkte und Berechtigungen bleiben
+          vollständig erhalten und lassen sich pro Mandant im Plattform-Admin wieder freischalten.
+        </div>
+      </div>
+      <a class="btn btn-ghost" href="mockup-platform-mandant.html">Wo die Module liegen</a>
+    </section>
+
+    <!-- KPIs -->
+    <div class="cr-kpis">
+      <div class="card cr-kpi">
+        <div class="cr-kpi-label">Navigationseinträge</div>
+        <div class="cr-kpi-value" id="kpi-nav">19</div>
+        <div class="cr-kpi-sub">8 Gruppen · Portal bis System</div>
+      </div>
+      <div class="card cr-kpi">
+        <div class="cr-kpi-label">Ausgeblendete Module</div>
+        <div class="cr-kpi-value" id="kpi-hidden">12</div>
+        <div class="cr-kpi-sub">Finanzen, Personal, Zeit, Automatisierung</div>
+      </div>
+      <div class="card cr-kpi">
+        <div class="cr-kpi-label">Entfernte Seiten</div>
+        <div class="cr-kpi-value">2</div>
+        <div class="cr-kpi-sub">Network &amp; Satisfaction (nur Redirects)</div>
+      </div>
+      <div class="card cr-kpi">
+        <div class="cr-kpi-label">Rollen im Profil</div>
+        <div class="cr-kpi-value">4</div>
+        <div class="cr-kpi-sub">Admin · Partner · Consultant · Assistenz</div>
+      </div>
+    </div>
+
+    <!-- Sichtbar -->
+    <section class="cr-section">
+      <div class="cr-sec-head">
+        <div>
+          <div class="cr-sec-title">Im CRM-Profil sichtbar</div>
+          <div class="cr-sec-sub">Diese Module bilden die Navigation des Ponturo-CRM.</div>
+        </div>
+        <span class="cr-sec-count">16 Module · 19 Einträge</span>
+      </div>
+
+      <div class="cr-grid">
+        <div class="card cr-mod-card">
+          <div class="cr-mod-head">
+            <span class="cr-mod-group">Kunden &amp; Kontakte</span>
+            <span class="cr-mod-badge">3</span>
+          </div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Accounts</div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Kontakte</div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Aktivitäten <span class="cr-mod-note">inkl. E-Mail-Sync</span></div>
+        </div>
+
+        <div class="card cr-mod-card">
+          <div class="cr-mod-head">
+            <span class="cr-mod-group">Vertrieb</span>
+            <span class="cr-mod-badge">3</span>
+          </div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Pipeline</div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Angebote</div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Verträge</div>
+        </div>
+
+        <div class="card cr-mod-card">
+          <div class="cr-mod-head">
+            <span class="cr-mod-group">Mandate &amp; Wissen</span>
+            <span class="cr-mod-badge">3</span>
+          </div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Projekte</div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Aufgaben</div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Dokumente</div>
+        </div>
+
+        <div class="card cr-mod-card">
+          <div class="cr-mod-head">
+            <span class="cr-mod-group">Analyse &amp; KI</span>
+            <span class="cr-mod-badge">5</span>
+          </div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Key Accounts</div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Cross-Selling</div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Compliance</div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> KI-Opportunities</div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> News Monitoring</div>
+        </div>
+
+        <div class="card cr-mod-card">
+          <div class="cr-mod-head">
+            <span class="cr-mod-group">System</span>
+            <span class="cr-mod-badge">2</span>
+          </div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Einstellungen</div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Benutzer &amp; Rollen <span class="cr-mod-note">nur Admin</span></div>
+        </div>
+
+        <div class="card cr-mod-card">
+          <div class="cr-mod-head">
+            <span class="cr-mod-group">Portal</span>
+            <span class="cr-mod-badge">3</span>
+          </div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Startseite <span class="cr-mod-note">nur CRM-Kacheln</span></div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> Dashboard <span class="cr-mod-note">CRM-Widgets</span></div>
+          <div class="cr-mod-row"><span class="cr-check">✓</span> CRM-Profil <span class="cr-mod-note">diese Seite</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ausgeblendet -->
+    <section class="cr-section" id="ausgeblendet">
+      <div class="cr-sec-head">
+        <div>
+          <div class="cr-sec-title">Ausgeblendet im CRM-Profil</div>
+          <div class="cr-sec-sub">Nicht Teil der CRM-Navigation. Einschalten = im Profil sichtbar (Demo).</div>
+        </div>
+        <span class="cr-sec-count" id="hidden-count">12 Module</span>
+      </div>
+
+      <div class="card cr-table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Modul</th>
+              <th>Route</th>
+              <th>Gruppe</th>
+              <th>Grund</th>
+              <th style="text-align:right">Im Profil</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="cr-mod-name">Reisekosten</div></td>
+              <td><span class="cr-mod-route">/expenses</span></td>
+              <td class="cr-mod-reason">Finanzen</td>
+              <td class="cr-mod-reason">Spesenabrechnung — eigenes Expense-Tool</td>
+              <td class="cr-td-state"><span class="cr-row-state">Ausgeblendet</span><button class="cr-toggle" type="button" aria-label="Reisekosten im Profil anzeigen"></button></td>
+            </tr>
+            <tr>
+              <td><div class="cr-mod-name">Materialkosten</div></td>
+              <td><span class="cr-mod-route">/material-costs</span></td>
+              <td class="cr-mod-reason">Finanzen</td>
+              <td class="cr-mod-reason">Projektkosten &amp; Freigabe — Beschaffung</td>
+              <td class="cr-td-state"><span class="cr-row-state">Ausgeblendet</span><button class="cr-toggle" type="button" aria-label="Materialkosten im Profil anzeigen"></button></td>
+            </tr>
+            <tr>
+              <td><div class="cr-mod-name">Ausgangsrechnungen</div></td>
+              <td><span class="cr-mod-route">/invoices</span></td>
+              <td class="cr-mod-reason">Finanzen</td>
+              <td class="cr-mod-reason">Debitoren, Gutschriften, Mahnwesen</td>
+              <td class="cr-td-state"><span class="cr-row-state">Ausgeblendet</span><button class="cr-toggle" type="button" aria-label="Ausgangsrechnungen im Profil anzeigen"></button></td>
+            </tr>
+            <tr>
+              <td><div class="cr-mod-name">Eingangsrechnungen</div></td>
+              <td><span class="cr-mod-route">/incoming-invoices</span></td>
+              <td class="cr-mod-reason">Finanzen</td>
+              <td class="cr-mod-reason">Kreditoren &amp; Lieferantenstammdaten</td>
+              <td class="cr-td-state"><span class="cr-row-state">Ausgeblendet</span><button class="cr-toggle" type="button" aria-label="Eingangsrechnungen im Profil anzeigen"></button></td>
+            </tr>
+            <tr>
+              <td><div class="cr-mod-name">Buchhaltung</div></td>
+              <td><span class="cr-mod-route">/buchhaltung</span></td>
+              <td class="cr-mod-reason">Finanzen</td>
+              <td class="cr-mod-reason">Kostenübersicht &amp; Rechnungsfreigabe — ERP</td>
+              <td class="cr-td-state"><span class="cr-row-state">Ausgeblendet</span><button class="cr-toggle" type="button" aria-label="Buchhaltung im Profil anzeigen"></button></td>
+            </tr>
+            <tr>
+              <td><div class="cr-mod-name">Finanzplanung</div></td>
+              <td><span class="cr-mod-route">/finanzplanung</span></td>
+              <td class="cr-mod-reason">Finanzen</td>
+              <td class="cr-mod-reason">Soll/Ist-Budgets — FP&amp;A/Controlling</td>
+              <td class="cr-td-state"><span class="cr-row-state">Ausgeblendet</span><button class="cr-toggle" type="button" aria-label="Finanzplanung im Profil anzeigen"></button></td>
+            </tr>
+            <tr>
+              <td><div class="cr-mod-name">Abwesenheiten</div></td>
+              <td><span class="cr-mod-route">/leave</span></td>
+              <td class="cr-mod-reason">Personal</td>
+              <td class="cr-mod-reason">Urlaubsanträge &amp; Kalender — HR-Selfservice</td>
+              <td class="cr-td-state"><span class="cr-row-state">Ausgeblendet</span><button class="cr-toggle" type="button" aria-label="Abwesenheiten im Profil anzeigen"></button></td>
+            </tr>
+            <tr>
+              <td><div class="cr-mod-name">Lohnverwaltung</div></td>
+              <td><span class="cr-mod-route">/lohnverwaltung</span></td>
+              <td class="cr-mod-reason">Personal</td>
+              <td class="cr-mod-reason">Payroll, Tarifgruppen, Gehaltszettel</td>
+              <td class="cr-td-state"><span class="cr-row-state">Ausgeblendet</span><button class="cr-toggle" type="button" aria-label="Lohnverwaltung im Profil anzeigen"></button></td>
+            </tr>
+            <tr>
+              <td><div class="cr-mod-name">Zeiterfassung</div></td>
+              <td><span class="cr-mod-route">/timesheets</span></td>
+              <td class="cr-mod-reason">Zeit &amp; Ressourcen</td>
+              <td class="cr-mod-reason">Stempeluhr &amp; Stundengenehmigung — PMO</td>
+              <td class="cr-td-state"><span class="cr-row-state">Ausgeblendet</span><button class="cr-toggle" type="button" aria-label="Zeiterfassung im Profil anzeigen"></button></td>
+            </tr>
+            <tr>
+              <td><div class="cr-mod-name">Mein Bereich</div></td>
+              <td><span class="cr-mod-route">/mein-bereich</span></td>
+              <td class="cr-mod-reason">Zeit &amp; Ressourcen</td>
+              <td class="cr-mod-reason">Team- und Projektzuweisung — Ressourcenmanagement</td>
+              <td class="cr-td-state"><span class="cr-row-state">Ausgeblendet</span><button class="cr-toggle" type="button" aria-label="Mein Bereich im Profil anzeigen"></button></td>
+            </tr>
+            <tr>
+              <td><div class="cr-mod-name">Skill-Matching</div></td>
+              <td><span class="cr-mod-route">/skills</span></td>
+              <td class="cr-mod-reason">Zeit &amp; Ressourcen</td>
+              <td class="cr-mod-reason">Staffing &amp; Skill-Matrix — Recruiting-Planung</td>
+              <td class="cr-td-state"><span class="cr-row-state">Ausgeblendet</span><button class="cr-toggle" type="button" aria-label="Skill-Matching im Profil anzeigen"></button></td>
+            </tr>
+            <tr>
+              <td><div class="cr-mod-name">Workflows</div></td>
+              <td><span class="cr-mod-route">/workflows</span></td>
+              <td class="cr-mod-reason">Automatisierung</td>
+              <td class="cr-mod-reason">Generische Workflow-Engine — Infrastruktur</td>
+              <td class="cr-td-state"><span class="cr-row-state">Ausgeblendet</span><button class="cr-toggle" type="button" aria-label="Workflows im Profil anzeigen"></button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Auswirkungen -->
+    <section class="cr-section">
+      <div class="cr-sec-head">
+        <div>
+          <div class="cr-sec-title">Was das Profil außerhalb der Navigation ändert</div>
+          <div class="cr-sec-sub">Die Ausblendung wirkt bis in Startseite und Dashboard.</div>
+        </div>
+      </div>
+      <div class="cr-two">
+        <div class="card cr-note-card">
+          <div class="cr-note-title">Startseite</div>
+          <ul class="cr-note-list">
+            <li>Kacheln „Finanzen“, „Personal“ und „Automatisierung“ entfallen.</li>
+            <li>Es bleiben die CRM-Module inkl. Analyse und KI.</li>
+            <li>Administratoren sehen zusätzlich „Benutzer &amp; Rollen“.</li>
+          </ul>
+          <div class="cr-note-foot">Berechtigungen unverändert — nur die Kacheln werden gefiltert.</div>
+        </div>
+        <div class="card cr-note-card">
+          <div class="cr-note-title">Dashboard</div>
+          <ul class="cr-note-list">
+            <li>Widgets „Meine Zeiterfassung“ und „Mein Urlaub“ werden ausgeblendet.</li>
+            <li>KPIs konzentrieren sich auf Accounts, Deals, Aufgaben und Aktivitäten.</li>
+            <li>Überfällige Aufgaben und letzte Aktivitäten bleiben sichtbar.</li>
+          </ul>
+          <div class="cr-note-foot">Daten der ausgeblendeten Module bleiben erhalten und werden nicht gelöscht.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Action bar -->
+    <div class="cr-actionbar">
+      <div class="cr-actionbar-text">Gilt für alle Nutzer des Mandanten <strong>Ponturo Beratung</strong> · Änderungen sind sofort aktiv.</div>
+      <div class="cr-actionbar-actions">
+        <button class="btn btn-ghost" type="button" id="btn-reset">Zurücksetzen</button>
+        <button class="btn btn-primary" type="button" id="btn-save-2">Profil speichern</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  var toggles = document.querySelectorAll('.cr-toggle');
+  var hiddenCount = document.getElementById('hidden-count');
+  var kpiHidden = document.getElementById('kpi-hidden');
+
+  function refresh() {
+    var on = 0;
+    toggles.forEach(function (t) {
+      if (t.classList.contains('on')) on++;
+    });
+    var hidden = toggles.length - on;
+    if (hiddenCount) hiddenCount.textContent = hidden + ' Module';
+    if (kpiHidden) kpiHidden.textContent = String(hidden);
+  }
+
+  toggles.forEach(function (t) {
+    t.addEventListener('click', function () {
+      t.classList.toggle('on');
+      var state = t.parentElement.querySelector('.cr-row-state');
+      if (state) {
+        var isOn = t.classList.contains('on');
+        state.textContent = isOn ? 'Sichtbar' : 'Ausgeblendet';
+        state.classList.toggle('on', isOn);
+      }
+      refresh();
+    });
+  });
+
+  function toast(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;' +
+      'padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:9999;' +
+      'box-shadow:0 4px 16px rgba(0,0,0,.3);opacity:0;transition:opacity .2s;pointer-events:none';
+    document.body.appendChild(el);
+    requestAnimationFrame(function () { el.style.opacity = '1'; });
+    setTimeout(function () {
+      el.style.opacity = '0';
+      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 250);
+    }, 1600);
+  }
+
+  ['btn-save', 'btn-save-2'].forEach(function (id) {
+    var b = document.getElementById(id);
+    if (b) b.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      toast('Demo: CRM-Profil gespeichert');
+    });
+  });
+
+  var reset = document.getElementById('btn-reset');
+  if (reset) reset.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    toggles.forEach(function (t) {
+      t.classList.remove('on');
+      var state = t.parentElement.querySelector('.cr-row-state');
+      if (state) { state.textContent = 'Ausgeblendet'; state.classList.remove('on'); }
+    });
+    refresh();
+    toast('Demo: Profil auf Standard zurückgesetzt');
+  });
+
+  refresh();
+})();
+</script>
+</body>
+</html>

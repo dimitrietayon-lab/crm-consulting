@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getToken } from '@/lib/auth'
+import { primeSprintSettings } from '@/lib/sprintSettings'
 import Sidebar from '@/components/layout/Sidebar'
 import Header from '@/components/layout/Header'
 
@@ -15,6 +16,7 @@ export default function ProtectedLayout({ children }) {
       router.push('/login')
     } else {
       setChecking(false)
+      primeSprintSettings()
     }
   }, [])
 

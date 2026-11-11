@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 
-// Startseite wurde entfernt – das Dashboard ist der Einstieg.
+// Startseite wurde entfernt – die Akquise-Übersicht ist der Einstieg.
 export default function HomePage() {
-  redirect('/')
+  redirect('/?tab=akquise')
 }

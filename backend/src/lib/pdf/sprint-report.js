@@ -3,12 +3,15 @@ const {
 } = require('./index');
 
 function buildReportPdf(summary, meta = {}) {
-  const doc = createDoc({ title: 'Sprint-Reporting' });
+  const doc = createDoc({ title: 'Akquise-Reporting' });
   const period = summary.period || {};
+  const campaign = summary.campaign || {};
+  const title = campaign.name ? `${campaign.name} – Akquise-Reporting` : 'Akquise-Reporting';
 
-  header(doc, 'Sprint-Reporting', meta.subtitle || 'Zielkunden, Pipeline und Aktivitäten');
+  header(doc, title, meta.subtitle || 'Zielkunden, Pipeline und Aktivitäten');
 
   sectionTitle(doc, 'Zeitraum');
+  if (campaign.name) kvRow(doc, 'Kampagne', campaign.name);
   kvRow(doc, 'Von', period.from ? date(period.from) : 'Gesamter Zeitraum');
   kvRow(doc, 'Bis', period.to ? date(period.to) : 'Gesamter Zeitraum');
   kvRow(doc, 'Erzeugt am', date(new Date()));
@@ -75,7 +78,7 @@ function buildReportPdf(summary, meta = {}) {
     );
   }
 
-  footer(doc, `Sprint-Reporting · ${date(new Date())}`);
+  footer(doc, `${campaign.name ? `${campaign.name} · ` : ''}Akquise-Reporting · ${date(new Date())}`);
   return doc;
 }
 

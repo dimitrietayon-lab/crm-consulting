@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import MergedTabs from '@/components/ui/MergedTabs'
+import SprintDashboardPage from './sprint-targets/dashboard/page'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell, ReferenceLine,
@@ -107,7 +109,18 @@ const PROJECT_STATUS_COLOR = {
 }
 
 // ─── Root: pick dashboard by role ─────────────────────────────────────────────
-export default function DashboardPage() {
+export default function DashboardMergedPage() {
+  return (
+    <MergedTabs
+      crmLabel="Dashboard"
+      akquiseLabel="Akquise"
+      Primary={DashboardPage}
+      Secondary={SprintDashboardPage}
+    />
+  )
+}
+
+function DashboardPage() {
   const user = getUser()
   if (!user) return null
   if (user.role === 'admin') return <ManagementDashboard user={user} />

@@ -1,8 +1,8 @@
 {
-  "/(protected)/page": "app/(protected)/page.js",
-  "/(protected)/contacts/[id]/page": "app/(protected)/contacts/[id]/page.js",
-  "/(protected)/sprint-targets/page": "app/(protected)/sprint-targets/page.js",
-  "/(protected)/sprint-targets/[id]/page": "app/(protected)/sprint-targets/[id]/page.js",
-  "/(protected)/sprint-targets/dashboard/page": "app/(protected)/sprint-targets/dashboard/page.js",
-  "/(protected)/sprint-targets/contacts/page": "app/(protected)/sprint-targets/contacts/page.js"
+  "/login/page": "app/login/page.js",
+  "/(protected)/sprint-targets/bafa/page": "app/(protected)/sprint-targets/bafa/page.js",
+  "/(protected)/settings/page": "app/(protected)/settings/page.js",
+  "/(protected)/admin/page": "app/(protected)/admin/page.js",
+  "/(protected)/pakete-leistungen/page": "app/(protected)/pakete-leistungen/page.js",
+  "/(protected)/crm-profil/page": "app/(protected)/crm-profil/page.js"
 }

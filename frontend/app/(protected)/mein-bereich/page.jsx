@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import MergedTabs from '@/components/ui/MergedTabs'
+import SprintMePage from '../sprint-targets/me/page'
 import {
   Users, Briefcase, UserCheck, Loader2,
   Plus, X, Building2, Shield, ChevronDown, Trash2,
@@ -266,7 +268,18 @@ function AssignProjectModal({ subordinate, onClose, onAssigned }) {
 }
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
-export default function MeinBereichPage() {
+export default function MeinBereichMergedPage() {
+  return (
+    <MergedTabs
+      crmLabel="Projekte & Team"
+      akquiseLabel="Akquise"
+      Primary={MeinBereichPage}
+      Secondary={SprintMePage}
+    />
+  )
+}
+
+function MeinBereichPage() {
   const currentUser = getUser()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)

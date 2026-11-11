@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import MergedTabs from '@/components/ui/MergedTabs'
+import SprintOffersPage from '../sprint-targets/offers/page'
 import { toast } from 'react-hot-toast'
 import {
   Plus,
@@ -72,7 +74,18 @@ function StatusStepper({ currentStatus }) {
   )
 }
 
-export default function ProposalsPage() {
+export default function ProposalsMergedPage() {
+  return (
+    <MergedTabs
+      crmLabel="Angebote"
+      akquiseLabel="Akquise-Angebote"
+      Primary={ProposalsPage}
+      Secondary={SprintOffersPage}
+    />
+  )
+}
+
+function ProposalsPage() {
   const router = useRouter()
   const [proposals, setProposals] = useState([])
   const [loading, setLoading] = useState(true)

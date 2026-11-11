@@ -542,7 +542,7 @@ export default function PipelinePage() {
       setContacts(Array.isArray(c) ? c : (c?.data || []))
       setUsers(Array.isArray(u) ? u : (u?.data || []))
     } catch {
-      toast.error('Fehler beim Laden der Pipeline')
+      toast.error('Fehler beim Laden der Deals')
     } finally {
       setLoading(false)
     }
@@ -631,7 +631,7 @@ export default function PipelinePage() {
             <TrendingUp className="w-5 h-5 text-blue-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Pipeline</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Deals</h1>
             <p className="text-sm text-gray-500">{openDeals.length} offene Deals</p>
           </div>
         </div>
@@ -747,7 +747,7 @@ export default function PipelinePage() {
         <div className="flex items-center justify-center flex-1 py-20">
           <div className="flex flex-col items-center gap-3">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-            <p className="text-sm text-gray-500">Pipeline wird geladen...</p>
+            <p className="text-sm text-gray-500">Deals werden geladen...</p>
           </div>
         </div>
       ) : view === 'kanban' ? (

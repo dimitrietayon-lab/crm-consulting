@@ -120,6 +120,106 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(protected)/sprint-targets/contacts/page.js"
+    ],
+    "/(protected)/sprint-targets/me/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/sprint-targets/me/page.js"
+    ],
+    "/(protected)/sprint-targets/team/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/sprint-targets/team/page.js"
+    ],
+    "/(protected)/sprint-targets/team/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/sprint-targets/team/[id]/page.js"
+    ],
+    "/(protected)/sprint-targets/documents/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/sprint-targets/documents/page.js"
+    ],
+    "/(protected)/sprint-targets/settings/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/sprint-targets/settings/page.js"
+    ],
+    "/(protected)/settings/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/settings/page.js"
+    ],
+    "/(protected)/sprint-targets/outreach/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/sprint-targets/outreach/page.js"
+    ],
+    "/(protected)/activities/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/activities/page.js"
+    ],
+    "/(protected)/pipeline/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/pipeline/page.js"
+    ],
+    "/(protected)/sprint-targets/bafa/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/sprint-targets/bafa/page.js"
+    ],
+    "/(protected)/sprint-targets/market/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/sprint-targets/market/page.js"
+    ],
+    "/(protected)/sprint-targets/capacity/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/sprint-targets/capacity/page.js"
+    ],
+    "/(protected)/documents/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/documents/page.js"
+    ],
+    "/(protected)/tasks/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/tasks/page.js"
+    ],
+    "/(protected)/contracts/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/contracts/page.js"
+    ],
+    "/(protected)/contracts/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/contracts/[id]/page.js"
+    ],
+    "/(protected)/ai-opportunities/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/ai-opportunities/page.js"
+    ],
+    "/(protected)/news/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/news/page.js"
+    ],
+    "/(protected)/pakete-leistungen/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/pakete-leistungen/page.js"
+    ],
+    "/(protected)/admin/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(protected)/admin/page.js"
     ]
   }
 }

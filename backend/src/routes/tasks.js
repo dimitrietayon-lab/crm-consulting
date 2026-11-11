@@ -28,13 +28,15 @@ function normalizeNullable(value) {
 // GET /api/tasks
 router.get('/', async (req, res) => {
   try {
-    const { status, priority, assignedToId, q, view } = req.query;
+    const { status, priority, assignedToId, q, view, sprintTargetId, onlySprint } = req.query;
 
     const where = {};
 
     if (status) where.status = status;
     if (priority) where.priority = priority;
     if (assignedToId) where.assignedToId = assignedToId;
+    if (sprintTargetId) where.sprintTargetId = sprintTargetId;
+    if (onlySprint === 'true') where.sprintTargetId = { not: null };
     if (q) {
       where.title = { contains: q, mode: 'insensitive' };
     }
@@ -44,13 +46,16 @@ router.get('/', async (req, res) => {
       where.status = { notIn: ['Done', 'Completed', 'Cancelled'] };
     }
 
-    // Restrict visibility: non-admins only see tasks from projects where they are members
+    // Restrict visibility: non-admins see tasks from their projects, their own tasks
+    // and tasks of sprint targets they are assigned to.
     if (req.user?.role !== 'admin') {
-      where.project = {
-        members: {
-          some: { userId: req.user.id },
-        },
-      };
+      where.OR = [
+        { project: { members: { some: { userId: req.user.id } } } },
+        { assignedToId: req.user.id },
+        { createdById: req.user.id },
+        { collaborators: { some: { userId: req.user.id } } },
+        { sprintTarget: { assignments: { some: { userId: req.user.id } } } },
+      ];
     }
 
     const tasks = await prisma.task.findMany({
@@ -62,6 +67,7 @@ router.get('/', async (req, res) => {
         project: { select: { id: true, name: true } },
         contact: { select: { id: true, name: true } },
         createdBy: { select: { id: true, name: true } },
+        sprintTarget: { select: { id: true, companyName: true, status: true } },
         collaborators: { include: { user: { select: { id: true, name: true, email: true } } } },
       },
       orderBy: [{ dueDate: 'asc' }, { priority: 'asc' }],
@@ -88,6 +94,7 @@ router.post('/', upload.array('files'), async (req, res) => {
       accountId: normalizeNullable(body.accountId),
       projectId: normalizeNullable(body.projectId),
       contactId: normalizeNullable(body.contactId),
+      sprintTargetId: normalizeNullable(body.sprintTargetId),
       createdById: req.user?.id || null,
     };
 
@@ -168,6 +175,7 @@ router.post('/', upload.array('files'), async (req, res) => {
               projectId: created.projectId || null,
               contactId: created.contactId || null,
               dealId: created.dealId || null,
+              sprintTargetId: created.sprintTargetId || null,
             },
           })
         )
@@ -183,6 +191,7 @@ router.post('/', upload.array('files'), async (req, res) => {
         project: { select: { id: true, name: true } },
         contact: { select: { id: true, name: true } },
         createdBy: { select: { id: true, name: true } },
+        sprintTarget: { select: { id: true, companyName: true, status: true } },
         documents: { orderBy: { createdAt: 'desc' } },
         checklistItems: { orderBy: [{ order: 'asc' }, { createdAt: 'asc' }] },
         collaborators: { include: { user: { select: { id: true, name: true, email: true } } }, orderBy: { addedAt: 'asc' } },
@@ -210,6 +219,7 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     if (body.accountId !== undefined) data.accountId = normalizeNullable(body.accountId);
     if (body.projectId !== undefined) data.projectId = normalizeNullable(body.projectId);
     if (body.contactId !== undefined) data.contactId = normalizeNullable(body.contactId);
+    if (body.sprintTargetId !== undefined) data.sprintTargetId = normalizeNullable(body.sprintTargetId);
 
     const previous = await prisma.task.findUnique({ where: { id: req.params.id } });
     if (!previous) return res.status(404).json({ error: 'Task not found' });
@@ -224,6 +234,7 @@ router.put('/:id', upload.array('files'), async (req, res) => {
         project: { select: { id: true, name: true } },
         contact: { select: { id: true, name: true } },
         createdBy: { select: { id: true, name: true } },
+        sprintTarget: { select: { id: true, companyName: true, status: true } },
       },
     });
 
@@ -244,6 +255,7 @@ router.put('/:id', upload.array('files'), async (req, res) => {
               projectId: task.projectId || null,
               contactId: task.contactId || null,
               dealId: task.dealId || null,
+              sprintTargetId: task.sprintTargetId || null,
             },
           })
         )
@@ -273,6 +285,7 @@ router.put('/:id', upload.array('files'), async (req, res) => {
             assignedToId: task.assignedToId,
             accountId: task.accountId,
             projectId: task.projectId,
+            sprintTargetId: task.sprintTargetId,
           },
         });
       }
@@ -289,6 +302,7 @@ router.put('/:id', upload.array('files'), async (req, res) => {
           assignedToId: task.assignedToId,
           accountId: task.accountId,
           projectId: task.projectId,
+          sprintTargetId: task.sprintTargetId,
         },
       });
     }
@@ -303,6 +317,7 @@ router.put('/:id', upload.array('files'), async (req, res) => {
         project: { select: { id: true, name: true } },
         contact: { select: { id: true, name: true } },
         createdBy: { select: { id: true, name: true } },
+        sprintTarget: { select: { id: true, companyName: true, status: true } },
         documents: { orderBy: { createdAt: 'desc' } },
         collaborators: { include: { user: { select: { id: true, name: true, email: true } } }, orderBy: { addedAt: 'asc' } },
       },

@@ -8,8 +8,8 @@ import {
 import toast from 'react-hot-toast'
 import { api } from '@/lib/api'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { getSprintSettings } from '@/lib/sprintSettings'
 
-const PACKAGE_LABELS = { compact: 'Compact', standard: 'Standard', premium: 'Premium' }
 const LOSS_REASONS = ['Preis', 'Kein Bedarf', 'Wettbewerb', 'Timing', 'Budget', 'Sonstiges']
 
 const STATUS_STYLES = {
@@ -42,6 +42,12 @@ export default function SprintOffersPage() {
   const [search, setSearch] = useState('')
   const [rejecting, setRejecting] = useState(null)
   const [busyId, setBusyId] = useState(null)
+
+  const packages = useMemo(() => {
+    const list = getSprintSettings().packages
+    return Array.isArray(list) ? list : []
+  }, [])
+  const packageLabel = (key) => packages.find((p) => p.key === key)?.label || key || '—'
 
   const fetchOffers = useCallback(async () => {
     setLoading(true)
@@ -123,13 +129,13 @@ export default function SprintOffersPage() {
           </button>
           <div className="h-5 w-px bg-gray-200" />
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Angebote</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Angebote</h1>
             <p className="text-sm text-gray-500">Angebote, Positionen, Status und Gültigkeit</p>
           </div>
         </div>
         <button
           onClick={() => router.push('/sprint-targets/offers/new')}
-          className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
         >
           <Plus className="w-4 h-4" /> Neues Angebot
         </button>
@@ -172,7 +178,7 @@ export default function SprintOffersPage() {
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
           </div>
         ) : rows.length === 0 ? (
           <div className="text-center py-12 text-sm text-gray-500">
@@ -193,7 +199,7 @@ export default function SprintOffersPage() {
                   <td className="px-4 py-2.5">
                     <button
                       onClick={() => router.push(`/sprint-targets/offers/${o.id}`)}
-                      className="text-sm font-mono font-medium text-gray-900 hover:text-violet-700"
+                      className="text-sm font-mono font-medium text-gray-900 hover:text-blue-700"
                     >
                       {o.offerNumber}
                     </button>
@@ -202,7 +208,7 @@ export default function SprintOffersPage() {
                     <p className="text-sm font-medium text-gray-900">{o.sprintTarget?.companyName || '—'}</p>
                     <p className="text-xs text-gray-500">{o.sprintTarget?.segment}</p>
                   </td>
-                  <td className="px-4 py-2.5 text-sm text-gray-700 capitalize">{PACKAGE_LABELS[o.package] || o.package || '—'}</td>
+                  <td className="px-4 py-2.5 text-sm text-gray-700">{packageLabel(o.package)}</td>
                   <td className="px-4 py-2.5 text-sm text-gray-600">{formatDate(o.sentAt || o.createdAt)}</td>
                   <td className="px-4 py-2.5 text-sm text-gray-600">{o.validUntil ? formatDate(o.validUntil) : '—'}</td>
                   <td className="px-4 py-2.5">

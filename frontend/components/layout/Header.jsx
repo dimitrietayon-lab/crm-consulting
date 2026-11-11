@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   Bell, Search, X, CheckCheck, Clock, Zap, Calendar, DollarSign,
-  AlertCircle, Info, CheckCircle, XCircle
+  AlertCircle, Info, CheckCircle, XCircle, CalendarClock, FileText, Crosshair
 } from 'lucide-react'
 import { getUser as getAuthUser } from '@/lib/auth'
 import { getInitials } from '@/lib/utils'
@@ -14,7 +14,7 @@ const PAGE_TITLES = {
   '/': 'Dashboard',
   '/accounts': 'Accounts',
   '/contacts': 'Kontakte',
-  '/pipeline': 'Pipeline',
+  '/pipeline': 'Deals',
   '/proposals': 'Angebote',
   '/projects': 'Projekte',
   '/activities': 'Aktivitäten',
@@ -36,24 +36,28 @@ const PAGE_TITLES = {
   '/admin': 'Administration',
   '/settings': 'Einstellungen',
   '/crm-profil': 'CRM-Profil',
+  '/pakete-leistungen': 'Pakete & Leistungen',
   '/mein-bereich': 'Mein Bereich',
 }
 
 const SPRINT_TITLES = {
   '/sprint-targets':           'Zielkunden',
-  '/sprint-targets/dashboard': 'Sprint-Dashboard',
+  '/sprint-targets/dashboard': 'Akquise-Übersicht',
+  '/sprint-targets/me':        'Mein Bereich',
+  '/sprint-targets/tasks':     'Aufgaben',
+  '/sprint-targets/documents': 'Dokumente',
   '/sprint-targets/import':    'Listen-Import',
   '/sprint-targets/blocklist': 'Sperrliste',
   '/sprint-targets/activities':'Aktivitäten',
   '/sprint-targets/offers':    'Angebote',
   '/sprint-targets/outreach':  'Outreach',
-  '/sprint-targets/contacts':  'Sprint-Kontakte',
+  '/sprint-targets/contacts':  'Kontakte',
   '/sprint-targets/team':      'Team & Zuweisung',
   '/sprint-targets/reporting': 'Reporting',
   '/sprint-targets/market':    'Marktauswahl',
   '/sprint-targets/capacity':  'Planung',
-  '/sprint-targets/bafa':      'BAFA-Förderung',
-  '/sprint-targets/settings':  'Sprint-Einstellungen',
+  '/sprint-targets/bafa':      'Förderungen',
+  '/sprint-targets/settings':  'Akquise-Einstellungen',
 }
 
 function getPageTitle(pathname) {
@@ -84,6 +88,9 @@ const NOTIF_CONFIG = {
   expense_approved:    { icon: CheckCircle,  color: 'text-green-600',  bg: 'bg-green-50'  },
   expense_rejected:    { icon: XCircle,      color: 'text-red-600',    bg: 'bg-red-50'    },
   expense_paid:        { icon: DollarSign,   color: 'text-blue-600',   bg: 'bg-blue-50'   },
+  // Sprint-Fälligkeiten (aus /sprint-targets/me/summary, nur im Client erzeugt)
+  sprint_followup:     { icon: CalendarClock, color: 'text-amber-600', bg: 'bg-amber-50'  },
+  sprint_offer:        { icon: FileText,     color: 'text-blue-600',    bg: 'bg-blue-50'   },
 }
 
 function timeAgo(date) {
@@ -103,10 +110,21 @@ export default function Header() {
   const title = getPageTitle(pathname)
 
   const [notifications, setNotifications] = useState([])
+  const [sprintReminders, setSprintReminders] = useState([])
   const [open, setOpen] = useState(false)
   const dropdownRef = useRef(null)
 
-  const unreadCount = notifications.filter(n => !n.read).length
+  const [search, setSearch] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchResults, setSearchResults] = useState([])
+  const [searchLoading, setSearchLoading] = useState(false)
+  const searchRef = useRef(null)
+
+  const allNotifications = useMemo(
+    () => [...sprintReminders, ...notifications],
+    [sprintReminders, notifications]
+  )
+  const unreadCount = allNotifications.filter(n => !n.read).length
 
   const loadNotifications = useCallback(async () => {
     try {
@@ -115,23 +133,90 @@ export default function Header() {
     } catch {}
   }, [])
 
+  // Sprint-Fälligkeiten (überfällige/heutige nächste Schritte, bald ablaufende Angebote)
+  const loadSprintReminders = useCallback(async () => {
+    try {
+      const data = await api.get('/sprint-targets/me/summary')
+      const items = []
+      const add = (t, kind) => items.push({
+        id: `sprint-${kind}-${t.id}`,
+        type: 'sprint_followup',
+        read: false,
+        title: kind === 'overdue' ? 'Überfälliger nächster Schritt' : 'Heute fällig',
+        message: `${t.companyName}: ${t.nextStep || 'Nächster Schritt'}`,
+        link: `/sprint-targets/${t.id}`,
+        createdAt: t.nextStepDue,
+      })
+      for (const t of data?.followUps?.overdue || []) add(t, 'overdue')
+      for (const t of data?.followUps?.dueToday || []) add(t, 'today')
+      const soon = Date.now() + 7 * 86400000
+      for (const o of data?.offers || []) {
+        if (o.validUntil && new Date(o.validUntil) <= soon) {
+          items.push({
+            id: `sprint-offer-${o.id}`,
+            type: 'sprint_offer',
+            read: false,
+            title: 'Angebot läuft bald ab',
+            message: `${o.offerNumber} · ${o.sprintTarget?.companyName || 'Zielkunde'}`,
+            link: `/sprint-targets/offers/${o.id}`,
+            createdAt: o.validUntil,
+          })
+        }
+      }
+      setSprintReminders(items)
+    } catch {}
+  }, [])
+
   // Initial load + poll every 30s
   useEffect(() => {
     loadNotifications()
+    loadSprintReminders()
     const interval = setInterval(loadNotifications, 30000)
-    return () => clearInterval(interval)
-  }, [loadNotifications])
+    const sprintInterval = setInterval(loadSprintReminders, 60000)
+    return () => {
+      clearInterval(interval)
+      clearInterval(sprintInterval)
+    }
+  }, [loadNotifications, loadSprintReminders])
 
-  // Close dropdown on outside click
+  // Globale Suche: Sprint-Zielkunden
+  useEffect(() => {
+    const q = search.trim()
+    if (q.length < 2) { setSearchResults([]); return }
+    const timer = setTimeout(async () => {
+      setSearchLoading(true)
+      try {
+        const data = await api.get(`/sprint-targets?q=${encodeURIComponent(q)}`)
+        const list = Array.isArray(data) ? data : data?.data || []
+        setSearchResults(list.slice(0, 6))
+      } catch {
+        setSearchResults([])
+      } finally {
+        setSearchLoading(false)
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [search])
+
+  // Close dropdown/search on outside click
   useEffect(() => {
     function handleOutsideClick(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setOpen(false)
       }
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchOpen(false)
+      }
     }
     document.addEventListener('mousedown', handleOutsideClick)
     return () => document.removeEventListener('mousedown', handleOutsideClick)
   }, [])
+
+  function clearSearch() {
+    setSearch('')
+    setSearchOpen(false)
+    setSearchResults([])
+  }
 
   async function markRead(id) {
     try {
@@ -141,6 +226,8 @@ export default function Header() {
   }
 
   async function markAllRead() {
+    // Sprint-Erinnerungen sind rein clientseitig → nur lokal ausblenden
+    setSprintReminders([])
     try {
       await api.put('/notifications/read-all', {})
       setNotifications(prev => prev.map(n => ({ ...n, read: true })))
@@ -149,6 +236,10 @@ export default function Header() {
 
   async function deleteNotif(id, e) {
     e.stopPropagation()
+    if (String(id).startsWith('sprint-')) {
+      setSprintReminders(prev => prev.filter(n => n.id !== id))
+      return
+    }
     try {
       await api.delete(`/notifications/${id}`)
       setNotifications(prev => prev.filter(n => n.id !== id))
@@ -156,7 +247,13 @@ export default function Header() {
   }
 
   function handleNotifClick(n) {
-    if (!n.read) markRead(n.id)
+    if (!n.read) {
+      if (String(n.id).startsWith('sprint-')) {
+        setSprintReminders(prev => prev.filter(x => x.id !== n.id))
+      } else {
+        markRead(n.id)
+      }
+    }
     if (n.link) {
       router.push(n.link)
       setOpen(false)
@@ -173,13 +270,50 @@ export default function Header() {
       {/* Right: Search + Notifications + User */}
       <div className="flex items-center gap-3">
         {/* Search bar */}
-        <div className="relative hidden sm:block">
+        <div ref={searchRef} className="relative hidden sm:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Suchen..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setSearchOpen(true) }}
+            onFocus={() => setSearchOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && searchResults[0]) {
+                router.push(`/sprint-targets/${searchResults[0].id}`)
+                clearSearch()
+              } else if (e.key === 'Escape') {
+                clearSearch()
+              }
+            }}
+            placeholder="Zielkunden suchen..."
             className="pl-9 pr-4 py-1.5 text-sm bg-gray-100 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-transparent w-52 transition-all"
           />
+          {searchOpen && search.trim().length >= 2 && (
+            <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-[9999] overflow-hidden">
+              {searchLoading ? (
+                <p className="px-4 py-3 text-xs text-gray-400">Suche…</p>
+              ) : searchResults.length === 0 ? (
+                <p className="px-4 py-3 text-xs text-gray-400">Keine Zielkunden gefunden</p>
+              ) : (
+                searchResults.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => {
+                      router.push(`/sprint-targets/${t.id}`)
+                      clearSearch()
+                    }}
+                    className="flex items-center gap-2 w-full px-4 py-2.5 text-left hover:bg-gray-50 border-b border-gray-50 last:border-0"
+                  >
+                    <Crosshair className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm text-gray-900 truncate">{t.companyName}</span>
+                      <span className="block text-[11px] text-gray-400 truncate">{t.segment} · {t.status}</span>
+                    </span>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
         </div>
 
         {/* Notifications */}
@@ -220,13 +354,13 @@ export default function Header() {
 
               {/* Notification list */}
               <div className="max-h-96 overflow-y-auto divide-y divide-gray-50">
-                {notifications.length === 0 ? (
+                {allNotifications.length === 0 ? (
                   <div className="py-12 text-center">
                     <Bell className="w-8 h-8 text-gray-200 mx-auto mb-2" />
                     <p className="text-sm text-gray-400">Keine Benachrichtigungen</p>
                   </div>
                 ) : (
-                  notifications.map(n => {
+                  allNotifications.map(n => {
                     const cfg = NOTIF_CONFIG[n.type] || { icon: Info, color: 'text-gray-500', bg: 'bg-gray-50' }
                     const Icon = cfg.icon
                     return (
@@ -264,10 +398,10 @@ export default function Header() {
               </div>
 
               {/* Footer */}
-              {notifications.length > 0 && (
+              {allNotifications.length > 0 && (
                 <div className="px-4 py-2.5 border-t border-gray-100 bg-gray-50">
                   <p className="text-xs text-gray-400 text-center">
-                    {notifications.length} Benachrichtigung{notifications.length !== 1 ? 'en' : ''}
+                    {allNotifications.length} Benachrichtigung{allNotifications.length !== 1 ? 'en' : ''}
                   </p>
                 </div>
               )}

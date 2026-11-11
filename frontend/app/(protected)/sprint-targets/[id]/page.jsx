@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ChevronLeft, Phone, ArrowRight, Brain, FileText, Edit2, Save, X, Plus, AlertTriangle, RotateCcw, UserCheck, ClipboardCheck, ShieldAlert } from 'lucide-react'
+import { ChevronLeft, Phone, ArrowRight, Brain, FileText, Edit2, Save, X, Plus, AlertTriangle, RotateCcw, UserCheck, ClipboardCheck, ShieldAlert, Building2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { api } from '@/lib/api'
 import { formatDate, formatCurrency } from '@/lib/utils'
@@ -12,8 +12,6 @@ import {
   BRANCHEN, BUNDESLAENDER, CONTACT_SOURCES, CONSENT_SOURCES, SPRINT_PHASES,
   LOST_STATUSES, ACTIVE_STATUSES, WON_STATUSES, phaseForStatus, statusLabel, STATUS_BADGE,
 } from '@/lib/sprintOptions'
-
-const PACKAGES = ['compact', 'standard', 'premium']
 
 const LOSS_REASONS = ['Preis', 'Kein Bedarf', 'Wettbewerb', 'Timing', 'Budget', 'Sonstiges']
 
@@ -109,14 +107,14 @@ function QualifyModal({ isOpen, target, targetId, onClose, onSaved }) {
                 placeholder="z.B. Erstgespräch am 05.11. vereinbaren"
               />
             </div>
-            <div className="bg-violet-50 border border-violet-100 rounded-lg px-3 py-2 text-xs text-violet-700">
+            <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-xs text-blue-700">
               Übergabe wird als Aktivität protokolliert; der Status wechselt auf „Übergabe an Engagement Manager“, sofern er nicht weiter ist.
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                 Abbrechen
               </button>
-              <button type="submit" disabled={saving} className="px-5 py-2 text-sm font-medium text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50">
+              <button type="submit" disabled={saving} className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">
                 {saving ? 'Speichern...' : 'Übergeben'}
               </button>
             </div>
@@ -132,6 +130,9 @@ export default function SprintTargetDetailPage() {
   const router = useRouter()
   const [target, setTarget] = useState(null)
   const [activities, setActivities] = useState([])
+  const [tasks, setTasks] = useState([])
+  const [docs, setDocs] = useState([])
+  const [packages, setPackages] = useState([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({})
@@ -142,13 +143,17 @@ export default function SprintTargetDetailPage() {
   const fetchTarget = useCallback(async () => {
     setLoading(true)
     try {
-      const [t, acts] = await Promise.all([
+      const [t, acts, taskList, docList] = await Promise.all([
         api.get(`/sprint-targets/${id}`),
         api.get(`/sprint-targets/${id}/activities`),
+        api.get(`/tasks?sprintTargetId=${id}`).catch(() => []),
+        api.get(`/documents?sprintTargetId=${id}`).catch(() => []),
       ])
       setTarget(t)
       setForm(t)
       setActivities(Array.isArray(acts) ? acts : [])
+      setTasks(Array.isArray(taskList) ? taskList : taskList.tasks || [])
+      setDocs(Array.isArray(docList) ? docList : [])
     } catch {
       toast.error('Fehler beim Laden')
     } finally {
@@ -157,6 +162,13 @@ export default function SprintTargetDetailPage() {
   }, [id])
 
   useEffect(() => { fetchTarget() }, [fetchTarget])
+
+  // Verfügbare Pakete (dynamisch, vom Admin verwaltet)
+  useEffect(() => {
+    api.get('/sprint-market')
+      .then((m) => setPackages(Array.isArray(m?.packages) ? m.packages : []))
+      .catch(() => {})
+  }, [])
 
   async function handleSave() {
     setSaving(true)
@@ -200,7 +212,7 @@ export default function SprintTargetDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     )
   }
@@ -224,8 +236,16 @@ export default function SprintTargetDetailPage() {
           </button>
           <div className="h-5 w-px bg-gray-200" />
           <div>
-            <h1 className="text-xl font-bold text-gray-900">{target.companyName}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{target.companyName}</h1>
             <p className="text-sm text-gray-500">{target.segment}</p>
+            {target.account && (
+              <button
+                onClick={() => router.push(`/accounts/${target.account.id}`)}
+                className="mt-0.5 flex items-center gap-1 text-xs text-blue-700 hover:text-blue-900"
+              >
+                <Building2 className="w-3.5 h-3.5" /> {target.account.companyName}
+              </button>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -277,7 +297,7 @@ export default function SprintTargetDetailPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { label: 'Status', value: statusLabel(target.status), hint: `Prio ${target.priority}` },
-          { label: 'Angebotswert', value: target.offerValue ? formatCurrency(target.offerValue) : '—', hint: target.offerPackage || 'kein Paket' },
+          { label: 'Angebotswert', value: target.offerValue ? formatCurrency(target.offerValue) : '—', hint: packages.find((p) => p.key === target.offerPackage)?.label || 'kein Paket' },
           { label: 'Anrufe', value: `${target.callAttempts || 0} / 3`, hint: (target.callAttempts || 0) >= 3 ? 'Limit erreicht' : 'im Rahmen' },
           { label: 'Letzte Aktivität', value: activities[0] ? formatDate(activities[0].date) : '—', hint: `${activities.length} Einträge` },
         ].map(({ label, value, hint }) => (
@@ -304,8 +324,8 @@ export default function SprintTargetDetailPage() {
                 title={phase.statuses.map(statusLabel).join(' · ')}
               >
                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap border ${
-                  active ? 'bg-violet-600 text-white border-violet-600'
-                  : done ? 'bg-violet-50 text-violet-700 border-violet-100'
+                  active ? 'bg-blue-600 text-white border-blue-600'
+                  : done ? 'bg-blue-50 text-blue-700 border-blue-100'
                   : 'bg-gray-50 text-gray-400 border-gray-100'
                 }`}>
                   {phase.label}
@@ -434,10 +454,10 @@ export default function SprintTargetDetailPage() {
                 {editing ? (
                   <select value={form.package || ''} onChange={(e) => set('package', e.target.value)} className={CLS_INPUT}>
                     <option value="">-- keins --</option>
-                    {PACKAGES.map((p) => <option key={p} value={p}>{p}</option>)}
+                    {packages.map((p) => <option key={p.key} value={p.key}>{p.label || p.key}</option>)}
                   </select>
                 ) : (
-                  <p className="text-sm text-gray-900 capitalize">{target.package || '—'}</p>
+                  <p className="text-sm text-gray-900">{packages.find((p) => p.key === target.package)?.label || target.package || '—'}</p>
                 )}
               </div>
             </div>
@@ -498,9 +518,9 @@ export default function SprintTargetDetailPage() {
             )}
           </div>
 
-          {/* Sprint Tracking */}
+          {/* Akquise Tracking */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="text-sm font-semibold text-gray-900 mb-4">Sprint-Tracking</h2>
+            <h2 className="text-sm font-semibold text-gray-900 mb-4">Akquise-Tracking</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={CLS_LABEL}>Ansprechpartner</label>
@@ -766,10 +786,10 @@ export default function SprintTargetDetailPage() {
                 {editing ? (
                   <select value={form.offerPackage || ''} onChange={(e) => set('offerPackage', e.target.value)} className={CLS_INPUT}>
                     <option value="">-- keins --</option>
-                    {PACKAGES.map((p) => <option key={p} value={p}>{p}</option>)}
+                    {packages.map((p) => <option key={p.key} value={p.key}>{p.label || p.key}</option>)}
                   </select>
                 ) : (
-                  <p className="text-sm text-gray-900 capitalize">{target.offerPackage || '—'}</p>
+                  <p className="text-sm text-gray-900">{packages.find((p) => p.key === target.offerPackage)?.label || target.offerPackage || '—'}</p>
                 )}
               </div>
               <div>
@@ -789,7 +809,7 @@ export default function SprintTargetDetailPage() {
                 )}
               </div>
               <div>
-                <label className={CLS_LABEL}>BAFA-Status</label>
+                <label className={CLS_LABEL}>Förderstatus</label>
                 {editing ? (
                   <select value={form.bafaStatus || ''} onChange={(e) => set('bafaStatus', e.target.value)} className={CLS_INPUT}>
                     <option value="">-- keiner --</option>
@@ -834,6 +854,52 @@ export default function SprintTargetDetailPage() {
               </div>
             )}
           </div>
+
+          {/* Aufgaben & Dokumente */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-gray-900">Aufgaben</h2>
+                <button onClick={() => router.push('/tasks?onlySprint=true')} className="text-xs font-medium text-blue-700 hover:text-blue-900">Alle</button>
+              </div>
+              {tasks.filter((t) => !['Done', 'Cancelled'].includes(t.status)).length === 0 ? (
+                <p className="text-sm text-gray-400 py-3">Keine offenen Aufgaben.</p>
+              ) : (
+                <ul className="divide-y divide-gray-50">
+                  {tasks.filter((t) => !['Done', 'Cancelled'].includes(t.status)).slice(0, 5).map((t) => {
+                    const overdue = t.dueDate && new Date(t.dueDate) < new Date().setHours(0, 0, 0, 0)
+                    return (
+                      <li key={t.id} className="py-2">
+                        <p className="text-sm text-gray-900 truncate">{t.title}</p>
+                        <p className={`text-[11px] ${overdue ? 'text-red-600' : 'text-gray-400'}`}>
+                          {t.dueDate ? `fällig ${formatDate(t.dueDate)}` : 'ohne Fälligkeit'} · {t.assignedTo?.name || 'unzugewiesen'}
+                        </p>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-gray-900">Dokumente</h2>
+                <button onClick={() => router.push('/documents?onlySprint=true')} className="text-xs font-medium text-blue-700 hover:text-blue-900">Alle</button>
+              </div>
+              {docs.length === 0 ? (
+                <p className="text-sm text-gray-400 py-3">Keine Dokumente hinterlegt.</p>
+              ) : (
+                <ul className="divide-y divide-gray-50">
+                  {docs.slice(0, 5).map((d) => (
+                    <li key={d.id} className="py-2 flex items-center gap-2">
+                      <FileText className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                      <span className="text-sm text-gray-900 truncate flex-1">{d.name}</span>
+                      <span className="text-[11px] text-gray-400 shrink-0">{formatDate(d.createdAt)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Right: actions + activities */}
@@ -848,7 +914,7 @@ export default function SprintTargetDetailPage() {
                 title={blocked ? 'Kontaktsperre (DSGVO Art. 21)' : undefined}
                 className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
               >
-                <UserCheck className="w-4 h-4 text-violet-500" /> Qualifizieren &amp; übergeben
+                <UserCheck className="w-4 h-4 text-blue-500" /> Qualifizieren &amp; übergeben
               </button>
               <button
                 onClick={() => setShowLogModal(true)}
@@ -862,7 +928,7 @@ export default function SprintTargetDetailPage() {
                 onClick={() => router.push(`/sprint-targets/${id}/assessment`)}
                 className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <Brain className="w-4 h-4 text-violet-500" /> KI-Assessment
+                <Brain className="w-4 h-4 text-blue-500" /> KI-Assessment
               </button>
               <button
                 onClick={() => router.push(`/sprint-targets/${id}/proposals`)}
@@ -876,7 +942,7 @@ export default function SprintTargetDetailPage() {
                 title={blocked ? 'Kontaktsperre (DSGVO Art. 21)' : undefined}
                 className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
               >
-                <FileText className="w-4 h-4 text-violet-500" /> Angebot anlegen
+                <FileText className="w-4 h-4 text-blue-500" /> Angebot anlegen
               </button>
               <button
                 onClick={() => router.push(`/sprint-targets/${id}/handover`)}
@@ -919,7 +985,7 @@ export default function SprintTargetDetailPage() {
               <h2 className="text-sm font-semibold text-gray-900">Aktivitäten</h2>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => router.push('/sprint-targets/activities')}
+                  onClick={() => router.push('/activities?onlySprint=true')}
                   className="text-xs text-gray-500 hover:text-gray-800"
                 >
                   Alle

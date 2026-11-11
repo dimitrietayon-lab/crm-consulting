@@ -3,15 +3,16 @@ const {
 } = require('./index');
 
 function buildBafaPdf(target, documents = []) {
-  const doc = createDoc({ title: 'BAFA-Förderung' });
+  const doc = createDoc({ title: 'Förderung' });
 
-  header(doc, 'BAFA-Förderung', [target.companyName, target.location].filter(Boolean).join(' · '));
+  header(doc, 'Förderung', [target.companyName, target.location].filter(Boolean).join(' · '));
 
   sectionTitle(doc, 'Antrag');
   kvRow(doc, 'Unternehmen', target.companyName);
   kvRow(doc, 'Ansprechpartner', target.contactName);
   kvRow(doc, 'Segment', target.segment);
-  kvRow(doc, 'BAFA-Status', target.bafaStatus || 'nicht beantragt');
+  kvRow(doc, 'Förderprogramm', target.fundingProgram);
+  kvRow(doc, 'Förderstatus', target.bafaStatus || 'nicht beantragt');
   kvRow(doc, 'Antragsdatum', date(target.bafaDate));
   kvRow(doc, 'Eingereicht am', date(target.bafaSubmittedAt));
   kvRow(doc, 'Angebotswert', money(target.offerValue));
@@ -38,7 +39,7 @@ function buildBafaPdf(target, documents = []) {
     paragraph(doc, target.bafaNotes);
   }
 
-  footer(doc, `BAFA-Förderung · ${target.companyName || ''} · ${date(new Date())}`);
+  footer(doc, `Förderung · ${target.companyName || ''} · ${date(new Date())}`);
   return doc;
 }
 

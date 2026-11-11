@@ -17,7 +17,7 @@ export default function LoginPage() {
   useEffect(() => {
     // If already authenticated, redirect to dashboard
     if (getToken()) {
-      router.push('/')
+      router.push('/?tab=akquise')
     }
   }, [])
 
@@ -49,7 +49,7 @@ export default function LoginPage() {
       localStorage.setItem('crm_user', JSON.stringify(data.user))
 
       toast.success('Erfolgreich angemeldet!')
-      router.push('/')
+      router.push('/?tab=akquise')
     } catch (err) {
       setError(err.message || 'Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Zugangsdaten.')
     } finally {

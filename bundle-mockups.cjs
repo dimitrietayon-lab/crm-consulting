@@ -42,6 +42,7 @@ const PAGES = [
   { group: 'Organisation', label: 'Sperrliste', file: 'mockup-sprint-sperrliste.html' },
   { group: 'Organisation', label: 'Reporting', file: 'mockup-sprint-reporting.html' },
   { group: 'CRM', label: 'CRM-Profil', file: 'mockup-crm-profil.html' },
+  { group: 'CRM', label: 'Feature-Übernahme', file: 'mockup-sprint-feature-uebernahme.html' },
   { group: 'CRM', label: 'Sidebar-Varianten', file: 'mockup-sidebar-varianten.html' },
   { group: 'Plattform', label: 'Mandanten', file: 'mockup-platform-uebersicht.html' },
   { group: 'Plattform', label: 'Neuer Mandant', file: 'mockup-platform-mandant-neu.html' },

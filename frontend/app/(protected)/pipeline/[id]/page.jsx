@@ -900,7 +900,7 @@ export default function DealDetailPage() {
       <div className="text-center py-20">
         <p className="text-gray-500">Deal nicht gefunden.</p>
         <button onClick={() => router.push('/pipeline')} className="mt-4 text-blue-600 hover:underline text-sm">
-          Zurück zur Pipeline
+          Zurück zu den Deals
         </button>
       </div>
     )

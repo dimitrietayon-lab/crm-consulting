@@ -4,9 +4,6 @@ export const TEAM_ROLES = [
   { key: 'sales', label: 'Vertrieb' },
 ]
 
-export const SPRINT_PACKAGES = ['compact', 'standard', 'premium']
-export const SPRINT_PACKAGE_LABELS = { compact: 'Compact', standard: 'Standard', premium: 'Premium' }
-
 // Zuweisungen eines Zielkunden je Rolle (Mehrfachzuweisung möglich)
 export function assignmentsForRole(target, roleKey) {
   return (target?.assignments || []).filter((a) => a.role === roleKey)
@@ -33,13 +30,18 @@ export function requiredRolesFor(target, roles, packageRoles = []) {
     .sort((a, b) => order.indexOf(a.role) - order.indexOf(b.role))
 }
 
-// Übernimmt die Bezeichnungen aus der Rollenverwaltung (PortalRole), falls vorhanden.
+// Basis-Rollen mit Bezeichnung aus der Rollenverwaltung (PortalRole) + freie,
+// admin-definierte Rollen aus den Paketen.
 export function resolveRoles(apiRoles) {
-  if (!Array.isArray(apiRoles) || apiRoles.length === 0) return TEAM_ROLES
-  return TEAM_ROLES.map((r) => {
-    const found = apiRoles.find((x) => x.key === r.key)
+  const list = Array.isArray(apiRoles) ? apiRoles : []
+  const base = TEAM_ROLES.map((r) => {
+    const found = list.find((x) => x.key === r.key)
     return found?.label ? { ...r, label: found.label } : r
   })
+  const custom = list
+    .filter((x) => x && x.key && !TEAM_ROLES.some((b) => b.key === x.key))
+    .map((x) => ({ key: x.key, label: x.label || x.key }))
+  return [...base, ...custom]
 }
 
 export { STATUS_BADGE } from './sprintOptions'

@@ -163,7 +163,7 @@ export default function TeamMemberPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     )
   }
@@ -190,7 +190,7 @@ export default function TeamMemberPage() {
           </button>
           <div className="h-5 w-px bg-gray-200" />
           <div>
-            <h1 className="text-xl font-bold text-gray-900">{member.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{member.name}</h1>
             <p className="text-sm text-gray-500">{member.email}</p>
           </div>
         </div>
@@ -306,11 +306,11 @@ export default function TeamMemberPage() {
                           {(t.assignments || []).filter((a) => a.userId === id).map((a) => {
                             const role = roles.find((r) => r.key === a.role)
                             return (
-                              <span key={a.id} className="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 bg-violet-50 text-violet-700 border border-violet-100 rounded-full text-xs">
+                              <span key={a.id} className="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-full text-xs">
                                 {role?.label || a.role}
                                 <button
                                   onClick={() => removeAssignment(t, a)}
-                                  className="p-0.5 rounded-full hover:bg-violet-100"
+                                  className="p-0.5 rounded-full hover:bg-blue-100"
                                   title="Zuweisung entfernen"
                                 >
                                   <X className="w-3 h-3" />
@@ -365,7 +365,7 @@ export default function TeamMemberPage() {
               <button
                 onClick={assignNew}
                 disabled={!newTargetId}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700 disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
               >
                 <Plus className="w-4 h-4" /> Zuweisen
               </button>

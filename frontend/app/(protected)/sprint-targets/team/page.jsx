@@ -150,7 +150,7 @@ export default function SprintTeamPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     )
   }
@@ -166,7 +166,7 @@ export default function SprintTeamPage() {
           </button>
           <div className="h-5 w-px bg-gray-200" />
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Team &amp; Zuweisung</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Team &amp; Zuweisung</h1>
             <p className="text-sm text-gray-500">
               {stats.rows.length} Mitglieder · {stats.covered} betreute Zielkunden · Kapazität {capacity} Kunden je Mitglied
             </p>
@@ -174,7 +174,7 @@ export default function SprintTeamPage() {
         </div>
         <button
           onClick={() => setCreating({ name: '', email: '', password: '', portalRoleId: '' })}
-          className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-violet-600 rounded-lg hover:bg-violet-700"
+          className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700"
         >
           <UserPlus className="w-4 h-4" /> Mitglied anlegen
         </button>
@@ -188,7 +188,7 @@ export default function SprintTeamPage() {
             onClick={() => setTab(t.key)}
             className={`px-4 py-2 text-sm -mb-px border-b-2 transition-colors ${
               tab === t.key
-                ? 'border-violet-600 text-violet-700 font-medium'
+                ? 'border-blue-600 text-blue-700 font-medium'
                 : 'border-transparent text-gray-500 hover:text-gray-800'
             }`}
           >
@@ -204,7 +204,7 @@ export default function SprintTeamPage() {
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <p className="text-xs text-gray-500">Mitglieder</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">{stats.rows.length}</p>
-              <p className="text-xs text-gray-400 mt-0.5">Sprint-Team</p>
+              <p className="text-xs text-gray-400 mt-0.5">Akquise-Team</p>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <p className="text-xs text-gray-500">Betreute Zielkunden</p>
@@ -325,7 +325,7 @@ export default function SprintTeamPage() {
                 <button
                   onClick={() => setOpenOnly((v) => !v)}
                   className={`px-3 py-1.5 text-xs rounded-md border transition-colors ${
-                    openOnly ? 'bg-violet-50 border-violet-200 text-violet-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                    openOnly ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
                   }`}
                 >
                   Nur offene Zuweisungen
@@ -459,7 +459,7 @@ export default function SprintTeamPage() {
               </div>
               <div className="flex justify-end gap-2 pt-4">
                 <button onClick={() => setCreating(null)} className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50">Abbrechen</button>
-                <button onClick={createMember} disabled={creatingBusy} className="px-4 py-2 text-sm text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50">
+                <button onClick={createMember} disabled={creatingBusy} className="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">
                   {creatingBusy ? 'Anlegen…' : 'Anlegen'}
                 </button>
               </div>
@@ -498,7 +498,7 @@ export default function SprintTeamPage() {
               </div>
               <div className="flex justify-end gap-2 pt-4">
                 <button onClick={() => setBulk(null)} className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50">Abbrechen</button>
-                <button onClick={saveBulk} className="px-4 py-2 text-sm text-white bg-violet-600 rounded-md hover:bg-violet-700">Übergeben</button>
+                <button onClick={saveBulk} className="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">Übergeben</button>
               </div>
             </div>
           </div>

@@ -8,6 +8,7 @@ import { api } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
 import { exportCsv, csvFilename } from '@/lib/csv'
 import { IN_TALK_STATUSES } from '@/lib/sprintOptions'
+import { primeSprintSettings } from '@/lib/sprintSettings'
 
 const STATUS_ORDER = [
   'offen', 'recherchiert', 'vernetzt', 'kontaktiert',
@@ -63,13 +64,17 @@ export default function SprintReportingPage() {
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [revenueTarget, setRevenueTarget] = useState(500000)
+  const [campaign, setCampaign] = useState({ name: '', start: '', end: '' })
+  const [periodReady, setPeriodReady] = useState(false)
 
   const fetchStats = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
-      if (from) params.set('from', from)
-      if (to) params.set('to', to)
+      // Immer senden: leerer Wert = bewusst kein Zeitraum (Gesamter Zeitraum).
+      // Fehlt der Parameter, würde das Backend den Kampagnen-Zeitraum einsetzen.
+      params.set('from', from || '')
+      params.set('to', to || '')
       if (revenueTarget) params.set('revenueTarget', String(revenueTarget))
       const qs = params.toString()
       const data = await api.get(`/sprint-targets/reporting/summary${qs ? `?${qs}` : ''}`)
@@ -81,7 +86,25 @@ export default function SprintReportingPage() {
     }
   }, [from, to, revenueTarget])
 
-  useEffect(() => { fetchStats() }, [fetchStats])
+  useEffect(() => {
+    if (periodReady) fetchStats()
+  }, [fetchStats, periodReady])
+
+  // Akquise-Info: Kampagnenname + Laufzeit als Standard-Zeitraum übernehmen.
+  // Erst die Server-Einstellungen laden, damit der Zeitraum beim ersten Abruf stimmt.
+  useEffect(() => {
+    let cancelled = false
+    primeSprintSettings().then((s) => {
+      if (cancelled) return
+      const start = s.sprintStart ? String(s.sprintStart).slice(0, 10) : ''
+      const end = s.sprintEnd ? String(s.sprintEnd).slice(0, 10) : ''
+      setCampaign({ name: s.sprintName || '', start, end })
+      setFrom((cur) => cur || start)
+      setTo((cur) => cur || end)
+      setPeriodReady(true)
+    })
+    return () => { cancelled = true }
+  }, [])
 
   async function handleExport() {
     setExporting(true)
@@ -100,11 +123,11 @@ export default function SprintReportingPage() {
     setPdfBusy(true)
     try {
       const params = new URLSearchParams()
-      if (from) params.set('from', from)
-      if (to) params.set('to', to)
+      params.set('from', from || '')
+      params.set('to', to || '')
       if (revenueTarget) params.set('revenueTarget', String(revenueTarget))
       const qs = params.toString()
-      await api.download(`/sprint-targets/reporting/pdf${qs ? `?${qs}` : ''}`, 'Sprint-Reporting.pdf')
+      await api.download(`/sprint-targets/reporting/pdf${qs ? `?${qs}` : ''}`, 'Akquise-Reporting.pdf')
     } catch (err) {
       toast.error(err.message || 'PDF-Export fehlgeschlagen')
     } finally {
@@ -113,12 +136,14 @@ export default function SprintReportingPage() {
   }
 
   function resetPeriod() {
-    setFrom('')
-    setTo('')
+    setFrom(campaign.start)
+    setTo(campaign.end)
   }
 
   const byStatus = stats?.byStatus || {}
   const total = stats?.total || 0
+  const periodIsDefault = from === campaign.start && to === campaign.end
+  const campaignName = campaign.name || stats?.campaign?.name || ''
 
   return (
     <div className="space-y-4">
@@ -130,7 +155,12 @@ export default function SprintReportingPage() {
           </button>
           <div className="h-5 w-px bg-gray-200" />
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Reporting</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-900">Reporting</h1>
+              {campaignName && (
+                <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">{campaignName}</span>
+              )}
+            </div>
             <p className="text-sm text-gray-500">KPIs je Phase, Funnel und Aktivitäten</p>
           </div>
         </div>
@@ -177,19 +207,21 @@ export default function SprintReportingPage() {
           onChange={(e) => setRevenueTarget(Number(e.target.value) || 0)}
           className="w-32 border border-gray-300 rounded-md px-2.5 py-1.5 text-sm text-gray-700"
         />
-        {(from || to) && (
+        {!periodIsDefault && (
           <button onClick={resetPeriod} className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800">
             <RotateCcw className="w-3.5 h-3.5" /> Zurücksetzen
           </button>
         )}
         <span className="ml-auto text-xs text-gray-400">
-          {stats?.period?.from || stats?.period?.to ? 'Gefilterter Zeitraum' : 'Gesamter Zeitraum'}
+          {periodIsDefault && (campaign.start || campaign.end)
+            ? 'Kampagnen-Zeitraum'
+            : (from || to ? 'Gefilterter Zeitraum' : 'Gesamter Zeitraum')}
         </span>
       </div>
 
       {loading || !stats ? (
         <div className="flex justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
         </div>
       ) : (
         <>
@@ -198,7 +230,7 @@ export default function SprintReportingPage() {
             {[
               { label: 'Zielkunden', value: stats.total, icon: Users, color: 'text-gray-700', bg: 'bg-gray-50' },
               { label: 'Im Gespräch', value: IN_TALK_STATUSES.reduce((sum, s) => sum + (byStatus[s] || 0), 0), icon: TrendingUp, color: 'text-yellow-700', bg: 'bg-yellow-50' },
-              { label: 'Angebote offen', value: stats.offers.pending, icon: FileText, color: 'text-violet-700', bg: 'bg-violet-50' },
+              { label: 'Angebote offen', value: stats.offers.pending, icon: FileText, color: 'text-blue-700', bg: 'bg-blue-50' },
               { label: 'Gewonnen', value: (byStatus['gewonnen'] || 0) + (byStatus['Folgeprojekt'] || 0), icon: CheckCircle2, color: 'text-green-700', bg: 'bg-green-50' },
               { label: 'Win-Rate', value: `${stats.winRate}%`, icon: TrendingUp, color: 'text-blue-700', bg: 'bg-blue-50' },
               { label: 'Umsatz', value: formatCurrency(stats.wonValue), icon: CheckCircle2, color: 'text-emerald-700', bg: 'bg-emerald-50' },
@@ -262,7 +294,7 @@ export default function SprintReportingPage() {
                       <div key={segment} className="flex items-center gap-3">
                         <span className="w-52 text-xs text-gray-600 truncate" title={segment}>{segment}</span>
                         <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full bg-violet-400" style={{ width: `${pct}%` }} />
+                          <div className="h-full rounded-full bg-blue-400" style={{ width: `${pct}%` }} />
                         </div>
                         <span className="w-8 text-right text-xs font-semibold text-gray-900">{count}</span>
                       </div>
@@ -284,9 +316,9 @@ export default function SprintReportingPage() {
                   <p className="text-xl font-bold text-blue-700">{stats.activities.last7}</p>
                   <p className="text-xs text-blue-600">7 Tage</p>
                 </div>
-                <div className="rounded-lg bg-violet-50 p-3">
-                  <p className="text-xl font-bold text-violet-700">{stats.activities.last30}</p>
-                  <p className="text-xs text-violet-600">30 Tage</p>
+                <div className="rounded-lg bg-blue-50 p-3">
+                  <p className="text-xl font-bold text-blue-700">{stats.activities.last30}</p>
+                  <p className="text-xs text-blue-600">30 Tage</p>
                 </div>
               </div>
               <div className="space-y-1.5">

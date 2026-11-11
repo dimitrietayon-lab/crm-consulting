@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
+const requireAdmin = require('../middleware/requireAdmin');
 
 const prisma = new PrismaClient();
 
@@ -23,7 +24,7 @@ const DEFAULTS = {
   targetFirms: 878,
   teamCapacity: 10,
   revenueTarget: 500000,
-  sprintName: 'KI-Readiness Sprint',
+  sprintName: 'Akquise',
   sprintStart: null,
   sprintEnd: null,
   packages: null,
@@ -82,8 +83,8 @@ router.put('/', async (req, res) => {
   }
 });
 
-// DELETE /api/sprint-settings/reset — setzt auf Defaults zurück
-router.post('/reset', async (req, res) => {
+// POST /api/sprint-settings/reset — setzt auf Defaults zurück (nur Admin)
+router.post('/reset', requireAdmin, async (req, res) => {
   try {
     await ensureSettings();
     const data = { ...DEFAULTS };

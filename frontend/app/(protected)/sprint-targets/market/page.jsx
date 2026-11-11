@@ -143,7 +143,7 @@ export default function SprintMarketPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     )
   }
@@ -157,7 +157,7 @@ export default function SprintMarketPage() {
         </button>
         <div className="h-5 w-px bg-gray-200" />
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Marktauswahl</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Marktauswahl</h1>
           <p className="text-sm text-gray-500">Bundesland-Priorisierung und WZ-Zuordnung</p>
         </div>
       </div>
@@ -171,12 +171,12 @@ export default function SprintMarketPage() {
         <div className="bg-white rounded-lg border border-gray-200 p-3">
           <p className="text-xs text-gray-500">Fokusländer-Anteil</p>
           <p className="text-lg font-bold text-gray-900">{fokusShare} %</p>
-          <p className="text-xs text-gray-400">der Sprint-Zielliste</p>
+          <p className="text-xs text-gray-400">der Zielliste</p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-3">
           <p className="text-xs text-gray-500">Zielkunden insgesamt</p>
-          <p className="text-lg font-bold text-violet-700">{targets.length}</p>
-          <p className="text-xs text-gray-400">in der Sprint-Zielliste</p>
+          <p className="text-lg font-bold text-blue-700">{targets.length}</p>
+          <p className="text-xs text-gray-400">in der Zielliste</p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-3">
           <p className="text-xs text-gray-500">in Fokusländern</p>
@@ -189,13 +189,13 @@ export default function SprintMarketPage() {
       <div className="bg-white rounded-xl border border-gray-200 p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-violet-600" />
+            <MapPin className="w-4 h-4 text-blue-600" />
             <h2 className="text-sm font-semibold text-gray-900">Bundesländer-Priorisierung</h2>
           </div>
           <button
             onClick={saveRegions}
             disabled={savingRegions}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
           >
             <Save className="w-3.5 h-3.5" /> {savingRegions ? 'Speichern…' : 'Speichern'}
           </button>
@@ -262,7 +262,7 @@ export default function SprintMarketPage() {
               </td>
               <td className="px-3 py-2 text-sm text-gray-400">neu</td>
               <td className="px-3 py-2 text-right">
-                <button onClick={addRegion} className="p-1 text-violet-600 hover:text-violet-800" title="Hinzufügen">
+                <button onClick={addRegion} className="p-1 text-blue-600 hover:text-blue-800" title="Hinzufügen">
                   <Plus className="w-4 h-4" />
                 </button>
               </td>
@@ -275,13 +275,13 @@ export default function SprintMarketPage() {
       <div className="bg-white rounded-xl border border-gray-200 p-5">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
-            <Target className="w-4 h-4 text-violet-600" />
+            <Target className="w-4 h-4 text-blue-600" />
             <h2 className="text-sm font-semibold text-gray-900">WZ-Zuordnung</h2>
           </div>
           <button
             onClick={saveWz}
             disabled={savingWz}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
           >
             <Save className="w-3.5 h-3.5" /> {savingWz ? 'Speichern…' : 'Speichern'}
           </button>
@@ -335,7 +335,7 @@ export default function SprintMarketPage() {
                 </select>
               </td>
               <td className="px-3 py-2 text-right">
-                <button onClick={addWz} className="p-1 text-violet-600 hover:text-violet-800" title="Hinzufügen">
+                <button onClick={addWz} className="p-1 text-blue-600 hover:text-blue-800" title="Hinzufügen">
                   <Plus className="w-4 h-4" />
                 </button>
               </td>
@@ -348,7 +348,7 @@ export default function SprintMarketPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-gray-900">Pakete</h2>
-            <button onClick={() => router.push('/sprint-targets/settings')} className="text-xs text-violet-600 hover:underline">Bearbeiten →</button>
+            <button onClick={() => router.push('/settings?tab=akquise')} className="text-xs text-blue-600 hover:underline">Bearbeiten →</button>
           </div>
           {packages.length === 0 ? (
             <p className="text-sm text-gray-400">Keine Pakete hinterlegt.</p>
@@ -367,7 +367,7 @@ export default function SprintMarketPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-gray-900">Branchen</h2>
-            <button onClick={() => router.push('/sprint-targets/settings')} className="text-xs text-violet-600 hover:underline">Bearbeiten →</button>
+            <button onClick={() => router.push('/settings?tab=akquise')} className="text-xs text-blue-600 hover:underline">Bearbeiten →</button>
           </div>
           {segments.length === 0 ? (
             <p className="text-sm text-gray-400">Keine Branchen hinterlegt.</p>

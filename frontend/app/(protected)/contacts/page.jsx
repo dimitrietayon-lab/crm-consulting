@@ -2,6 +2,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import MergedTabs from '@/components/ui/MergedTabs'
+import SprintContactsPage from '../sprint-targets/contacts/page'
 import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
 import {
@@ -29,7 +31,18 @@ const HIERARCHY_COLORS = {
   Specialist: 'bg-gray-100 text-gray-700',
 }
 
-export default function ContactsPage() {
+export default function ContactsMergedPage() {
+  return (
+    <MergedTabs
+      crmLabel="Kundenkontakte"
+      akquiseLabel="Akquise-Kontakte"
+      Primary={ContactsPage}
+      Secondary={SprintContactsPage}
+    />
+  )
+}
+
+function ContactsPage() {
   const router = useRouter()
   const [contacts, setContacts] = useState([])
   const [accounts, setAccounts] = useState([])

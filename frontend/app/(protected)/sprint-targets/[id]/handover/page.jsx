@@ -140,7 +140,7 @@ export default function SprintHandoverPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     )
   }
@@ -157,7 +157,7 @@ export default function SprintHandoverPage() {
         </button>
         <div className="h-5 w-px bg-gray-200" />
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Übergabe</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Übergabe</h1>
           <p className="text-sm text-gray-500">{target.companyName}</p>
         </div>
       </div>

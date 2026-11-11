@@ -59,7 +59,7 @@ function createDoc(options = {}) {
   const doc = new PDFDocument({
     size: 'A4',
     margins: { top: 50, left: 50, right: 50, bottom: 55 },
-    info: { Title: options.title || 'Dokument', Author: 'KI-Readiness Sprint' },
+    info: { Title: options.title || 'Dokument', Author: 'CRM' },
   });
 
   const fonts = resolveFonts();
@@ -269,7 +269,7 @@ function footer(doc, text) {
   const bottom = doc.page.height - doc.page.margins.bottom + 18;
   fontRegular(doc);
   doc.fontSize(8).fillColor(COLORS.muted).text(
-    text || 'Erzeugt am ' + date(new Date()) + ' · KI-Readiness Sprint',
+    text || 'Erzeugt am ' + date(new Date()) + ' · CRM',
     left,
     bottom,
     { width: doc.page.width - left - doc.page.margins.right, align: 'center' }

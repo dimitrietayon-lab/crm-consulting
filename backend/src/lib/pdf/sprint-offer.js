@@ -25,7 +25,7 @@ function buildOfferPdf(offer) {
   kvRow(doc, 'Status', STATUS_LABELS[offer.status] || offer.status);
 
   sectionTitle(doc, 'Angebotsdaten');
-  kvRow(doc, 'Paket', PACKAGE_LABELS[offer.package] || offer.package);
+  kvRow(doc, 'Paket', offer.packageLabel || PACKAGE_LABELS[offer.package] || offer.package);
   kvRow(doc, 'Angebotsdatum', date(offer.createdAt));
   kvRow(doc, 'Gültig bis', date(offer.validUntil));
 

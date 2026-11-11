@@ -144,7 +144,7 @@ export default function SprintImportPage() {
           </button>
           <div className="h-5 w-px bg-gray-200" />
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Listen-Import</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Listen-Import</h1>
             <p className="text-sm text-gray-500">Zielkunden aus CSV mit Sperrlisten- und Dublettenprüfung</p>
           </div>
         </div>
@@ -195,11 +195,11 @@ export default function SprintImportPage() {
             <label
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => { e.preventDefault(); handleFile(e.dataTransfer.files?.[0]) }}
-              className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg px-4 py-8 text-sm text-gray-500 bg-gray-50 hover:border-violet-300 hover:bg-violet-50/40 cursor-pointer transition-colors"
+              className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg px-4 py-8 text-sm text-gray-500 bg-gray-50 hover:border-blue-300 hover:bg-blue-50/40 cursor-pointer transition-colors"
             >
               <Upload className="w-5 h-5 text-gray-400" />
               <span>
-                CSV hier ablegen oder <span className="font-semibold text-violet-600">Datei auswählen</span>
+                CSV hier ablegen oder <span className="font-semibold text-blue-600">Datei auswählen</span>
               </span>
               <span className="text-xs text-gray-400">Semikolon oder Komma · max. 5.000 Zeilen</span>
               <input
@@ -398,7 +398,7 @@ export default function SprintImportPage() {
                 <button
                   onClick={handleImport}
                   disabled={importing || plannedCount === 0}
-                  className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700 disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
                   <Copy className="w-4 h-4" />
                   {importing ? 'Importiere…' : `${plannedCount} Zielkunden importieren`}

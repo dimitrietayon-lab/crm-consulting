@@ -82,7 +82,7 @@ export default function SprintCapacityPage() {
         </button>
         <div className="h-5 w-px bg-gray-200" />
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Kapazitätsplanung</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Kapazitätsplanung</h1>
           <p className="text-sm text-gray-500">Wochen bis zur Marktabdeckung</p>
         </div>
       </div>
@@ -90,7 +90,7 @@ export default function SprintCapacityPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
         <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Calculator className="w-4 h-4 text-violet-600" />
+            <Calculator className="w-4 h-4 text-blue-600" />
             <h2 className="text-sm font-semibold text-gray-900">Rechenhilfe Zeitbedarf</h2>
           </div>
 
@@ -117,9 +117,9 @@ export default function SprintCapacityPage() {
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3">
-            <div className="rounded-lg border border-violet-100 bg-violet-50 p-4">
-              <p className="text-xs text-violet-600">Wochen bis zur Abdeckung</p>
-              <p className="text-3xl font-bold text-violet-700">{weeks}</p>
+            <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+              <p className="text-xs text-blue-600">Wochen bis zur Abdeckung</p>
+              <p className="text-3xl font-bold text-blue-700">{weeks}</p>
             </div>
             <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
               <p className="text-xs text-gray-500">Gesamtstunden</p>
@@ -131,7 +131,7 @@ export default function SprintCapacityPage() {
             <span>
               {netto.toLocaleString('de-DE')} Firmen × {hoursPerFirm} h ÷ {teamHours} h/Woche
             </span>
-            <button onClick={handleSave} className="flex items-center gap-1.5 text-violet-700 hover:text-violet-900 font-medium">
+            <button onClick={handleSave} className="flex items-center gap-1.5 text-blue-700 hover:text-blue-900 font-medium">
               <Save className="w-3.5 h-3.5" /> Als Standard speichern
             </button>
           </div>

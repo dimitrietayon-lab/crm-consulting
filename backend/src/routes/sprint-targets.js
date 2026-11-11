@@ -8,6 +8,7 @@ const { sendPdf, date: pdfDate } = require('../lib/pdf');
 const { buildBafaPdf } = require('../lib/pdf/bafa-report');
 const { buildReportPdf } = require('../lib/pdf/sprint-report');
 const { normalizeCompany, contactBlockReason } = require('../lib/sprintCompliance');
+const { linkAccountOnWin } = require('../lib/sprintAccount');
 
 const prisma = new PrismaClient();
 
@@ -21,12 +22,13 @@ const ALLOWED_FIELDS = [
   'numberOfEmployees', 'sizeCheckedAt', 'status', 'contactSource', 'ponturoRelationship',
   'contactName', 'contactTitle', 'contactLinkedIn', 'callAttempts', 'callTrigger',
   'emailAllowed', 'handoverDate', 'firstMeetingDate', 'offerPackage', 'offerValue',
-  'offerDate', 'bafaDate', 'bafaStatus', 'result', 'lossReason', 'notes', 'accountId',
+  'offerDate', 'bafaDate', 'bafaStatus', 'result', 'lossReason', 'notes',
   'contactEmail', 'revenue', 'website', 'wzCode', 'emailConsentAt', 'emailConsentSource',
   'emailConsentRevokedAt', 'callConsentAt', 'callConsentSource', 'privacyNoticeAt',
   'privacyNoticeSource', 'selfTestScore', 'selfTestDate', 'selfTestLink',
   'decisionDate', 'nextStep', 'nextStepDue',
   'fundingAmount', 'offerValidUntil', 'bafaApprovedAmount', 'bafaSubmittedAt', 'bafaNotes',
+  'fundingProgram',
 ];
 
 // Kanonisches Phasen-/Statusmodell: jede Phase hat eigene Statuswerte.
@@ -69,9 +71,20 @@ const SPRINT_ROLE_IDS = {
   sales: 'sprint-role-sales',
 };
 
-const SPRINT_ROLE_KEYS = new Set(Object.keys(SPRINT_ROLE_IDS));
+// Rollen-Keys sind freie Slugs (Basis-Rollen lead/ki/sales + admin-definierte Rollen)
+const ROLE_KEY_RE = /^[a-z0-9][a-z0-9_-]{0,49}$/i;
+const isValidRoleKey = (role) => typeof role === 'string' && ROLE_KEY_RE.test(role);
 
-const SPRINT_PACKAGES = ['compact', 'standard', 'premium'];
+function slugifyRoleKey(value) {
+  const map = { ä: 'ae', ö: 'oe', ü: 'ue', ß: 'ss' };
+  const slug = String(value || '')
+    .toLowerCase()
+    .replace(/[äöüß]/g, (c) => map[c] || c)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 50);
+  return slug;
+}
 
 const TEAM_SLOTS = [
   { key: 'lead', label: 'Lead Berater' },
@@ -126,6 +139,7 @@ async function enrichTargets(targets) {
     lastActivityAt: lastActivity.get(t.id) || null,
   }));
 }
+
 
 function sanitize(body) {
   const data = {};
@@ -431,7 +445,20 @@ router.post('/', async (req, res) => {
       data,
       include: { account: { select: { id: true, companyName: true } } },
     });
-    res.status(201).json(target);
+
+    // Direkt als gewonnen angelegt → CRM-Account anlegen/verknüpfen
+    let account = target.account;
+    if (WON_STATUS_SET.has(target.status)) {
+      const linkedId = await linkAccountOnWin(prisma, target);
+      if (linkedId) {
+        account = await prisma.account.findUnique({
+          where: { id: linkedId },
+          select: { id: true, companyName: true },
+        });
+      }
+    }
+
+    res.status(201).json({ ...target, accountId: account?.id || target.accountId, account });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -766,8 +793,10 @@ router.post('/import/commit', upload.single('file'), async (req, res) => {
           await prisma.sprintTarget.update({ where: { id: row.match.id }, data });
           merged++;
         } else if (decision === 'merge' && row.match?.kind === 'account') {
+          // Bestehender CRM-Account: nur als Interessent anlegen –
+          // die Verknüpfung entsteht erst beim Abschluss (Status „gewonnen“).
           const data = buildTargetData(row, { source, sourceDate, defaults: true });
-          await prisma.sprintTarget.create({ data: { ...data, accountId: row.match.id } });
+          await prisma.sprintTarget.create({ data });
           created++;
         } else {
           const data = buildTargetData(row, { source, sourceDate, defaults: true });
@@ -868,8 +897,18 @@ async function computeReportingSummary(query = {}) {
       if (endOfDay) d.setHours(23, 59, 59, 999);
       return d;
     };
-    const from = parseDate(query.from);
-    const to = parseDate(query.to, true);
+    // Akquise-Info (Name/Laufzeit) als Default für Kampagnenname und Zeitraum
+    const campaignSettings = await prisma.sprintSetting.findUnique({
+      where: { id: 'singleton' },
+      select: { sprintName: true, sprintStart: true, sprintEnd: true },
+    });
+
+    // Explizit übergebenes (auch leeres) Datum gewinnt; fehlt der Parameter
+    // komplett, greift der in der Akquise-Info hinterlegte Kampagnen-Zeitraum.
+    const fromProvided = Object.prototype.hasOwnProperty.call(query, 'from');
+    const toProvided = Object.prototype.hasOwnProperty.call(query, 'to');
+    const from = fromProvided ? parseDate(query.from) : parseDate(campaignSettings?.sprintStart);
+    const to = toProvided ? parseDate(query.to, true) : parseDate(campaignSettings?.sprintEnd, true);
     const dateRange = from || to ? { ...(from ? { gte: from } : {}), ...(to ? { lte: to } : {}) } : null;
 
     const targetWhere = dateRange ? { createdAt: dateRange } : {};
@@ -989,6 +1028,11 @@ async function computeReportingSummary(query = {}) {
     return {
       total: targets.length,
       period: { from, to },
+      campaign: {
+        name: campaignSettings?.sprintName || null,
+        start: campaignSettings?.sprintStart || null,
+        end: campaignSettings?.sprintEnd || null,
+      },
       byStatus,
       byPriority,
       segmentList,
@@ -1040,7 +1084,12 @@ router.get('/reporting/pdf', async (req, res) => {
       ? `Zeitraum ${period.from ? pdfDate(period.from) : '…'} – ${period.to ? pdfDate(period.to) : '…'}`
       : 'Zielkunden, Pipeline und Aktivitäten';
     const doc = buildReportPdf(summary, { subtitle });
-    sendPdf(res, doc, `Sprint-Reporting-${new Date().toISOString().slice(0, 10)}.pdf`);
+    const campaignSlug = String(summary.campaign?.name || '')
+      .replace(/[\\/:*?"<>|]+/g, '')
+      .trim()
+      .replace(/\s+/g, '-');
+    const fileBase = campaignSlug || 'Akquise-Reporting';
+    sendPdf(res, doc, `${fileBase}-${new Date().toISOString().slice(0, 10)}.pdf`);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1051,7 +1100,7 @@ router.get('/reporting/pdf', async (req, res) => {
 // GET /api/sprint-targets/team/overview — Mitglieder + Zuweisungen je Zielkunde
 router.get('/team/overview', async (req, res) => {
   try {
-    const [members, targets, portalRoles, packageRoles] = await Promise.all([
+    const [members, targets, portalRoles, packageRoles, packages] = await Promise.all([
       prisma.user.findMany({
         select: {
           id: true, name: true, email: true, role: true,
@@ -1074,15 +1123,28 @@ router.get('/team/overview', async (req, res) => {
         select: { id: true, name: true },
       }),
       prisma.sprintPackageRole.findMany({
-        select: { package: true, role: true, headcount: true },
+        select: { package: true, role: true, label: true, headcount: true },
+      }),
+      prisma.sprintPackageInfo.findMany({
+        select: { key: true, label: true },
+        orderBy: { price: 'asc' },
       }),
     ]);
     const roleName = Object.fromEntries(portalRoles.map((r) => [r.id, r.name]));
-    const roles = TEAM_SLOTS.map((slot) => ({
+    // Basis-Rollen (mit Labels aus der Rollenverwaltung) + freie, in Paketen definierte Rollen
+    const baseRoles = TEAM_SLOTS.map((slot) => ({
       ...slot,
       label: roleName[SPRINT_ROLE_IDS[slot.key]] || slot.label,
     }));
-    res.json({ members, targets, roles, packageRoles });
+    const customRoles = [];
+    const seen = new Set(TEAM_SLOTS.map((s) => s.key));
+    for (const pr of packageRoles) {
+      if (seen.has(pr.role)) continue;
+      seen.add(pr.role);
+      customRoles.push({ key: pr.role, label: pr.label || pr.role });
+    }
+    const roles = [...baseRoles, ...customRoles];
+    res.json({ members, targets, roles, packageRoles, packages });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1104,20 +1166,26 @@ router.get('/package-roles', async (req, res) => {
 router.put('/package-roles/:package', async (req, res) => {
   try {
     const pkg = req.params.package;
-    if (!SPRINT_PACKAGES.includes(pkg)) return res.status(400).json({ error: 'Unbekanntes Paket' });
+    // Paket-Keys sind freie Slugs (der Admin kann beliebig viele Pakete anlegen)
+    if (!isValidRoleKey(pkg)) return res.status(400).json({ error: 'Unbekanntes Paket' });
     if (!Array.isArray(req.body.roles)) return res.status(400).json({ error: 'roles erforderlich' });
 
+    // Freie Rollen: der Admin kann pro Paket beliebig viele Rollen anlegen.
     const byRole = new Map();
-    for (const r of req.body.roles) {
-      if (!SPRINT_ROLE_KEYS.has(r.role)) continue;
+    for (const r of req.body.roles || []) {
+      const role = isValidRoleKey(r.role) ? r.role : slugifyRoleKey(r.role || r.label);
+      if (!role) continue;
       const headcount = Math.max(0, Number(r.headcount) || 0);
-      if (headcount > 0) byRole.set(r.role, headcount);
+      const label = typeof r.label === 'string' && r.label.trim() ? r.label.trim().slice(0, 100) : null;
+      if (headcount > 0) byRole.set(role, { headcount, label });
     }
 
     await prisma.$transaction([
       prisma.sprintPackageRole.deleteMany({ where: { package: pkg } }),
       prisma.sprintPackageRole.createMany({
-        data: [...byRole.entries()].map(([role, headcount]) => ({ package: pkg, role, headcount })),
+        data: [...byRole.entries()].map(([role, v]) => ({
+          package: pkg, role, label: v.label, headcount: v.headcount,
+        })),
       }),
     ]);
 
@@ -1141,8 +1209,8 @@ router.put('/team/roles/:targetId', async (req, res) => {
     if (!target) return res.status(404).json({ error: 'Zielkunde nicht gefunden' });
 
     const byRole = new Map();
-    for (const r of req.body.roles) {
-      if (!SPRINT_ROLE_KEYS.has(r.role)) continue;
+    for (const r of req.body.roles || []) {
+      if (!isValidRoleKey(r.role)) continue;
       byRole.set(r.role, Math.max(1, Number(r.headcount) || 1));
     }
 
@@ -1169,7 +1237,7 @@ router.post('/team/assign', async (req, res) => {
   try {
     const { targetId, userId, role } = req.body;
     if (!targetId || !userId) return res.status(400).json({ error: 'targetId und userId erforderlich' });
-    if (!SPRINT_ROLE_KEYS.has(role)) return res.status(400).json({ error: 'Ungültige Rolle' });
+    if (!isValidRoleKey(role)) return res.status(400).json({ error: 'Ungültige Rolle' });
 
     const target = await prisma.sprintTarget.findUnique({
       where: { id: targetId },
@@ -1208,7 +1276,7 @@ router.delete('/team/assign/:id', async (req, res) => {
 router.post('/team/bulk-assign', async (req, res) => {
   try {
     const { role, userId } = req.body;
-    if (!SPRINT_ROLE_KEYS.has(role)) return res.status(400).json({ error: 'Ungültige Rolle' });
+    if (!isValidRoleKey(role)) return res.status(400).json({ error: 'Ungültige Rolle' });
     if (!userId) return res.status(400).json({ error: 'userId erforderlich' });
 
     const targets = await prisma.sprintTarget.findMany({
@@ -1269,7 +1337,7 @@ router.post('/team/members', async (req, res) => {
 const TEAM_RELEASE_SCHEMA = {
   userId: { type: 'string', maxLength: 100, label: 'Benutzer' },
   targetId: { type: 'string', maxLength: 100, label: 'Zielkunde' },
-  role: { type: 'enum', values: SPRINT_ROLE_KEYS, label: 'Rolle' },
+  role: { type: 'string', maxLength: 50, pattern: ROLE_KEY_RE, label: 'Rolle' },
 };
 
 router.post('/team/release', async (req, res) => {
@@ -1296,9 +1364,28 @@ router.post('/team/release', async (req, res) => {
 
 const BAFA_FIELDS = [
   'bafaStatus', 'bafaDate', 'bafaSubmittedAt', 'bafaApprovedAmount', 'bafaNotes', 'fundingAmount',
+  'fundingProgram',
 ];
 
 const BAFA_DOC_STATUS = new Set(['offen', 'angefordert', 'erhalten', 'geprüft']);
+
+// Förderprogramme kommen aus den Einstellungen (bafaParams.programs). Fehlt die
+// Liste, wird aus den alten Einzelwerten (rate/cap) ein BAFA-Programm abgeleitet.
+function normalizeFundingPrograms(bafaParams) {
+  const params = bafaParams && typeof bafaParams === 'object' ? bafaParams : null;
+  if (Array.isArray(params?.programs) && params.programs.length) return params.programs;
+  if (params && (params.rate != null || params.cap != null)) {
+    return [{
+      id: 'bafa',
+      name: 'BAFA',
+      rate: params.rate != null ? Number(params.rate) : 0.5,
+      cap: params.cap != null ? Number(params.cap) : null,
+      note: '',
+      active: true,
+    }];
+  }
+  return [];
+}
 
 function pickBafa(body) {
   const data = {};
@@ -1338,6 +1425,7 @@ router.get('/:id/bafa', async (req, res) => {
         bafaApprovedAmount: true,
         bafaNotes: true,
         fundingAmount: true,
+        fundingProgram: true,
       },
     });
     if (!target) return res.status(404).json({ error: 'Zielkunde nicht gefunden' });
@@ -1350,7 +1438,13 @@ router.get('/:id/bafa', async (req, res) => {
       prisma.sprintSetting.findUnique({ where: { id: 'singleton' }, select: { bafaParams: true } }),
     ]);
 
-    res.json({ target, documents, bafaParams: settings?.bafaParams || null });
+    const bafaParams = settings?.bafaParams || null;
+    res.json({
+      target,
+      documents,
+      bafaParams,
+      fundingPrograms: normalizeFundingPrograms(bafaParams),
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1371,6 +1465,7 @@ router.put('/:id/bafa', async (req, res) => {
         bafaApprovedAmount: true,
         bafaNotes: true,
         fundingAmount: true,
+        fundingProgram: true,
       },
     });
     res.json(target);
@@ -1463,6 +1558,7 @@ router.get('/:id/bafa/pdf', async (req, res) => {
         bafaApprovedAmount: true,
         bafaNotes: true,
         fundingAmount: true,
+        fundingProgram: true,
       },
     });
     if (!target) return res.status(404).json({ error: 'Zielkunde nicht gefunden' });
@@ -1473,7 +1569,98 @@ router.get('/:id/bafa/pdf', async (req, res) => {
     });
 
     const doc = buildBafaPdf(target, documents);
-    sendPdf(res, doc, `BAFA-${target.companyName || 'Zielkunde'}.pdf`);
+    sendPdf(res, doc, `Foerderung-${target.companyName || 'Zielkunde'}.pdf`);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/sprint-targets/me/summary — persönliches Sprint-Cockpit
+router.get('/me/summary', async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ error: 'Nicht authentifiziert' });
+
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfDay = new Date(startOfDay.getTime() + 86400000);
+    const in7 = new Date(startOfDay.getTime() + 7 * 86400000);
+    const weekAgo = new Date(startOfDay.getTime() - 7 * 86400000);
+
+    const assignments = await prisma.sprintAssignment.findMany({
+      where: { userId },
+      select: { sprintTargetId: true, role: true },
+    });
+    const targetIds = [...new Set(assignments.map((a) => a.sprintTargetId))];
+
+    const [myTargets, openOffers, followUps, weekActivities] = await Promise.all([
+      prisma.sprintTarget.findMany({
+        where: { id: { in: targetIds } },
+        orderBy: [{ priority: 'asc' }, { nextStepDue: 'asc' }],
+        select: {
+          id: true, companyName: true, status: true, priority: true, segment: true,
+          callAttempts: true, nextStep: true, nextStepDue: true, offerValue: true,
+          offerValidUntil: true, firstMeetingDate: true,
+        },
+      }),
+      prisma.sprintOffer.findMany({
+        where: { sprintTargetId: { in: targetIds }, status: { in: ['draft', 'sent'] } },
+        orderBy: { validUntil: 'asc' },
+        select: {
+          id: true, offerNumber: true, status: true, value: true, validUntil: true,
+          sprintTarget: { select: { id: true, companyName: true } },
+        },
+      }),
+      prisma.sprintTarget.findMany({
+        where: { id: { in: targetIds }, nextStepDue: { not: null, lte: in7 }, status: { notIn: LOST_STATUSES } },
+        orderBy: { nextStepDue: 'asc' },
+        select: { id: true, companyName: true, nextStep: true, nextStepDue: true, status: true, priority: true },
+      }),
+      prisma.activity.findMany({
+        where: { sprintTargetId: { in: targetIds }, date: { gte: weekAgo } },
+        select: { type: true },
+      }),
+    ]);
+
+    const roleByTarget = new Map();
+    for (const a of assignments) {
+      if (!roleByTarget.has(a.sprintTargetId)) roleByTarget.set(a.sprintTargetId, []);
+      roleByTarget.get(a.sprintTargetId).push(a.role);
+    }
+
+    const overdue = followUps.filter((t) => new Date(t.nextStepDue) < startOfDay);
+    const dueToday = followUps.filter((t) => {
+      const d = new Date(t.nextStepDue);
+      return d >= startOfDay && d < endOfDay;
+    });
+
+    const activityByType = {};
+    for (const a of weekActivities) activityByType[a.type] = (activityByType[a.type] || 0) + 1;
+
+    const activeTargets = myTargets.filter((t) => !LOST_STATUS_SET.has(t.status));
+    const pipelineValue = activeTargets.reduce((sum, t) => sum + (t.offerValue || 0), 0);
+    const won = myTargets.filter((t) => WON_STATUS_SET.has(t.status)).length;
+    const expiringOffers = openOffers.filter((o) => o.validUntil && new Date(o.validUntil) <= in7);
+
+    res.json({
+      targets: myTargets.map((t) => ({ ...t, roles: roleByTarget.get(t.id) || [] })),
+      stats: {
+        assigned: targetIds.length,
+        active: activeTargets.length,
+        won,
+        pipelineValue,
+        openOffers: openOffers.length,
+        weekActivities: weekActivities.length,
+      },
+      followUps: {
+        overdue,
+        dueToday,
+        upcoming: followUps.filter((t) => new Date(t.nextStepDue) >= endOfDay),
+      },
+      offers: openOffers,
+      expiringOffers: expiringOffers.length,
+      activityByType,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1492,7 +1679,7 @@ router.get('/:id', async (req, res) => {
         },
       },
     });
-    if (!target) return res.status(404).json({ error: 'SprintTarget nicht gefunden' });
+    if (!target) return res.status(404).json({ error: 'Zielkunde nicht gefunden' });
     res.json(target);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -1521,7 +1708,7 @@ router.put('/:id', async (req, res) => {
         where: { id: req.params.id },
         select: { status: true, lossReason: true },
       });
-      if (!existing) return res.status(404).json({ error: 'SprintTarget nicht gefunden' });
+      if (!existing) return res.status(404).json({ error: 'Zielkunde nicht gefunden' });
       previousStatus = existing.status;
 
       if (LOST_STATUS_SET.has(data.status)) {
@@ -1539,6 +1726,18 @@ router.put('/:id', async (req, res) => {
       data,
       include: { account: { select: { id: true, companyName: true } } },
     });
+
+    // Abschluss: Zielkunde wird zum CRM-Account (verknüpfen oder neu anlegen)
+    let account = target.account;
+    if (WON_STATUS_SET.has(target.status)) {
+      const linkedId = await linkAccountOnWin(prisma, target);
+      if (linkedId) {
+        account = await prisma.account.findUnique({
+          where: { id: linkedId },
+          select: { id: true, companyName: true },
+        });
+      }
+    }
 
     let blocklisted = false;
     let unblocked = false;
@@ -1568,9 +1767,9 @@ router.put('/:id', async (req, res) => {
       unblocked = count > 0;
     }
 
-    res.json({ ...target, blocklisted, unblocked });
+    res.json({ ...target, accountId: account?.id || target.accountId, account, blocklisted, unblocked });
   } catch (err) {
-    if (err.code === 'P2025') return res.status(404).json({ error: 'SprintTarget nicht gefunden' });
+    if (err.code === 'P2025') return res.status(404).json({ error: 'Zielkunde nicht gefunden' });
     if (err.code === 'P2003') return res.status(400).json({ error: 'Ungültige Benutzerzuordnung' });
     res.status(500).json({ error: err.message });
   }
@@ -1582,7 +1781,7 @@ router.delete('/:id', async (req, res) => {
     await prisma.sprintTarget.delete({ where: { id: req.params.id } });
     res.json({ message: 'Gelöscht' });
   } catch (err) {
-    if (err.code === 'P2025') return res.status(404).json({ error: 'SprintTarget nicht gefunden' });
+    if (err.code === 'P2025') return res.status(404).json({ error: 'Zielkunde nicht gefunden' });
     res.status(500).json({ error: err.message });
   }
 });
@@ -1612,7 +1811,7 @@ router.post('/:id/activities', async (req, res) => {
       where: { id: req.params.id },
       select: { id: true, callAttempts: true, companyName: true, status: true },
     });
-    if (!target) return res.status(404).json({ error: 'SprintTarget nicht gefunden' });
+    if (!target) return res.status(404).json({ error: 'Zielkunde nicht gefunden' });
 
     // DSGVO Art. 21: Widerspruch ("kein Interesse"/Sperrliste) sperrt jede Kontaktaufnahme.
     // Interne Notizen/Aufgaben bleiben erlaubt, kundenbezogene Kanäle nicht.

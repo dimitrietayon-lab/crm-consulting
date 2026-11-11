@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
   LayoutDashboard,
@@ -28,6 +28,7 @@ import {
   FileSpreadsheet,
   ArrowDownToLine,
   ShoppingCart,
+  Package,
   UserCog,
   LayoutGrid,
   Zap,
@@ -45,7 +46,6 @@ import {
 import { getUser, logout } from '@/lib/auth'
 import { getInitials } from '@/lib/utils'
 import { usePermissions } from '@/lib/permissions'
-import { PORTALS, getStoredPortal, setStoredPortal, portalForPath } from '@/lib/portal'
 import { isPathHidden, CRM_PROFILE_EVENT } from '@/lib/crmProfile'
 
 // Feature key → required permission key (matches portal feature keys from seed)
@@ -92,6 +92,16 @@ const FEATURE_GATES = {
   '/sprint-targets/settings':   'sprint_settings',
 }
 
+// Gemeinsame Seiten (Aktivitäten/Aufgaben/Dokumente) sind jetzt EINE Seite mit
+// Akquise-Filter. Rollen mit reinen Sprint-Rechten sollen sie weiterhin sehen.
+const FEATURE_ALT_GATES = {
+  '/activities': 'sprint_activities',
+  '/tasks':      'sprint_targets',
+  '/documents':  'sprint_targets',
+  '/contacts':   'sprint_contacts',
+  '/proposals':  'sprint_offers',
+}
+
 const ROLE_LABELS = {
   admin: 'Administrator',
   consultant: 'Berater',
@@ -105,31 +115,46 @@ function featureKeyFor(href) {
   return null
 }
 
-// CRM-Profil: sichtbar bleiben nur Kunden, Vertrieb, Mandate, Analyse, KI & System.
-// Finanzen/Personal/Zeit/Automatisierung werden über `crmProfile` gefiltert –
-// die Definitionen bleiben hier, damit ein Toggle sie wieder einblenden kann.
-const CRM_NAV_GROUPS = [
+// EIN Menü, nach Kundenlebenszyklus geordnet: Akquise (Sprint) → Kunden/Vertrieb
+// (Sprint-Bestand) → Mandate → Analyse/Backoffice.
+// CRM-Profil: Finanzen/Personal/Zeit/Automatisierung werden über `crmProfile`
+// gefiltert – die Definitionen bleiben hier, damit ein Toggle sie wieder einblenden kann.
+const NAV_GROUPS = [
   {
     label: 'Portal',
     items: [
       { label: 'Dashboard',    href: '/',             icon: LayoutDashboard, alwaysShow: true },
-      { label: 'Mein Bereich', href: '/mein-bereich', icon: LayoutGrid,      alwaysShow: true },
+      { label: 'Mein Bereich', href: '/mein-bereich', icon: LayoutGrid, alwaysShow: true },
     ],
   },
   {
-    label: 'Kunden',
+    label: 'Akquise',
     items: [
-      { label: 'Accounts',    href: '/accounts',    icon: Building2 },
-      { label: 'Kontakte',    href: '/contacts',    icon: Users },
-      { label: 'Aktivitäten', href: '/activities',  icon: Activity },
+      { label: 'Zielkunden',    href: '/sprint-targets',            icon: Crosshair },
+      { label: 'Outreach',      href: '/sprint-targets/outreach',   icon: Send },
+      { label: 'Förderungen',   href: '/sprint-targets/bafa',       icon: Banknote },
+      { label: 'Listen-Import', href: '/sprint-targets/import',     icon: Upload },
+      { label: 'Sperrliste',    href: '/sprint-targets/blocklist',  icon: ShieldAlert },
     ],
   },
   {
-    label: 'Vertrieb',
+    label: 'Akquise-Planung',
     items: [
-      { label: 'Pipeline',  href: '/pipeline',  icon: TrendingUp },
-      { label: 'Angebote',  href: '/proposals', icon: FileText },
-      { label: 'Verträge',  href: '/contracts', icon: FileCheck },
+      { label: 'Team',         href: '/sprint-targets/team',      icon: UserCog },
+      { label: 'Marktauswahl', href: '/sprint-targets/market',    icon: MapPin },
+      { label: 'Planung',      href: '/sprint-targets/capacity',  icon: CalendarClock },
+      { label: 'Reporting',    href: '/sprint-targets/reporting', icon: BarChart3 },
+    ],
+  },
+  {
+    label: 'Kunden & Vertrieb',
+    items: [
+      { label: 'Accounts',     href: '/accounts',     icon: Building2 },
+      { label: 'Kontakte',     href: '/contacts',     icon: Users },
+      { label: 'Aktivitäten',  href: '/activities',   icon: Activity },
+      { label: 'Deals',        href: '/pipeline',     icon: TrendingUp },
+      { label: 'Angebote',     href: '/proposals',    icon: FileText },
+      { label: 'Verträge',     href: '/contracts',    icon: FileCheck },
     ],
   },
   {
@@ -138,12 +163,7 @@ const CRM_NAV_GROUPS = [
       { label: 'Projekte',      href: '/projects',   icon: Briefcase },
       { label: 'Aufgaben',      href: '/tasks',      icon: CheckSquare },
       { label: 'Zeiterfassung', href: '/timesheets', icon: Clock },
-    ],
-  },
-  {
-    label: 'Wissen',
-    items: [
-      { label: 'Dokumente', href: '/documents', icon: FolderOpen },
+      { label: 'Dokumente',     href: '/documents',  icon: FolderOpen },
     ],
   },
   {
@@ -193,74 +213,13 @@ const CRM_NAV_GROUPS = [
   },
 ]
 
-// Sprint-Sidebar: gleiche Gruppenlogik wie das CRM-Portal (flache Gruppen,
-// keine Unterpunkte). Reihenfolge folgt dem Arbeitsfluss des Sprints.
-const SPRINT_NAV_GROUPS = [
-  {
-    label: 'Portal',
-    items: [
-      { label: 'Dashboard', href: '/sprint-targets/dashboard', icon: LayoutDashboard },
-    ],
-  },
-  {
-    label: 'Kunden',
-    items: [
-      { label: 'Zielkunden',      href: '/sprint-targets',          icon: Crosshair },
-      { label: 'Sprint-Kontakte', href: '/sprint-targets/contacts', icon: Users },
-      { label: 'Accounts',        href: '/accounts',                icon: Building2 },
-    ],
-  },
-  {
-    label: 'Vertrieb',
-    items: [
-      { label: 'Aktivitäten',   href: '/sprint-targets/activities', icon: Activity },
-      { label: 'Angebote',      href: '/sprint-targets/offers',     icon: FileText },
-      { label: 'Outreach',      href: '/sprint-targets/outreach',   icon: Send },
-      { label: 'BAFA',          href: '/sprint-targets/bafa',       icon: Banknote },
-      { label: 'Listen-Import', href: '/sprint-targets/import',     icon: Upload },
-      { label: 'Sperrliste',    href: '/sprint-targets/blocklist',  icon: ShieldAlert },
-    ],
-  },
-  {
-    label: 'Organisation',
-    items: [
-      { label: 'Team', href: '/sprint-targets/team', icon: UserCog },
-    ],
-  },
-  {
-    label: 'Planung',
-    items: [
-      { label: 'Marktauswahl', href: '/sprint-targets/market',   icon: MapPin },
-      { label: 'Planung',      href: '/sprint-targets/capacity', icon: CalendarClock },
-    ],
-  },
-  {
-    label: 'Analyse',
-    items: [
-      { label: 'Reporting', href: '/sprint-targets/reporting', icon: BarChart3 },
-    ],
-  },
-]
-
 export default function Sidebar() {
   const pathname = usePathname()
-  const router = useRouter()
   const user = getUser()
   const isAdmin = user?.role === 'admin'
   const { can, loading: permsLoading, perms } = usePermissions()
-  const [portal, setPortal] = useState('crm')
   const [, setProfileTick] = useState(0)
   const [profileReady, setProfileReady] = useState(false)
-
-  useEffect(() => {
-    const forced = portalForPath(pathname)
-    if (forced) {
-      setStoredPortal(forced)
-      setPortal(forced)
-    } else {
-      setPortal(getStoredPortal())
-    }
-  }, [pathname])
 
   // CRM-Profil-Änderungen (gleicher Tab oder anderer Tab) sofort übernehmen
   useEffect(() => {
@@ -275,8 +234,9 @@ export default function Sidebar() {
   }, [])
 
   const SPRINT_SUBPAGES = new Set([
-    'dashboard', 'import', 'blocklist', 'activities', 'offers',
+    'dashboard', 'me', 'import', 'blocklist', 'activities', 'offers',
     'outreach', 'team', 'reporting', 'market', 'capacity', 'bafa', 'settings', 'contacts',
+    'tasks', 'documents',
   ])
 
   function isActive(href) {
@@ -300,77 +260,45 @@ export default function Sidebar() {
     if (!featureKey) return true
     if (permsLoading) return false
     if (can(featureKey)) return true
+    // Gemeinsame Seiten: Sprint-Rollen behalten Zugriff über ihr Sprint-Recht.
+    const altKey = FEATURE_ALT_GATES[item.href]
+    if (altKey && can(altKey)) return true
     // Fallback: Rollen, die (noch) keine granularen sprint_*-Rechte haben, behalten
     // den bisherigen Zugriff über das Sammelrecht 'sprint_targets'.
-    if (featureKey.startsWith('sprint_') && !hasGranularSprint && can('sprint_targets')) return true
+    if ((featureKey.startsWith('sprint_') || altKey) && !hasGranularSprint && can('sprint_targets')) return true
     return false
   }
 
   const hasGranularSprint = Object.keys(perms || {}).some(
     (key) => key.startsWith('sprint_') && key !== 'sprint_targets' && perms[key]?.canView
   )
-  const canUseSprint = isAdmin || hasGranularSprint || can('sprint_targets')
 
-  const meta = PORTALS[portal]
-  const BrandIcon = portal === 'sprint' ? Crosshair : Briefcase
-  const baseGroups = portal === 'sprint' ? SPRINT_NAV_GROUPS : CRM_NAV_GROUPS
-  const systemGroup = portal === 'sprint'
-    ? { label: 'System', items: [{ label: 'Sprint-Einstellungen', href: '/sprint-targets/settings', icon: Settings, alwaysShow: true }] }
-    : { label: 'System', items: [{ label: 'Einstellungen', href: '/settings', icon: Settings, alwaysShow: true }] }
+  const systemGroup = {
+    label: 'System',
+    items: [
+      { label: 'Einstellungen', href: '/settings', icon: Settings, alwaysShow: true },
+    ],
+  }
 
   // Filter groups to only show groups that have at least one visible item
-  const visibleGroups = [...baseGroups, systemGroup]
+  const visibleGroups = [...NAV_GROUPS, systemGroup]
     .map((group) => ({
       ...group,
       items: group.items.filter(isVisible),
     }))
     .filter((group) => group.items.length > 0)
 
-  function switchPortal(id) {
-    if (id === portal) return
-    if (id === 'sprint' && !canUseSprint) return
-    setStoredPortal(id)
-    setPortal(id)
-    router.push(PORTALS[id].home)
-  }
-
   return (
     <aside className="flex flex-col w-60 min-w-[240px] h-screen bg-slate-900 border-r border-slate-800 overflow-y-auto">
       {/* Logo / Brand */}
       <div className="flex items-center gap-3 px-5 h-14 border-b border-slate-800 shrink-0">
         <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600">
-          <BrandIcon className="w-4 h-4 text-white" />
+          <Briefcase className="w-4 h-4 text-white" />
         </div>
         <div className="min-w-0">
-          <p className="text-white text-sm font-bold leading-tight truncate">{meta.name}</p>
-          <p className="text-slate-400 text-xs truncate">{meta.subtitle}</p>
+          <p className="text-white text-sm font-bold leading-tight truncate">CRM</p>
+          <p className="text-slate-400 text-xs truncate">Consulting Business Suite</p>
         </div>
-      </div>
-
-      {/* Portal switcher — kompakte Segmente (Variante A) */}
-      <div className="mx-3 mt-3 flex gap-1 rounded-lg border border-slate-800 bg-slate-950/40 p-1">
-        {Object.values(PORTALS).map((p) => {
-          const active = p.id === portal
-          const disabled = p.id === 'sprint' && !canUseSprint
-          return (
-            <button
-              key={p.id}
-              onClick={() => switchPortal(p.id)}
-              disabled={disabled}
-              title={p.name}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium transition-colors ${
-                active
-                  ? 'bg-slate-700 text-white'
-                  : disabled
-                    ? 'text-slate-600 cursor-not-allowed'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-700/60'
-              }`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${active ? 'bg-blue-400' : 'bg-slate-600'}`} />
-              <span className="truncate">{p.shortName || p.name}</span>
-            </button>
-          )
-        })}
       </div>
 
       {/* Navigation */}
@@ -435,6 +363,19 @@ export default function Sidebar() {
                 >
                   <ShieldCheck className={`w-4 h-4 shrink-0 ${isActive('/crm-profil') ? 'text-blue-400' : 'text-slate-400'}`} />
                   <span>CRM-Profil</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/pakete-leistungen"
+                  className={
+                    isActive('/pakete-leistungen')
+                      ? 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white bg-slate-700'
+                      : 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/60 transition-colors'
+                  }
+                >
+                  <Package className={`w-4 h-4 shrink-0 ${isActive('/pakete-leistungen') ? 'text-blue-400' : 'text-slate-400'}`} />
+                  <span>Pakete &amp; Leistungen</span>
                 </Link>
               </li>
             </ul>

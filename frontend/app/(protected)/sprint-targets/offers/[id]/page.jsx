@@ -8,9 +8,8 @@ import {
 import toast from 'react-hot-toast'
 import { api } from '@/lib/api'
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils'
+import { getSprintSettings } from '@/lib/sprintSettings'
 
-const PACKAGES = ['compact', 'standard', 'premium']
-const PACKAGE_LABELS = { compact: 'Compact', standard: 'Standard', premium: 'Premium' }
 const LOSS_REASONS = ['Preis', 'Kein Bedarf', 'Wettbewerb', 'Timing', 'Budget', 'Sonstiges']
 
 const STATUS_STYLES = {
@@ -54,6 +53,12 @@ export default function SprintOfferDetailPage() {
   const [rejecting, setRejecting] = useState(false)
   const [busy, setBusy] = useState(false)
 
+  const packages = useMemo(() => {
+    const list = getSprintSettings().packages
+    return Array.isArray(list) ? list : []
+  }, [])
+  const packageLabel = (key) => packages.find((p) => p.key === key)?.label || key || '—'
+
   const fetchOffer = useCallback(async () => {
     setLoading(true)
     try {
@@ -72,7 +77,7 @@ export default function SprintOfferDetailPage() {
 
   function startEdit() {
     setDraft({
-      package: offer.package || 'standard',
+      package: offer.package || packages[0]?.key || '',
       validUntil: offer.validUntil ? offer.validUntil.slice(0, 10) : '',
       notes: offer.notes || '',
       items: (offer.items || []).map((i) => ({
@@ -144,7 +149,7 @@ export default function SprintOfferDetailPage() {
     try {
       await api.delete(`/sprint-offers/${id}`)
       toast.success('Angebot gelöscht')
-      router.push('/sprint-targets/offers')
+      router.push('/proposals?tab=akquise')
     } catch (err) {
       toast.error(err.message || 'Löschen fehlgeschlagen')
       setBusy(false)
@@ -162,7 +167,7 @@ export default function SprintOfferDetailPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     )
   }
@@ -177,20 +182,20 @@ export default function SprintOfferDetailPage() {
     <div className="space-y-4 max-w-5xl">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/sprint-targets/offers')} className="flex items-center gap-1 text-gray-500 hover:text-gray-800 text-sm">
+          <button onClick={() => router.push('/proposals?tab=akquise')} className="flex items-center gap-1 text-gray-500 hover:text-gray-800 text-sm">
             <ChevronLeft className="w-4 h-4" /> Angebote
           </button>
           <div className="h-5 w-px bg-gray-200" />
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-mono font-bold text-gray-900">{offer.offerNumber}</h1>
+              <h1 className="text-2xl font-mono font-bold text-gray-900">{offer.offerNumber}</h1>
               <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[state]}`}>
                 {STATUS_LABELS[state]}
               </span>
             </div>
             <button
               onClick={() => router.push(`/sprint-targets/${offer.sprintTarget?.id}`)}
-              className="text-sm text-gray-500 hover:text-violet-700"
+              className="text-sm text-gray-500 hover:text-blue-700"
             >
               {offer.sprintTarget?.companyName}
             </button>
@@ -241,7 +246,7 @@ export default function SprintOfferDetailPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Paket', value: PACKAGE_LABELS[offer.package] || offer.package || '—' },
+          { label: 'Paket', value: packageLabel(offer.package) },
           { label: 'Betrag', value: formatCurrency(offer.value) },
           { label: 'Gültig bis', value: offer.validUntil ? formatDate(offer.validUntil) : '—' },
           { label: 'Versendet', value: offer.sentAt ? formatDateTime(offer.sentAt) : '—' },
@@ -260,7 +265,8 @@ export default function SprintOfferDetailPage() {
               <div>
                 <label className={CLS_LABEL}>Paket</label>
                 <select value={draft.package} onChange={(e) => setDraft({ ...draft, package: e.target.value })} className={CLS_INPUT}>
-                  {PACKAGES.map((p) => <option key={p} value={p}>{PACKAGE_LABELS[p]}</option>)}
+                  {!draft.package && <option value="">-- kein Paket --</option>}
+                  {packages.map((p) => <option key={p.key} value={p.key}>{p.label || p.key}</option>)}
                 </select>
               </div>
               <div>
@@ -280,7 +286,7 @@ export default function SprintOfferDetailPage() {
               <button
                 type="button"
                 onClick={() => setDraft((prev) => ({ ...prev, items: [...prev.items, { description: '', quantity: 1, unitPrice: '' }] }))}
-                className="flex items-center gap-1 text-sm text-violet-700 hover:text-violet-900"
+                className="flex items-center gap-1 text-sm text-blue-700 hover:text-blue-900"
               >
                 <Plus className="w-4 h-4" /> Position
               </button>
@@ -336,7 +342,7 @@ export default function SprintOfferDetailPage() {
             <button type="button" onClick={() => setEditing(false)} className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50">
               Abbrechen
             </button>
-            <button type="submit" disabled={saving} className="flex items-center gap-1.5 px-5 py-2 text-sm text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50">
+            <button type="submit" disabled={saving} className="flex items-center gap-1.5 px-5 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">
               <Save className="w-4 h-4" /> {saving ? 'Speichern...' : 'Speichern'}
             </button>
           </div>

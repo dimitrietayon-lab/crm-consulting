@@ -110,8 +110,8 @@ export default function SprintBafaPage() {
           </button>
           <div className="h-5 w-px bg-gray-200" />
           <div>
-            <h1 className="text-xl font-bold text-gray-900">BAFA-Förderung</h1>
-            <p className="text-sm text-gray-500">Antragsstatus, Nachweise und Verwendungsnachweis je Zielkunde</p>
+            <h1 className="text-2xl font-bold text-gray-900">Förderungen</h1>
+            <p className="text-sm text-gray-500">Förderprogramm, Antragsstatus, Nachweise und Verwendungsnachweis je Zielkunde</p>
           </div>
         </div>
       </div>
@@ -121,7 +121,7 @@ export default function SprintBafaPage() {
           { label: 'Angebote mit Förderbezug', value: stats.total, cls: 'text-gray-900' },
           { label: 'Anträge gestellt', value: stats.applied, cls: 'text-blue-700' },
           { label: 'Bewilligt / ausgezahlt', value: `${stats.approved} · ${formatCurrency(stats.approvedSum)}`, cls: 'text-green-700' },
-          { label: 'Förderpotenzial (50 %)', value: formatCurrency(stats.funding), cls: 'text-violet-700' },
+          { label: 'Förderpotenzial (Richtwert)', value: formatCurrency(stats.funding), cls: 'text-blue-700' },
         ].map((s) => (
           <div key={s.label} className="bg-white rounded-lg border border-gray-200 p-3">
             <p className="text-xs text-gray-500">{s.label}</p>
@@ -146,7 +146,7 @@ export default function SprintBafaPage() {
       )}
 
       <div className="text-xs text-blue-800 bg-blue-50 border border-blue-100 rounded-lg px-4 py-2.5">
-        <span className="font-semibold">Hinweis:</span> Die Förderquote ist eine Orientierung (50 %).
+        <span className="font-semibold">Hinweis:</span> Quote und Obergrenze richten sich nach dem gewählten Förderprogramm.
         Banken gelten in der Regel nicht als KMU; die Einwilligung zur Datenweitergabe ist vor Antragstellung zu prüfen.
       </div>
 
@@ -169,7 +169,7 @@ export default function SprintBafaPage() {
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
           </div>
         ) : rows.length === 0 ? (
           <div className="text-center py-12">
@@ -180,7 +180,7 @@ export default function SprintBafaPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50">
-                {['Unternehmen', 'Angebotswert', 'Fördersumme', 'BAFA-Status', 'Antragsdatum', 'Ergebnis', ''].map((h) => (
+                {['Unternehmen', 'Förderprogramm', 'Angebotswert', 'Fördersumme', 'Förderstatus', 'Antragsdatum', 'Ergebnis', ''].map((h) => (
                   <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase">{h}</th>
                 ))}
               </tr>
@@ -191,11 +191,12 @@ export default function SprintBafaPage() {
                 return (
                   <tr key={t.id} className="border-t border-gray-50 hover:bg-gray-50/60">
                     <td className="px-4 py-2.5">
-                      <button onClick={() => router.push(`/sprint-targets/${t.id}`)} className="text-sm font-medium text-gray-900 hover:text-violet-700">
+                      <button onClick={() => router.push(`/sprint-targets/${t.id}`)} className="text-sm font-medium text-gray-900 hover:text-blue-700">
                         {t.companyName}
                       </button>
                       <p className="text-xs text-gray-500">{t.segment}</p>
                     </td>
+                    <td className="px-4 py-2.5 text-sm text-gray-700">{t.fundingProgram || '—'}</td>
                     <td className="px-4 py-2.5 text-sm font-semibold text-gray-900">{t.offerValue ? formatCurrency(t.offerValue) : '—'}</td>
                     <td className="px-4 py-2.5 text-sm text-gray-700">
                       {t.bafaApprovedAmount
@@ -220,7 +221,7 @@ export default function SprintBafaPage() {
                     <td className="px-4 py-2.5">
                       <select
                         value={status}
-                        onChange={(e) => updateTarget(t.id, { bafaStatus: e.target.value }, 'BAFA-Status aktualisiert')}
+                        onChange={(e) => updateTarget(t.id, { bafaStatus: e.target.value }, 'Förderstatus aktualisiert')}
                         className="border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-700 bg-white"
                       >
                         {BAFA_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -229,7 +230,7 @@ export default function SprintBafaPage() {
                     <td className="px-4 py-2.5">
                       <button
                         onClick={() => setDetailId(t.id)}
-                        className="text-xs font-medium text-violet-700 hover:text-violet-900"
+                        className="text-xs font-medium text-blue-700 hover:text-blue-900"
                       >
                         Nachweise
                       </button>
@@ -274,12 +275,20 @@ function BafaDetailModal({ targetId, onClose, onChanged }) {
         fundingAmount: res.target.fundingAmount != null ? String(res.target.fundingAmount) : '',
         bafaApprovedAmount: res.target.bafaApprovedAmount != null ? String(res.target.bafaApprovedAmount) : '',
         bafaNotes: res.target.bafaNotes || '',
+        fundingProgram: res.target.fundingProgram || '',
       })
-      const params = res.bafaParams || {}
-      if (params.rate != null) setRate(Number(params.rate) || 0.5)
-      if (params.cap != null) setCap(String(params.cap))
+      const programs = res.fundingPrograms || []
+      const chosen = programs.find((p) => p.name === res.target.fundingProgram)
+      if (chosen) {
+        setRate(Number(chosen.rate) || 0.5)
+        setCap(chosen.cap != null ? String(chosen.cap) : '')
+      } else {
+        const params = res.bafaParams || {}
+        if (params.rate != null) setRate(Number(params.rate) || 0.5)
+        if (params.cap != null) setCap(String(params.cap))
+      }
     } catch (err) {
-      toast.error(err.message || 'BAFA-Daten konnten nicht geladen werden')
+      toast.error(err.message || 'Förderdaten konnten nicht geladen werden')
     } finally {
       setLoading(false)
     }
@@ -294,6 +303,15 @@ function BafaDetailModal({ targetId, onClose, onChanged }) {
     return Math.round(capped * 100) / 100
   }, [offerValue, rate, cap])
 
+  function selectProgram(name) {
+    setForm((prev) => ({ ...prev, fundingProgram: name }))
+    const p = (data?.fundingPrograms || []).find((x) => x.name === name)
+    if (p) {
+      setRate(Number(p.rate) || 0)
+      setCap(p.cap != null ? String(p.cap) : '')
+    }
+  }
+
   async function save() {
     setSaving(true)
     try {
@@ -304,8 +322,9 @@ function BafaDetailModal({ targetId, onClose, onChanged }) {
         fundingAmount: form.fundingAmount === '' ? null : Number(form.fundingAmount),
         bafaApprovedAmount: form.bafaApprovedAmount === '' ? null : Number(form.bafaApprovedAmount),
         bafaNotes: form.bafaNotes || null,
+        fundingProgram: form.fundingProgram || null,
       })
-      toast.success('BAFA-Daten gespeichert')
+      toast.success('Förderdaten gespeichert')
       onChanged?.()
       fetchDetail()
     } catch (err) {
@@ -351,7 +370,7 @@ function BafaDetailModal({ targetId, onClose, onChanged }) {
 
   async function downloadPdf() {
     try {
-      await api.download(`/sprint-targets/${targetId}/bafa/pdf`, `BAFA-${data?.target?.companyName || 'Zielkunde'}.pdf`)
+      await api.download(`/sprint-targets/${targetId}/bafa/pdf`, `Foerderung-${data?.target?.companyName || 'Zielkunde'}.pdf`)
     } catch (err) {
       toast.error(err.message || 'PDF-Download fehlgeschlagen')
     }
@@ -364,7 +383,7 @@ function BafaDetailModal({ targetId, onClose, onChanged }) {
         <div className="relative bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 z-10 max-h-[90vh] overflow-y-auto">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">BAFA-Nachweise</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Förder-Nachweise</h2>
               <p className="text-sm text-gray-500">{data?.target?.companyName || '…'}</p>
             </div>
             <div className="flex items-center gap-2">
@@ -377,11 +396,22 @@ function BafaDetailModal({ targetId, onClose, onChanged }) {
 
           {loading ? (
             <div className="flex justify-center py-10">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
             </div>
           ) : (
             <div className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <label className={CLS_LABEL}>Förderprogramm</label>
+                  <select value={form.fundingProgram} onChange={(e) => selectProgram(e.target.value)} className={CLS_INPUT}>
+                    <option value="">— kein Programm —</option>
+                    {(data?.fundingPrograms || [])
+                      .filter((p) => p.active !== false || p.name === form.fundingProgram)
+                      .map((p) => (
+                        <option key={p.id || p.name} value={p.name}>{p.name}</option>
+                      ))}
+                  </select>
+                </div>
                 <div>
                   <label className={CLS_LABEL}>Status</label>
                   <select value={form.bafaStatus} onChange={(e) => setForm({ ...form, bafaStatus: e.target.value })} className={CLS_INPUT}>
@@ -422,7 +452,7 @@ function BafaDetailModal({ targetId, onClose, onChanged }) {
 
               <div className="border border-gray-200 rounded-lg p-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-gray-800 mb-3">
-                  <Calculator className="w-4 h-4 text-violet-500" /> Fördersummen-Rechner
+                  <Calculator className="w-4 h-4 text-blue-500" /> Fördersummen-Rechner
                 </p>
                 <div className="grid grid-cols-3 gap-3 items-end">
                   <div>
@@ -446,14 +476,14 @@ function BafaDetailModal({ targetId, onClose, onChanged }) {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Ergebnis</p>
-                    <p className="text-lg font-bold text-violet-700">{formatCurrency(calculated)}</p>
+                    <p className="text-lg font-bold text-blue-700">{formatCurrency(calculated)}</p>
                   </div>
                 </div>
                 <div className="flex justify-end mt-3">
                   <button
                     type="button"
                     onClick={() => setForm((prev) => ({ ...prev, fundingAmount: String(calculated) }))}
-                    className="text-sm text-violet-700 hover:text-violet-900"
+                    className="text-sm text-blue-700 hover:text-blue-900"
                   >
                     Als Fördersumme übernehmen
                   </button>
@@ -466,7 +496,7 @@ function BafaDetailModal({ targetId, onClose, onChanged }) {
               </div>
 
               <div className="flex justify-end">
-                <button onClick={save} disabled={saving} className="flex items-center gap-1.5 px-4 py-2 text-sm text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50">
+                <button onClick={save} disabled={saving} className="flex items-center gap-1.5 px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">
                   <Save className="w-4 h-4" /> {saving ? 'Speichern...' : 'Speichern'}
                 </button>
               </div>
@@ -509,7 +539,7 @@ function BafaDetailModal({ targetId, onClose, onChanged }) {
                   >
                     {DOC_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
-                  <button type="submit" className="col-span-3 flex items-center justify-center gap-1 px-3 py-2 text-sm text-violet-700 border border-violet-200 rounded-md hover:bg-violet-50">
+                  <button type="submit" className="col-span-3 flex items-center justify-center gap-1 px-3 py-2 text-sm text-blue-700 border border-blue-200 rounded-md hover:bg-blue-50">
                     <Plus className="w-4 h-4" /> Hinzufügen
                   </button>
                 </form>

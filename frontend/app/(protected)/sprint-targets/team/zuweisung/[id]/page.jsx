@@ -7,7 +7,7 @@ import toast from 'react-hot-toast'
 import { api } from '@/lib/api'
 import { getSprintSettings } from '@/lib/sprintSettings'
 import {
-  TEAM_ROLES, resolveRoles, requiredRolesFor, SPRINT_PACKAGE_LABELS,
+  TEAM_ROLES, resolveRoles, requiredRolesFor,
   STATUS_BADGE, PRIORITY_LABEL, PRIORITY_DOT,
   assignmentsForRole, initials, colorFor, utilState,
 } from '@/lib/sprintTeam'
@@ -27,6 +27,7 @@ export default function CustomerAssignmentPage() {
   const [targets, setTargets] = useState([])
   const [roles, setRoles] = useState(TEAM_ROLES)
   const [packageRoles, setPackageRoles] = useState([])
+  const [packages, setPackages] = useState([])
   const [loading, setLoading] = useState(true)
   const [capacity, setCapacity] = useState(10)
   const [tab, setTab] = useState('zuweisung')
@@ -47,6 +48,7 @@ export default function CustomerAssignmentPage() {
       setTargets(Array.isArray(data.targets) ? data.targets : [])
       setRoles(resolveRoles(data.roles))
       setPackageRoles(Array.isArray(data.packageRoles) ? data.packageRoles : [])
+      setPackages(Array.isArray(data.packages) ? data.packages : [])
     } catch {
       toast.error('Fehler beim Laden der Zuweisungen')
     } finally {
@@ -57,6 +59,7 @@ export default function CustomerAssignmentPage() {
   useEffect(() => { fetchData() }, [fetchData])
 
   const target = targets.find((t) => t.id === id)
+  const packageLabel = (key) => packages.find((p) => p.key === key)?.label || key
   const assignments = target?.assignments || []
   const locked = LOST_STATUSES.includes(target?.status)
 
@@ -210,7 +213,7 @@ export default function CustomerAssignmentPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     )
   }
@@ -236,10 +239,10 @@ export default function CustomerAssignmentPage() {
         </button>
         <div className="h-5 w-px bg-gray-200" />
         <div className="min-w-0">
-          <h1 className="text-xl font-bold text-gray-900 truncate">{target.companyName}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 truncate">{target.companyName}</h1>
           <p className="text-sm text-gray-500 truncate">
             {target.segment || '—'}
-            {target.package ? ` · Paket ${SPRINT_PACKAGE_LABELS[target.package] || target.package}` : ' · kein Paket'}
+            {target.package ? ` · Paket ${packageLabel(target.package)}` : ' · kein Paket'}
           </p>
         </div>
       </div>
@@ -279,7 +282,7 @@ export default function CustomerAssignmentPage() {
           onClick={() => setTab('zuweisung')}
           className={`px-4 py-2 text-sm -mb-px border-b-2 transition-colors ${
             tab === 'zuweisung'
-              ? 'border-violet-600 text-violet-700 font-medium'
+              ? 'border-blue-600 text-blue-700 font-medium'
               : 'border-transparent text-gray-500 hover:text-gray-800'
           }`}
         >
@@ -289,7 +292,7 @@ export default function CustomerAssignmentPage() {
           onClick={openSettings}
           className={`px-4 py-2 text-sm -mb-px border-b-2 transition-colors ${
             tab === 'einstellung'
-              ? 'border-violet-600 text-violet-700 font-medium'
+              ? 'border-blue-600 text-blue-700 font-medium'
               : 'border-transparent text-gray-500 hover:text-gray-800'
           }`}
         >
@@ -358,7 +361,7 @@ export default function CustomerAssignmentPage() {
                     {!locked && (
                       <button
                         onClick={() => openPicker(role.key)}
-                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-violet-700 border border-dashed border-violet-300 rounded-lg hover:bg-violet-50 transition-colors"
+                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-blue-700 border border-dashed border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
                       >
                         <Plus className="w-3.5 h-3.5" /> Mitarbeiter zuweisen
                       </button>
@@ -378,7 +381,7 @@ export default function CustomerAssignmentPage() {
               <h2 className="text-sm font-semibold text-gray-900">Rollen für diesen Kunden</h2>
               <p className="text-xs text-gray-500 mt-1">
                 {target.package
-                  ? `Standard aus Paket „${SPRINT_PACKAGE_LABELS[target.package] || target.package}“ – hier je Kunde anpassbar.`
+                  ? `Standard aus Paket „${packageLabel(target.package)}“ – hier je Kunde anpassbar.`
                   : 'Kein Paket zugeordnet – Rollen manuell festlegen.'}
               </p>
             </div>
@@ -400,7 +403,7 @@ export default function CustomerAssignmentPage() {
                     id={`role-${role.key}`}
                     checked={Boolean(entry)}
                     onChange={(e) => toggleEditRole(role.key, e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <label htmlFor={`role-${role.key}`} className="flex-1 text-sm text-gray-700 cursor-pointer">
                     {role.label}
@@ -426,7 +429,7 @@ export default function CustomerAssignmentPage() {
             <button
               onClick={saveRoles}
               disabled={savingRoles}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700 disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
             >
               <Save className="w-4 h-4" /> {savingRoles ? 'Speichern...' : 'Rollen speichern'}
             </button>
@@ -482,7 +485,7 @@ export default function CustomerAssignmentPage() {
                         </p>
                       </div>
                       <span className={`text-xs font-semibold shrink-0 ${m.state.text}`}>{m.util} %</span>
-                      <Plus className="w-4 h-4 text-violet-600 shrink-0" />
+                      <Plus className="w-4 h-4 text-blue-600 shrink-0" />
                     </button>
                   ))
                 )}

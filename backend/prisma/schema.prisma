@@ -308,6 +308,7 @@ model ServiceCatalog {
   createdAt   DateTime @default(now())
   lineItems       ProposalLineItem[]
   aiOpportunities AiOpportunity[]
+  packageServices SprintPackageService[]
 }
 
 model Contract {
@@ -385,12 +386,16 @@ model Task {
   project      Project? @relation(fields: [projectId], references: [id])
   activityId   String?
   activity     Activity? @relation(fields: [activityId], references: [id])
+  sprintTargetId String?
+  sprintTarget   SprintTarget? @relation(fields: [sprintTargetId], references: [id], onDelete: SetNull)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   // relation to documents
   documents    Document[]
   checklistItems TaskChecklistItem[]
   collaborators  TaskCollaborator[]
+
+  @@index([sprintTargetId])
 }
 
 model Document {
@@ -416,7 +421,11 @@ model Document {
   // link to task (optional)
   taskId       String?
   task         Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  sprintTargetId String?
+  sprintTarget   SprintTarget? @relation(fields: [sprintTargetId], references: [id], onDelete: SetNull)
   createdAt    DateTime @default(now())
+
+  @@index([sprintTargetId])
 }
 
 model TaskChecklistItem {
@@ -1149,6 +1158,7 @@ model SprintTarget {
   bafaApprovedAmount  Float?
   bafaSubmittedAt     DateTime?
   bafaNotes           String?
+  fundingProgram      String?
   contactEmail        String?
   revenue             Float?
   website             String?
@@ -1185,6 +1195,8 @@ model SprintTarget {
   bafaDocuments       SprintBafaDocument[]
   handover            SprintHandover?
   contacts            SprintTargetContact[]
+  tasks               Task[]
+  documents           Document[]
 }
 
 // Welche Rollen ein Paket benötigt und mit welchem Umfang (Anzahl Mitarbeiter)
@@ -1192,6 +1204,7 @@ model SprintPackageRole {
   id        String   @id @default(cuid())
   package   String
   role      String
+  label     String?
   headcount Int      @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1420,6 +1433,22 @@ model SprintPackageInfo {
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  services    SprintPackageService[]
+}
+
+// Leistungen, die in einem Paket enthalten sind – mit Umfang (Menge)
+model SprintPackageService {
+  id          String            @id @default(cuid())
+  package     String
+  packageInfo SprintPackageInfo @relation(fields: [package], references: [key], onDelete: Cascade)
+  serviceId   String
+  service     ServiceCatalog    @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  quantity    Int               @default(1)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([package, serviceId])
+  @@index([package])
 }
 
 model SprintSegment {

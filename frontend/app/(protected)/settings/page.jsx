@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-hot-toast'
+import SprintSettingsPage, { SPRINT_SETTINGS_TABS } from '../sprint-targets/settings/page'
 import {
   Plus,
   Trash2,
@@ -23,6 +24,7 @@ import {
   EyeOff,
 } from 'lucide-react'
 import { getUser } from '@/lib/auth'
+import { usePermissions } from '@/lib/permissions'
 import api from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
 import Badge from '@/components/ui/Badge'
@@ -191,7 +193,7 @@ function ServiceForm({ initialData, onSave, onCancel, saving }) {
   )
 }
 
-function ServiceCatalogTab() {
+export function ServiceCatalogTab() {
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -1127,16 +1129,45 @@ function LlmTab() {
   )
 }
 
-const TABS = [
-  { id: 'catalog',     label: 'Dienstkatalog', icon: BookOpen },
+const GENERAL_TABS = [
   { id: 'users',       label: 'Benutzer',       icon: Users },
   { id: 'categories',  label: 'Kategorien',     icon: ChevronDown },
   { id: 'connections', label: 'Verbindungen',   icon: Link2 },
   { id: 'llm',         label: 'KI-Verbindung',  icon: Brain },
 ]
 
-export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('catalog')
+export default function SettingsMergedPage() {
+  const { perms, can } = usePermissions()
+  const isAdmin = getUser()?.role === 'admin'
+  const hasGranularSprint = Object.keys(perms || {}).some(
+    (key) => key.startsWith('sprint_') && key !== 'sprint_targets' && perms[key]?.canView
+  )
+  const canAkquise = isAdmin || hasGranularSprint || can('sprint_targets')
+
+  // Admin-only: Benutzer, Kategorien, Verbindungen, KI-Verbindung + Akquise "System"
+  const generalTabs = isAdmin ? GENERAL_TABS : []
+  const akquiseTabs = canAkquise
+    ? SPRINT_SETTINGS_TABS.filter((t) => isAdmin || t.id !== 'system')
+    : []
+  const tabs = [...generalTabs, ...akquiseTabs]
+  const tabKey = tabs.map((t) => t.id).join('|')
+
+  const [activeTab, setActiveTab] = useState(tabs[0]?.id || '')
+
+  // Verfügbare Tabs können sich nach dem Laden der Rechte ändern → gültigen Tab wählen
+  useEffect(() => {
+    if (!tabs.some((t) => t.id === activeTab)) setActiveTab(tabs[0]?.id || '')
+  }, [tabKey]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Deep-Link: /settings?tab=users | akquise | <tab-id>
+  useEffect(() => {
+    const initial = new URLSearchParams(window.location.search).get('tab')
+    if (!initial) return
+    const target = initial === 'akquise' ? akquiseTabs[0]?.id : initial
+    if (target && tabs.some((t) => t.id === target)) setActiveTab(target)
+  }, [tabKey]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const isAkquiseTab = SPRINT_SETTINGS_TABS.some((t) => t.id === activeTab)
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -1144,37 +1175,56 @@ export default function SettingsPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Einstellungen</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Systemkonfiguration und Verwaltung
+          Systemkonfiguration, Akquise und Verwaltung
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-fit mb-6">
-        {TABS.map((tab) => {
-          const Icon = tab.icon
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                activeTab === tab.id
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          )
-        })}
-      </div>
+      {tabs.length === 0 ? (
+        <div className="bg-white border border-gray-200 rounded-lg p-6 text-sm text-gray-500">
+          Für dieses Konto sind keine Einstellungen verfügbar. Wende dich an einen Administrator.
+        </div>
+      ) : (
+        <>
+          {/* Eine gemeinsame Tab-Leiste für Allgemein + Akquise */}
+          <div className="flex flex-wrap gap-1 bg-gray-100 rounded-lg p-1 w-fit mb-6">
+            {tabs.map((tab) => {
+              const Icon = tab.icon
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    activeTab === tab.id
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              )
+            })}
+          </div>
 
-      {/* Tab Content */}
-      {activeTab === 'catalog' && <ServiceCatalogTab />}
-      {activeTab === 'users' && <UsersTab />}
-      {activeTab === 'categories' && <CategoriesTab />}
-      {activeTab === 'connections' && <ConnectionsTab />}
-      {activeTab === 'llm' && <LlmTab />}
+          {/* Tab Content – allgemein (nur Admin) */}
+          {!isAkquiseTab && (
+            <>
+              {activeTab === 'users' && <UsersTab />}
+              {activeTab === 'categories' && <CategoriesTab />}
+              {activeTab === 'connections' && <ConnectionsTab />}
+              {activeTab === 'llm' && <LlmTab />}
+            </>
+          )}
+
+          {/* Tab Content – Akquise (bleibt gemountet, damit Eingaben erhalten bleiben) */}
+          {canAkquise && (
+            <div className={isAkquiseTab ? '' : 'hidden'}>
+              <SprintSettingsPage embedded activeTab={activeTab} />
+            </div>
+          )}
+        </>
+      )}
     </div>
   )
 }

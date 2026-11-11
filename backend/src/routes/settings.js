@@ -3,6 +3,10 @@ const router  = express.Router()
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const { callLlm } = require('../lib/llm')
+const requireAdmin = require('../middleware/requireAdmin')
+
+// Kategorien und KI-Verbindung sind globale Systemeinstellungen → nur Admin
+router.use(requireAdmin)
 
 function maskKey(key) {
   if (!key || key.length < 8) return '••••••••'

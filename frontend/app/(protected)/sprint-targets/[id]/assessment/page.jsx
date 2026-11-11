@@ -156,7 +156,7 @@ export default function AssessmentPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     )
   }
@@ -174,11 +174,11 @@ export default function AssessmentPage() {
           </button>
           <div className="h-5 w-px bg-gray-200" />
           <div>
-            <h1 className="text-xl font-bold text-gray-900">KI-Readiness Assessment</h1>
+            <h1 className="text-2xl font-bold text-gray-900">KI-Readiness Assessment</h1>
             {target && <p className="text-sm text-gray-500">{target.companyName}</p>}
           </div>
           {current && (
-            <span className="ml-2 px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full text-xs font-medium">
+            <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
               Version {current.version}
             </span>
           )}
@@ -201,7 +201,7 @@ export default function AssessmentPage() {
           <button
             onClick={generateAssessment}
             disabled={generating || creating}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-violet-600 rounded-lg hover:bg-violet-700 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
           >
             {generating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
             {generating ? 'Analysiere...' : 'KI neu analysieren'}
@@ -219,7 +219,7 @@ export default function AssessmentPage() {
               onClick={() => setCurrent(a)}
               className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
                 current?.id === a.id
-                  ? 'bg-violet-600 text-white border-violet-600'
+                  ? 'bg-blue-600 text-white border-blue-600'
                   : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
               }`}
             >
@@ -252,7 +252,7 @@ export default function AssessmentPage() {
 
       {!current ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <Sparkles className="w-10 h-10 text-violet-300 mx-auto mb-3" />
+          <Sparkles className="w-10 h-10 text-blue-300 mx-auto mb-3" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Noch kein Assessment</h3>
           <p className="text-sm text-gray-500 mb-6">Erstelle ein KI-Assessment, um die Readiness dieses Unternehmens zu bewerten.</p>
           <div className="flex justify-center gap-3">
@@ -266,7 +266,7 @@ export default function AssessmentPage() {
             <button
               onClick={generateAssessment}
               disabled={generating || creating}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-violet-600 rounded-lg hover:bg-violet-700 disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
             >
               <Sparkles className="w-4 h-4" />
               {generating ? 'Analysiere...' : 'KI-Assessment generieren'}
@@ -286,7 +286,7 @@ export default function AssessmentPage() {
                 ))}
               </div>
               {current.generatedByAi && (
-                <p className="mt-3 text-xs text-violet-600 flex items-center gap-1">
+                <p className="mt-3 text-xs text-blue-600 flex items-center gap-1">
                   <Sparkles className="w-3.5 h-3.5" /> KI-generiert am {formatDate(current.updatedAt)}
                 </p>
               )}
@@ -359,7 +359,7 @@ export default function AssessmentPage() {
                       key={a.id}
                       onClick={() => setCurrent(a)}
                       className={`w-full text-left flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
-                        current?.id === a.id ? 'bg-violet-50 text-violet-700 font-medium' : 'hover:bg-gray-50 text-gray-700'
+                        current?.id === a.id ? 'bg-blue-50 text-blue-700 font-medium' : 'hover:bg-gray-50 text-gray-700'
                       }`}
                     >
                       <span>Version {a.version}</span>

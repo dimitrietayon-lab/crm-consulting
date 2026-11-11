@@ -168,7 +168,7 @@ function ContactModal({ contact, targets, onClose, onSaved, onDeleted }) {
                 <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50">
                   Abbrechen
                 </button>
-                <button type="submit" disabled={saving} className="px-4 py-2 text-sm text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50">
+                <button type="submit" disabled={saving} className="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">
                   {saving ? 'Speichern…' : 'Speichern'}
                 </button>
               </div>
@@ -244,13 +244,13 @@ export default function SprintContactsPage() {
           </button>
           <div className="h-5 w-px bg-gray-200" />
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Sprint-Kontakte</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Kontakte</h1>
             <p className="text-sm text-gray-500">Ansprechpartner je Zielkunde inkl. Einwilligungen</p>
           </div>
         </div>
         <button
           onClick={() => setEditing({ ...EMPTY_CONTACT })}
-          className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-violet-600 rounded-lg hover:bg-violet-700"
+          className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700"
         >
           <Plus className="w-4 h-4" /> Neuer Kontakt
         </button>
@@ -263,7 +263,7 @@ export default function SprintContactsPage() {
         </div>
         <div className="bg-white rounded-lg border border-gray-200 px-4 py-3">
           <p className="text-xs text-gray-500">Hauptansprechpartner</p>
-          <p className="text-lg font-bold text-violet-700">{primaryCount}</p>
+          <p className="text-lg font-bold text-blue-700">{primaryCount}</p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 px-4 py-3">
           <p className="text-xs text-gray-500">E-Mail-Einwilligung</p>
@@ -291,7 +291,7 @@ export default function SprintContactsPage() {
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
           </div>
         ) : rows.length === 0 ? (
           <div className="p-12 text-center text-sm text-gray-500">
@@ -321,7 +321,7 @@ export default function SprintContactsPage() {
                     </td>
                     <td className="px-4 py-2.5">
                       {c.sprintTarget ? (
-                        <button onClick={() => router.push(`/sprint-targets/${c.sprintTargetId}`)} className="text-gray-800 hover:text-violet-700 hover:underline text-left">
+                        <button onClick={() => router.push(`/sprint-targets/${c.sprintTargetId}`)} className="text-gray-800 hover:text-blue-700 hover:underline text-left">
                           {c.sprintTarget.companyName}
                         </button>
                       ) : <span className="text-gray-400">—</span>}
@@ -346,7 +346,7 @@ export default function SprintContactsPage() {
                       <p>Telefon: {c.callConsentAt ? formatDate(c.callConsentAt) : '—'}</p>
                     </td>
                     <td className="px-4 py-2.5 text-right">
-                      <button onClick={() => setEditing(c)} className="p-1.5 text-gray-400 hover:text-violet-700 rounded" title="Bearbeiten">
+                      <button onClick={() => setEditing(c)} className="p-1.5 text-gray-400 hover:text-blue-700 rounded" title="Bearbeiten">
                         <Pencil className="w-4 h-4" />
                       </button>
                     </td>

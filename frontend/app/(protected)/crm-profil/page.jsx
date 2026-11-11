@@ -28,7 +28,7 @@ const COLOR = {
 // 19 Einträge, die im CRM-Profil sichtbar bleiben
 const VISIBLE_GROUPS = [
   { label: 'Kunden & Kontakte', color: 'blue',   icon: Building2, items: ['Accounts', 'Kontakte', 'Aktivitäten'] },
-  { label: 'Vertrieb',          color: 'green',  icon: TrendingUp, items: ['Pipeline', 'Angebote', 'Verträge'] },
+  { label: 'Vertrieb',          color: 'green',  icon: TrendingUp, items: ['Deals', 'Angebote', 'Verträge'] },
   { label: 'Mandate & Wissen',  color: 'purple', icon: Briefcase, items: ['Projekte', 'Aufgaben', 'Dokumente'] },
   { label: 'Analyse & KI',      color: 'pink',   icon: Brain, items: ['Key Accounts', 'Cross-Selling', 'Compliance', 'KI-Opportunities', 'News Monitoring'] },
   { label: 'System',            color: 'amber',  icon: Settings, items: ['Einstellungen', 'Administration', 'CRM-Profil'] },

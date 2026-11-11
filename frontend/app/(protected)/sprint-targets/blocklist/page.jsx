@@ -116,7 +116,7 @@ export default function SprintBlocklistPage() {
           </button>
           <div className="h-5 w-px bg-gray-200" />
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Sperrliste</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Sperrliste</h1>
             <p className="text-sm text-gray-500">
               Wird automatisch befüllt, wenn ein Zielkunde auf „kein Interesse" gesetzt wird – und beim Zurücksetzen wieder entsperrt
             </p>

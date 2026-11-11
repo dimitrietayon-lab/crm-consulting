@@ -28,14 +28,14 @@ const FEASIBILITY_LABELS = {
 function ProposalCard({ uc, selected, onToggle }) {
   const feasibility = FEASIBILITY_LABELS[uc.feasibility]
   return (
-    <div className={`bg-white rounded-xl border p-4 transition-shadow ${selected ? 'border-violet-300 ring-1 ring-violet-200' : 'border-gray-200 hover:shadow-md'}`}>
+    <div className={`bg-white rounded-xl border p-4 transition-shadow ${selected ? 'border-blue-300 ring-1 ring-blue-200' : 'border-gray-200 hover:shadow-md'}`}>
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 flex-wrap">
           <input
             type="checkbox"
             checked={selected}
             onChange={() => onToggle(uc.id)}
-            className="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
           <span className={`px-2 py-0.5 rounded border text-xs font-medium ${PRIORITY_STYLES[uc.priority] || PRIORITY_STYLES.low}`}>
             {uc.priority}
@@ -119,10 +119,10 @@ export default function ProposalsPage() {
       // Build deal from top use case
       const topUc = useCases.find((uc) => uc.priority === 'high') || useCases[0]
       const payload = {
-        title: topUc ? `KI-Sprint: ${topUc.title} – ${target.companyName}` : `KI-Readiness Sprint – ${target.companyName}`,
+        title: topUc ? `KI-Readiness: ${topUc.title} – ${target.companyName}` : `KI-Readiness – ${target.companyName}`,
         value: topUc?.estimatedValue || null,
         stage: 'First Contact',
-        notes: `Sprint-Zielkunde: ${target.companyName}\nBranche: ${target.segment}\n${topUc?.description || ''}`,
+        notes: `Zielkunde: ${target.companyName}\nBranche: ${target.segment}\n${topUc?.description || ''}`,
       }
       // Link to account if exists
       if (target.accountId) payload.accountId = target.accountId
@@ -140,7 +140,7 @@ export default function ProposalsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     )
   }
@@ -158,7 +158,7 @@ export default function ProposalsPage() {
           </button>
           <div className="h-5 w-px bg-gray-200" />
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Projektvorschläge</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Projektvorschläge</h1>
             {target && <p className="text-sm text-gray-500">{target.companyName}</p>}
           </div>
           <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
@@ -170,7 +170,7 @@ export default function ProposalsPage() {
             onClick={() => router.push(`/sprint-targets/${id}/assessment`)}
             className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50"
           >
-            <Sparkles className="w-4 h-4 text-violet-500" /> Assessment öffnen
+            <Sparkles className="w-4 h-4 text-blue-500" /> Assessment öffnen
           </button>
           {useCases.length > 0 && (
             <>
@@ -188,7 +188,7 @@ export default function ProposalsPage() {
                   router.push(`/sprint-targets/offers/new?target=${id}`)
                 }}
                 title={selectedUseCases.length > 0 ? 'Ausgewählte Use Cases als Angebotspositionen übernehmen' : 'Angebot für diesen Zielkunden anlegen'}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-violet-700 bg-violet-50 border border-violet-200 rounded-lg hover:bg-violet-100"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100"
               >
                 <FileText className="w-4 h-4" />
                 Angebot aus Auswahl{selectedUseCases.length > 0 ? ` (${selectedUseCases.length})` : ''}
@@ -208,14 +208,14 @@ export default function ProposalsPage() {
 
       {useCases.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <Sparkles className="w-10 h-10 text-violet-300 mx-auto mb-3" />
+          <Sparkles className="w-10 h-10 text-blue-300 mx-auto mb-3" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Noch keine Projektvorschläge</h3>
           <p className="text-sm text-gray-500 mb-6">
             Führe zuerst ein KI-Assessment durch, um Projektvorschläge zu generieren.
           </p>
           <button
             onClick={() => router.push(`/sprint-targets/${id}/assessment`)}
-            className="flex items-center gap-2 mx-auto px-4 py-2 text-sm text-white bg-violet-600 rounded-lg hover:bg-violet-700"
+            className="flex items-center gap-2 mx-auto px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700"
           >
             <Sparkles className="w-4 h-4" /> Zum Assessment
           </button>
@@ -259,7 +259,7 @@ export default function ProposalsPage() {
             </div>
             <div className="bg-white rounded-lg border border-gray-200 px-4 py-3">
               <p className="text-xs text-gray-500">Ausgewählt</p>
-              <p className="text-lg font-bold text-violet-700">{selectedUseCases.length} Use Cases</p>
+              <p className="text-lg font-bold text-blue-700">{selectedUseCases.length} Use Cases</p>
             </div>
             <div className="bg-white rounded-lg border border-gray-200 px-4 py-3">
               <p className="text-xs text-gray-500">Summe Auswahl</p>

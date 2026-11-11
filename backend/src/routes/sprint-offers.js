@@ -4,6 +4,7 @@ const { PrismaClient } = require('@prisma/client');
 const { sendPdf } = require('../lib/pdf');
 const { buildOfferPdf } = require('../lib/pdf/sprint-offer');
 const { normalizeCompany, contactBlockReason } = require('../lib/sprintCompliance');
+const { linkAccountOnWin } = require('../lib/sprintAccount');
 
 const prisma = new PrismaClient();
 
@@ -302,6 +303,13 @@ router.post('/:id/accept', async (req, res) => {
       }),
     ]);
 
+    // Abschluss → CRM-Account anlegen/verknüpfen
+    const wonTarget = await prisma.sprintTarget.findUnique({
+      where: { id: offer.sprintTargetId },
+      select: { id: true, companyName: true, segment: true, website: true, numberOfEmployees: true, accountId: true, status: true },
+    });
+    await linkAccountOnWin(prisma, wonTarget);
+
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -404,6 +412,15 @@ router.get('/:id/pdf', async (req, res) => {
       },
     });
     if (!offer) return res.status(404).json({ error: 'Angebot nicht gefunden' });
+
+    // Paketbezeichnung aus der Paketverwaltung (freie Pakete), Fallback = Key
+    if (offer.package) {
+      const pkg = await prisma.sprintPackageInfo.findUnique({
+        where: { key: offer.package },
+        select: { label: true },
+      });
+      if (pkg) offer.packageLabel = pkg.label;
+    }
 
     const doc = buildOfferPdf(offer);
     const company = offer.sprintTarget?.companyName || 'Zielkunde';

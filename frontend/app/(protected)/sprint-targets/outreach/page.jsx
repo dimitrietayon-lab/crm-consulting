@@ -102,7 +102,7 @@ function TemplateModal({ template, onClose, onSaved }) {
                     key={p}
                     type="button"
                     onClick={() => set('body', `${form.body}${p}`)}
-                    className="px-1.5 py-0.5 text-[11px] font-mono text-violet-700 bg-violet-50 border border-violet-100 rounded hover:bg-violet-100"
+                    className="px-1.5 py-0.5 text-[11px] font-mono text-blue-700 bg-blue-50 border border-blue-100 rounded hover:bg-blue-100"
                   >
                     {p}
                   </button>
@@ -121,7 +121,7 @@ function TemplateModal({ template, onClose, onSaved }) {
               <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50">
                 Abbrechen
               </button>
-              <button type="submit" disabled={saving} className="px-4 py-2 text-sm text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50">
+              <button type="submit" disabled={saving} className="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">
                 {saving ? 'Speichern…' : 'Speichern'}
               </button>
             </div>
@@ -261,14 +261,14 @@ export default function SprintOutreachPage() {
           </button>
           <div className="h-5 w-px bg-gray-200" />
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Outreach</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Outreach</h1>
             <p className="text-sm text-gray-500">Kontaktanfragen, Wochenquote und Vorlagen</p>
           </div>
         </div>
         {tab === 'templates' && (
           <button
             onClick={() => setEditing({ ...EMPTY_TEMPLATE })}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-violet-600 rounded-lg hover:bg-violet-700"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700"
           >
             <Plus className="w-4 h-4" /> Neue Vorlage
           </button>
@@ -282,7 +282,7 @@ export default function SprintOutreachPage() {
             onClick={() => setTab(t.key)}
             className={`px-4 py-2 text-sm -mb-px border-b-2 transition-colors ${
               tab === t.key
-                ? 'border-violet-600 text-violet-700 font-medium'
+                ? 'border-blue-600 text-blue-700 font-medium'
                 : 'border-transparent text-gray-500 hover:text-gray-800'
             }`}
           >
@@ -333,7 +333,7 @@ export default function SprintOutreachPage() {
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             {loading ? (
               <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
               </div>
             ) : rows.length === 0 ? (
               <div className="text-center py-12 text-sm text-gray-500">Keine offenen Zielkunden für den Outreach.</div>
@@ -350,7 +350,7 @@ export default function SprintOutreachPage() {
                   {rows.map((t) => (
                     <tr key={t.id} className="border-t border-gray-50 hover:bg-gray-50/60">
                       <td className="px-4 py-2.5">
-                        <button onClick={() => router.push(`/sprint-targets/${t.id}`)} className="text-sm font-medium text-gray-900 hover:text-violet-700">
+                        <button onClick={() => router.push(`/sprint-targets/${t.id}`)} className="text-sm font-medium text-gray-900 hover:text-blue-700">
                           {t.companyName}
                         </button>
                         <p className="text-xs text-gray-500">{t.segment}{t.bundesland ? ` · ${t.bundesland}` : ''}</p>
@@ -402,7 +402,7 @@ export default function SprintOutreachPage() {
               <p className="text-sm text-gray-500 mb-4">Noch keine Vorlagen angelegt.</p>
               <button
                 onClick={() => setEditing({ ...EMPTY_TEMPLATE })}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm text-white bg-violet-600 rounded-lg hover:bg-violet-700"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700"
               >
                 <Plus className="w-4 h-4" /> Erste Vorlage anlegen
               </button>
@@ -430,7 +430,7 @@ export default function SprintOutreachPage() {
                       <button onClick={() => copyTemplate(tpl)} title="Text kopieren" className="p-1.5 text-gray-400 hover:text-gray-700 rounded">
                         <Copy className="w-4 h-4" />
                       </button>
-                      <button onClick={() => setEditing(tpl)} title="Bearbeiten" className="p-1.5 text-gray-400 hover:text-violet-700 rounded">
+                      <button onClick={() => setEditing(tpl)} title="Bearbeiten" className="p-1.5 text-gray-400 hover:text-blue-700 rounded">
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button onClick={() => removeTemplate(tpl)} title="Löschen" className="p-1.5 text-gray-400 hover:text-red-600 rounded">

@@ -29,6 +29,7 @@ import {
   Circle,
   RefreshCw,
   Paperclip,
+  Crosshair,
 } from 'lucide-react'
 import api from '@/lib/api'
 import { formatDate, getInitials } from '@/lib/utils'
@@ -167,6 +168,12 @@ function TaskCard({ task, onDelete, onEdit, isDragOverlay = false }) {
             <span className="truncate">{task.project.name}</span>
           </div>
         )}
+        {task.sprintTarget?.companyName && (
+          <div className="flex items-center gap-1 text-xs text-emerald-600 truncate">
+            <Crosshair className="w-3 h-3 shrink-0" />
+            <span className="truncate">{task.sprintTarget.companyName}</span>
+          </div>
+        )}
       </div>
 
       {/* Assignee */}
@@ -251,7 +258,7 @@ const RECURRING_OPTIONS = [
   { value: 'Quarterly', label: 'Vierteljährlich' },
 ]
 
-function CreateTaskModal({ isOpen, onClose, onCreated, accounts, users, projects, defaultStatus }) {
+function CreateTaskModal({ isOpen, onClose, onCreated, accounts, users, projects, sprintTargets = [], defaultStatus }) {
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -260,6 +267,7 @@ function CreateTaskModal({ isOpen, onClose, onCreated, accounts, users, projects
     assignedToId: '',
     accountId: '',
     projectId: '',
+    sprintTargetId: '',
     status: defaultStatus || 'Open',
     recurring: '',
   })
@@ -295,6 +303,7 @@ function CreateTaskModal({ isOpen, onClose, onCreated, accounts, users, projects
       if (form.assignedToId) fd.append('assignedToId', form.assignedToId)
       if (form.accountId) fd.append('accountId', form.accountId)
       if (form.projectId) fd.append('projectId', form.projectId)
+      if (form.sprintTargetId) fd.append('sprintTargetId', form.sprintTargetId)
       fd.append('status', form.status)
       if (form.recurring) fd.append('recurring', form.recurring)
       for (const f of files) fd.append('files', f)
@@ -311,7 +320,7 @@ function CreateTaskModal({ isOpen, onClose, onCreated, accounts, users, projects
       toast.success('Aufgabe erstellt.')
       onCreated(result)
       onClose()
-      setForm({ title: '', description: '', dueDate: '', priority: 'Medium', assignedToId: '', accountId: '', projectId: '', status: defaultStatus || 'Open', recurring: '' })
+      setForm({ title: '', description: '', dueDate: '', priority: 'Medium', assignedToId: '', accountId: '', projectId: '', sprintTargetId: '', status: defaultStatus || 'Open', recurring: '' })
       setFiles([])
       setChecklistDraft([''])
       setCollaborators([])
@@ -456,6 +465,22 @@ function CreateTaskModal({ isOpen, onClose, onCreated, accounts, users, projects
           )}
         </div>
 
+        {sprintTargets.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Zielkunde (Akquise)</label>
+            <select
+              value={form.sprintTargetId}
+              onChange={(e) => update('sprintTargetId', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Kein Zielkunde</option>
+              {sprintTargets.map((t) => (
+                <option key={t.id} value={t.id}>{t.companyName}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Dateien anhängen */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
@@ -566,6 +591,9 @@ export default function TasksPage() {
   const [accounts, setAccounts] = useState([])
   const [users, setUsers] = useState([])
   const [projects, setProjects] = useState([])
+  const [sprintTargets, setSprintTargets] = useState([])
+  const [scope, setScope] = useState('all')
+  const [targetFilter, setTargetFilter] = useState('all')
   const [activeTask, setActiveTask] = useState(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
@@ -577,28 +605,35 @@ export default function TasksPage() {
   const fetchTasks = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await api.get('/tasks')
+      const data = await api.get(scope === 'akquise' ? '/tasks?onlySprint=true' : '/tasks')
       setTasks(Array.isArray(data) ? data : data.tasks || [])
     } catch {
       toast.error('Aufgaben konnten nicht geladen werden.')
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [scope])
 
   useEffect(() => { fetchTasks() }, [fetchTasks])
+
+  // Akquise-Filter aus der URL übernehmen (?onlySprint=true), sonst zurücksetzen
+  useEffect(() => {
+    setScope(searchParams.get('onlySprint') === 'true' ? 'akquise' : 'all')
+  }, [searchParams])
 
   useEffect(() => {
     const loadMeta = async () => {
       try {
-        const [accs, usrs, projs] = await Promise.all([
+        const [accs, usrs, projs, targets] = await Promise.all([
           api.get('/accounts'),
           api.get('/users'),
           api.get('/projects'),
+          api.get('/sprint-targets').catch(() => []),
         ])
         setAccounts(Array.isArray(accs) ? accs : accs.accounts || [])
         setUsers(Array.isArray(usrs) ? usrs : usrs.users || [])
         setProjects(Array.isArray(projs) ? projs : projs.projects || [])
+        setSprintTargets(Array.isArray(targets) ? targets : targets.data || [])
       } catch {}
     }
     loadMeta()
@@ -668,7 +703,9 @@ export default function TasksPage() {
   }
 
   const filteredTasks = tasks.filter(
-    (t) => priorityFilter === 'all' || t.priority === priorityFilter
+    (t) =>
+      (priorityFilter === 'all' || t.priority === priorityFilter) &&
+      (targetFilter === 'all' || t.sprintTargetId === targetFilter)
   )
 
   const tasksByStatus = COLUMNS.reduce((acc, col) => {
@@ -737,7 +774,27 @@ export default function TasksPage() {
       </div>
 
       {/* Filter bar */}
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center gap-3 shrink-0 flex-wrap">
+        <select
+          value={scope}
+          onChange={(e) => setScope(e.target.value)}
+          className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+        >
+          <option value="all">Alle Bereiche</option>
+          <option value="akquise">Nur Akquise</option>
+        </select>
+        {sprintTargets.length > 0 && (
+          <select
+            value={targetFilter}
+            onChange={(e) => setTargetFilter(e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white max-w-[220px]"
+          >
+            <option value="all">Alle Zielkunden</option>
+            {sprintTargets.map((t) => (
+              <option key={t.id} value={t.id}>{t.companyName}</option>
+            ))}
+          </select>
+        )}
         <select
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value)}
@@ -748,9 +805,9 @@ export default function TasksPage() {
             <option key={key} value={key}>{cfg.label}</option>
           ))}
         </select>
-        {priorityFilter !== 'all' && (
+        {(priorityFilter !== 'all' || scope !== 'all' || targetFilter !== 'all') && (
           <button
-            onClick={() => setPriorityFilter('all')}
+            onClick={() => { setPriorityFilter('all'); setScope('all'); setTargetFilter('all') }}
             className="flex items-center gap-1 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
           >
             <X className="w-3.5 h-3.5" /> Reset
@@ -802,6 +859,7 @@ export default function TasksPage() {
         accounts={accounts}
         users={users}
         projects={projects}
+        sprintTargets={sprintTargets}
         defaultStatus={defaultStatus}
       />
 

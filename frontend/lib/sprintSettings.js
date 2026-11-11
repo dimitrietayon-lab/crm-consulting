@@ -8,7 +8,7 @@ export const SPRINT_DEFAULTS = {
   targetFirms: 878,
   teamCapacity: 10,
   revenueTarget: 500000,
-  sprintName: 'KI-Readiness Sprint',
+  sprintName: 'Akquise',
   sprintStart: null,
   sprintEnd: null,
   packages: null,

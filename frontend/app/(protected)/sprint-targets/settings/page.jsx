@@ -3,30 +3,27 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  ChevronLeft, Save, Users, Package, Settings as SettingsIcon, Building2, Megaphone,
-  Bell, Landmark, Linkedin, AlertTriangle, RotateCcw,
+  Save, Users, Settings as SettingsIcon, Building2, Megaphone,
+  Bell, Landmark, Linkedin, AlertTriangle, RotateCcw, Plus, Trash2, X,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { api } from '@/lib/api'
+import { getUser } from '@/lib/auth'
 import { SPRINT_DEFAULTS, refreshSprintSettings } from '@/lib/sprintSettings'
-import { TEAM_ROLES, SPRINT_PACKAGES, SPRINT_PACKAGE_LABELS } from '@/lib/sprintTeam'
+import { BRANCHEN } from '@/lib/sprintOptions'
 
 const CLS_INPUT = 'w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500'
 const CLS_LABEL = 'block text-xs font-medium text-gray-500 mb-1'
 
-const PACKAGE_DEFAULT_LABELS = { compact: 'Compact', standard: 'Standard', premium: 'Premium' }
-
-function normalizePackages(raw) {
-  const arr = Array.isArray(raw) ? raw : []
-  return SPRINT_PACKAGES.map((key) => {
-    const found = arr.find((p) => p && (p.key === key || p.id === key))
-    return {
-      key,
-      label: found?.label || PACKAGE_DEFAULT_LABELS[key],
-      price: found?.price != null ? String(found.price) : '',
-    }
-  })
-}
+const TABS = [
+  { id: 'quoten',            label: 'Quoten',            icon: SettingsIcon },
+  { id: 'info',              label: 'Akquise-Info',      icon: Building2 },
+  { id: 'branchen',          label: 'Branchen',          icon: Megaphone },
+  { id: 'foerderung',        label: 'Förderungen',       icon: Landmark },
+  { id: 'outreach',          label: 'Outreach',          icon: Linkedin },
+  { id: 'benachrichtigungen', label: 'Benachrichtigungen', icon: Bell },
+  { id: 'system',            label: 'System',            icon: AlertTriangle },
+]
 
 function normalizeSegmentsText(raw) {
   if (!Array.isArray(raw)) return ''
@@ -53,16 +50,40 @@ function defaultForm() {
     notifEmail: true,
     notifWeeklyDigest: true,
     notifOverdue: true,
-    bafaRate: 50,
-    bafaCap: '',
     linkedinDailyLimit: 25,
     linkedinInviteMessage: '',
   }
 }
 
+// Förderprogramme (Admin-Katalog). Rate wird als Prozent geführt, in den
+// Einstellungen aber als Bruch (0.5) gespeichert – hier umgerechnet.
+function normalizeFundingPrograms(bafaParams) {
+  const p = bafaParams && typeof bafaParams === 'object' ? bafaParams : null
+  if (Array.isArray(p?.programs) && p.programs.length) {
+    return p.programs.map((x, i) => ({
+      id: x.id || `fp-${i}`,
+      name: x.name || '',
+      rate: x.rate != null ? Math.round(Number(x.rate) * 100) : 50,
+      cap: x.cap != null ? String(x.cap) : '',
+      note: x.note || '',
+      active: x.active !== false,
+    }))
+  }
+  if (p && (p.rate != null || p.cap != null)) {
+    return [{
+      id: 'bafa',
+      name: 'BAFA',
+      rate: p.rate != null ? Math.round(Number(p.rate) * 100) : 50,
+      cap: p.cap != null ? String(p.cap) : '',
+      note: '',
+      active: true,
+    }]
+  }
+  return [{ id: 'bafa', name: 'BAFA', rate: 50, cap: '', note: '', active: true }]
+}
+
 function applySettingsToForm(settings) {
   const notif = normalizeNotifications(settings.notifications).notifications
-  const bafa = settings.bafaParams && typeof settings.bafaParams === 'object' ? settings.bafaParams : {}
   const linkedin = settings.linkedin && typeof settings.linkedin === 'object' ? settings.linkedin : {}
   return {
     ...defaultForm(),
@@ -73,22 +94,26 @@ function applySettingsToForm(settings) {
     notifEmail: notif.email,
     notifWeeklyDigest: notif.weeklyDigest,
     notifOverdue: notif.overdue,
-    bafaRate: bafa.rate != null ? Math.round(Number(bafa.rate) * 100) : 50,
-    bafaCap: bafa.cap != null ? String(bafa.cap) : '',
     linkedinDailyLimit: linkedin.dailyLimit != null ? linkedin.dailyLimit : 25,
     linkedinInviteMessage: linkedin.inviteMessage || '',
   }
 }
 
-export default function SprintSettingsPage() {
+export const SPRINT_SETTINGS_TABS = TABS
+
+export default function SprintSettingsPage({ embedded = false, activeTab: controlledTab }) {
   const router = useRouter()
   const [form, setForm] = useState(defaultForm)
-  const [packageRows, setPackageRows] = useState(() => normalizePackages(null))
-  const [pkgRoles, setPkgRoles] = useState([])
+  const [fundingPrograms, setFundingPrograms] = useState(() => normalizeFundingPrograms(null))
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [resetting, setResetting] = useState(false)
-  const [savingPkg, setSavingPkg] = useState(false)
+  const [localTab, setLocalTab] = useState('quoten')
+  const activeTab = controlledTab || localTab
+  const isAdmin = getUser()?.role === 'admin'
+  // System (Danger Zone / Reset) ist Admin-only
+  const visibleTabs = isAdmin ? TABS : TABS.filter((t) => t.id !== 'system')
+  const [newSegment, setNewSegment] = useState('')
 
   const loadSettings = useCallback(async () => {
     setLoading(true)
@@ -96,7 +121,7 @@ export default function SprintSettingsPage() {
       const settings = await refreshSprintSettings()
       const nextForm = applySettingsToForm(settings)
       setForm(nextForm)
-      setPackageRows(normalizePackages(settings.packages))
+      setFundingPrograms(normalizeFundingPrograms(settings.bafaParams))
 
       // Marktdaten (Segmente/Pakete) sind die gemeinsame Quelle für Marktauswahl & Import
       try {
@@ -115,14 +140,6 @@ export default function SprintSettingsPage() {
 
   useEffect(() => { loadSettings() }, [loadSettings])
 
-  useEffect(() => {
-    let active = true
-    api.get('/sprint-targets/package-roles')
-      .then((rows) => { if (active) setPkgRoles(Array.isArray(rows) ? rows : []) })
-      .catch(() => toast.error('Fehler beim Laden der Paket-Rollen'))
-    return () => { active = false }
-  }, [])
-
   function set(field, value) {
     setForm((p) => ({ ...p, [field]: value }))
   }
@@ -131,47 +148,36 @@ export default function SprintSettingsPage() {
     setForm((p) => ({ ...p, [field]: value === '' ? '' : Number(value) }))
   }
 
-  // ─── Paket-Rollen ──────────────────────────────────────────────────────────
+  // ─── Branchen (Chips) ──────────────────────────────────────────────────────
+  const segmentList = (form.segmentsText || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  const segmentSuggestions = BRANCHEN.filter(
+    (b) => !segmentList.some((s) => s.toLowerCase() === b.toLowerCase())
+  )
 
-  function rolesForPackage(pkg) {
-    return pkgRoles.filter((r) => r.package === pkg)
+  function addSegment(name) {
+    const n = (name || '').trim()
+    if (!n) return
+    if (segmentList.some((s) => s.toLowerCase() === n.toLowerCase())) return
+    set('segmentsText', [...segmentList, n].join(', '))
+  }
+  function removeSegment(name) {
+    set('segmentsText', segmentList.filter((s) => s !== name).join(', '))
   }
 
-  function isRequired(pkg, role) {
-    return rolesForPackage(pkg).some((r) => r.role === role)
+  function addFundingProgram() {
+    setFundingPrograms((prev) => [
+      ...prev,
+      { id: `fp-${Date.now()}`, name: '', rate: 50, cap: '', note: '', active: true },
+    ])
   }
-
-  function headcountFor(pkg, role) {
-    return rolesForPackage(pkg).find((r) => r.role === role)?.headcount || 1
+  function updateFundingProgram(idx, patch) {
+    setFundingPrograms((prev) => prev.map((p, i) => (i === idx ? { ...p, ...patch } : p)))
   }
-
-  function setRequired(pkg, role, on) {
-    setPkgRoles((prev) => {
-      const rest = prev.filter((r) => !(r.package === pkg && r.role === role))
-      return on ? [...rest, { package: pkg, role, headcount: 1 }] : rest
-    })
-  }
-
-  function setHeadcount(pkg, role, value) {
-    const n = Math.max(1, Number(value) || 1)
-    setPkgRoles((prev) =>
-      prev.map((r) => (r.package === pkg && r.role === role ? { ...r, headcount: n } : r))
-    )
-  }
-
-  async function savePackageRoles() {
-    setSavingPkg(true)
-    try {
-      for (const pkg of SPRINT_PACKAGES) {
-        const roles = rolesForPackage(pkg).map((r) => ({ role: r.role, headcount: r.headcount }))
-        await api.put(`/sprint-targets/package-roles/${pkg}`, { roles })
-      }
-      toast.success('Paket-Rollen gespeichert')
-    } catch (err) {
-      toast.error(err.message || 'Fehler beim Speichern')
-    } finally {
-      setSavingPkg(false)
-    }
+  function removeFundingProgram(idx) {
+    setFundingPrograms((prev) => prev.filter((_, i) => i !== idx))
   }
 
   // ─── Einstellungen speichern ───────────────────────────────────────────────
@@ -180,6 +186,18 @@ export default function SprintSettingsPage() {
     e.preventDefault()
     setSaving(true)
     try {
+      const programs = fundingPrograms
+        .filter((p) => (p.name || '').trim())
+        .map((p, i) => ({
+          id: p.id || `fp-${i}`,
+          name: p.name.trim(),
+          rate: (Number(p.rate) || 0) / 100,
+          cap: p.cap === '' ? null : Number(p.cap),
+          note: p.note || '',
+          active: p.active !== false,
+        }))
+      const firstActive = programs.find((p) => p.active) || programs[0] || null
+
       const payload = {
         sprintName: form.sprintName || null,
         sprintStart: form.sprintStart || null,
@@ -191,9 +209,6 @@ export default function SprintSettingsPage() {
         targetFirms: Number(form.targetFirms) || 0,
         teamCapacity: Number(form.teamCapacity) || 0,
         revenueTarget: Number(form.revenueTarget) || 0,
-        packages: packageRows
-          .filter((p) => p.label || p.price)
-          .map((p) => ({ key: p.key, label: p.label || p.key, price: p.price === '' ? null : Number(p.price) })),
         segments: (form.segmentsText || '')
           .split(',')
           .map((s) => s.trim())
@@ -204,8 +219,10 @@ export default function SprintSettingsPage() {
           overdue: Boolean(form.notifOverdue),
         },
         bafaParams: {
-          rate: (Number(form.bafaRate) || 0) / 100,
-          cap: form.bafaCap === '' ? null : Number(form.bafaCap),
+          programs,
+          // Legacy-Einzelwerte für rückwärtskompatible Verbraucher (1. aktives Programm)
+          rate: firstActive ? firstActive.rate : null,
+          cap: firstActive ? firstActive.cap : null,
         },
         linkedin: {
           dailyLimit: Number(form.linkedinDailyLimit) || 0,
@@ -214,12 +231,9 @@ export default function SprintSettingsPage() {
       }
       const saved = await api.put('/sprint-settings', payload)
 
-      // Segmente & Pakete zusätzlich in die Marktkonfiguration spiegeln
+      // Segmente zusätzlich in die Marktkonfiguration spiegeln
       if (payload.segments.length) {
         api.put('/sprint-market/segments', { segments: payload.segments }).catch(() => {})
-      }
-      if (payload.packages.length) {
-        api.put('/sprint-market/packages', { packages: payload.packages }).catch(() => {})
       }
       try {
         if (typeof window !== 'undefined') window.localStorage.setItem('sprint_settings', JSON.stringify(saved))
@@ -227,7 +241,6 @@ export default function SprintSettingsPage() {
         // ignorieren
       }
       setForm(applySettingsToForm(saved))
-      setPackageRows(normalizePackages(saved.packages))
       refreshSprintSettings().catch(() => {})
       toast.success('Einstellungen gespeichert')
     } catch (err) {
@@ -243,7 +256,6 @@ export default function SprintSettingsPage() {
     try {
       const res = await api.post('/sprint-settings/reset', {})
       setForm(applySettingsToForm(res))
-      setPackageRows(normalizePackages(res.packages))
       try {
         if (typeof window !== 'undefined') window.localStorage.setItem('sprint_settings', JSON.stringify(res))
       } catch {
@@ -258,37 +270,51 @@ export default function SprintSettingsPage() {
     }
   }
 
-  function updatePackageRow(key, patch) {
-    setPackageRows((prev) => prev.map((p) => (p.key === key ? { ...p, ...patch } : p)))
-  }
-
   return (
-    <div className="space-y-4">
+    <div className={embedded ? 'space-y-4' : 'p-6 max-w-5xl mx-auto space-y-4'}>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/sprint-targets')} className="flex items-center gap-1 text-gray-500 hover:text-gray-800 text-sm">
-            <ChevronLeft className="w-4 h-4" /> Zurück
-          </button>
-          <div className="h-5 w-px bg-gray-200" />
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Sprint-Einstellungen</h1>
-            <p className="text-sm text-gray-500">Sprint-Info, Quoten, Pakete, Benachrichtigungen und Förderparameter</p>
-          </div>
+      {!embedded && (
+        <div className="mb-2">
+          <h1 className="text-2xl font-bold text-gray-900">Akquise-Einstellungen</h1>
+          <p className="text-sm text-gray-500 mt-1">Akquise-Info, Quoten, Benachrichtigungen und Förderparameter</p>
         </div>
-      </div>
+      )}
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
         </div>
       ) : (
         <form onSubmit={handleSave} className="space-y-4">
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+          {/* Tabs */}
+          {!embedded && (
+            <div className="flex flex-wrap gap-1 bg-gray-100 rounded-lg p-1 w-fit">
+              {visibleTabs.map((tab) => {
+                const Icon = tab.icon
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setLocalTab(tab.id)}
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                      activeTab === tab.id
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          <div className={`grid grid-cols-1 lg:grid-cols-3 gap-4 items-start ${activeTab === 'quoten' ? '' : 'hidden'}`}>
             <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-5">
               <div className="flex items-center gap-2 mb-4">
-                <SettingsIcon className="w-4 h-4 text-violet-600" />
+                <SettingsIcon className="w-4 h-4 text-blue-600" />
                 <h2 className="text-sm font-semibold text-gray-900">Quoten &amp; Parameter</h2>
               </div>
 
@@ -352,15 +378,15 @@ export default function SprintSettingsPage() {
             </div>
           </div>
 
-          {/* Sprint-Info */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          {/* Akquise-Info */}
+          <div className={`bg-white rounded-xl border border-gray-200 p-5 ${activeTab === 'info' ? '' : 'hidden'}`}>
             <div className="flex items-center gap-2 mb-4">
-              <Building2 className="w-4 h-4 text-violet-600" />
-              <h2 className="text-sm font-semibold text-gray-900">Sprint-Info</h2>
+              <Building2 className="w-4 h-4 text-blue-600" />
+              <h2 className="text-sm font-semibold text-gray-900">Akquise-Info</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className={CLS_LABEL}>Name des Sprints</label>
+                <label className={CLS_LABEL}>Name der Akquise</label>
                 <input value={form.sprintName || ''} onChange={(e) => set('sprintName', e.target.value)} className={CLS_INPUT} />
               </div>
               <div>
@@ -374,53 +400,86 @@ export default function SprintSettingsPage() {
             </div>
           </div>
 
-          {/* Pakete & Preise */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <div className="flex items-center gap-2 mb-1">
-              <Package className="w-4 h-4 text-violet-600" />
-              <h2 className="text-sm font-semibold text-gray-900">Pakete &amp; Preise</h2>
-            </div>
-            <p className="text-sm text-gray-500 mb-4">
-              Paketnamen und Standardpreise. Der Preis wird beim Anlegen eines Angebots als Position vorgeschlagen.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {packageRows.map((pkg) => (
-                <div key={pkg.key} className="rounded-lg border border-gray-200 p-4">
-                  <p className="text-xs font-semibold text-gray-500 uppercase mb-2">{pkg.key}</p>
-                  <label className={CLS_LABEL}>Bezeichnung</label>
-                  <input value={pkg.label} onChange={(e) => updatePackageRow(pkg.key, { label: e.target.value })} className={`${CLS_INPUT} mb-2`} />
-                  <label className={CLS_LABEL}>Preis (€)</label>
-                  <input
-                    type="number" min="0" step="0.01"
-                    value={pkg.price}
-                    onChange={(e) => updatePackageRow(pkg.key, { price: e.target.value })}
-                    className={CLS_INPUT}
-                    placeholder="z.B. 9990"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Branchen */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className={`bg-white rounded-xl border border-gray-200 p-5 ${activeTab === 'branchen' ? '' : 'hidden'}`}>
             <div className="flex items-center gap-2 mb-1">
-              <Megaphone className="w-4 h-4 text-violet-600" />
+              <Megaphone className="w-4 h-4 text-blue-600" />
               <h2 className="text-sm font-semibold text-gray-900">Branchen</h2>
+              <span className="px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">{segmentList.length}</span>
             </div>
-            <p className="text-sm text-gray-500 mb-4">Kommagetrennte Liste der Branchen für Filter und Auswertungen.</p>
-            <input
-              value={form.segmentsText}
-              onChange={(e) => set('segmentsText', e.target.value)}
-              className={CLS_INPUT}
-              placeholder="z.B. Banken, Maschinenbau & Elektro, Gesundheit & Soziales"
-            />
+            <p className="text-sm text-gray-500 mb-4">Diese Branchen stehen bei Zielkunden, Filtern und Auswertungen zur Auswahl.</p>
+
+            {/* Ausgewählte Branchen */}
+            {segmentList.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-gray-200 py-8 text-center text-sm text-gray-400 mb-4">
+                Noch keine Branchen hinterlegt.
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {segmentList.map((name) => (
+                  <span key={name} className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full bg-gray-100 text-sm text-gray-800">
+                    {name}
+                    <button
+                      type="button"
+                      onClick={() => removeSegment(name)}
+                      className="p-0.5 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50"
+                      title="Entfernen"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Eigene Branche hinzufügen */}
+            <div className="flex gap-2">
+              <input
+                value={newSegment}
+                onChange={(e) => setNewSegment(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    addSegment(newSegment)
+                    setNewSegment('')
+                  }
+                }}
+                className={CLS_INPUT}
+                placeholder="Weitere Branche hinzufügen…"
+              />
+              <button
+                type="button"
+                onClick={() => { addSegment(newSegment); setNewSegment('') }}
+                className="shrink-0 flex items-center gap-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+              >
+                <Plus className="w-4 h-4" /> Hinzufügen
+              </button>
+            </div>
+
+            {/* Vorschläge aus der Standardliste */}
+            {segmentSuggestions.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <p className="text-xs font-medium text-gray-500 mb-2">Vorschläge aus der Standardliste</p>
+                <div className="flex flex-wrap gap-2">
+                  {segmentSuggestions.map((name) => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => addSegment(name)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-gray-200 text-sm text-gray-600 hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> {name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Benachrichtigungen */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className={`bg-white rounded-xl border border-gray-200 p-5 ${activeTab === 'benachrichtigungen' ? '' : 'hidden'}`}>
             <div className="flex items-center gap-2 mb-4">
-              <Bell className="w-4 h-4 text-violet-600" />
+              <Bell className="w-4 h-4 text-blue-600" />
               <h2 className="text-sm font-semibold text-gray-900">Benachrichtigungen</h2>
             </div>
             <div className="space-y-2.5">
@@ -434,7 +493,7 @@ export default function SprintSettingsPage() {
                     type="checkbox"
                     checked={Boolean(form[item.key])}
                     onChange={(e) => set(item.key, e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   {item.label}
                 </label>
@@ -442,29 +501,67 @@ export default function SprintSettingsPage() {
             </div>
           </div>
 
-          {/* BAFA */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <div className="flex items-center gap-2 mb-1">
-              <Landmark className="w-4 h-4 text-violet-600" />
-              <h2 className="text-sm font-semibold text-gray-900">BAFA-Parameter</h2>
-            </div>
-            <p className="text-sm text-gray-500 mb-4">Standardwerte für den Fördersummen-Rechner.</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className={CLS_LABEL}>Förderquote (%)</label>
-                <input type="number" min="0" max="100" step="1" value={form.bafaRate} onChange={(e) => setNum('bafaRate', e.target.value)} className={CLS_INPUT} />
+          {/* Förderprogramme */}
+          <div className={`bg-white rounded-xl border border-gray-200 p-5 ${activeTab === 'foerderung' ? '' : 'hidden'}`}>
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <Landmark className="w-4 h-4 text-blue-600" />
+                <h2 className="text-sm font-semibold text-gray-900">Förderprogramme</h2>
               </div>
-              <div>
-                <label className={CLS_LABEL}>Obergrenze (€)</label>
-                <input type="number" min="0" step="1" value={form.bafaCap} onChange={(e) => set('bafaCap', e.target.value)} className={CLS_INPUT} placeholder="optional" />
-              </div>
+              <button
+                type="button"
+                onClick={addFundingProgram}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm text-blue-700 border border-blue-200 rounded-md hover:bg-blue-50"
+              >
+                <Plus className="w-4 h-4" /> Programm
+              </button>
             </div>
+            <p className="text-sm text-gray-500 mb-4">
+              Der Admin stellt Förderprogramme bereit; sie stehen bei jedem Zielkunden zur Auswahl.
+            </p>
+            {fundingPrograms.length === 0 ? (
+              <p className="text-sm text-gray-500">Noch keine Förderprogramme hinterlegt.</p>
+            ) : (
+              <div className="space-y-3">
+                {fundingPrograms.map((p, idx) => (
+                  <div key={p.id} className="grid grid-cols-12 gap-2 items-end border border-gray-100 rounded-lg p-3">
+                    <div className="col-span-4">
+                      <label className={CLS_LABEL}>Name</label>
+                      <input value={p.name} onChange={(e) => updateFundingProgram(idx, { name: e.target.value })} placeholder="z. B. BAFA" className={CLS_INPUT} />
+                    </div>
+                    <div className="col-span-2">
+                      <label className={CLS_LABEL}>Quote (%)</label>
+                      <input type="number" min="0" max="100" value={p.rate} onChange={(e) => updateFundingProgram(idx, { rate: e.target.value === '' ? '' : Number(e.target.value) })} className={CLS_INPUT} />
+                    </div>
+                    <div className="col-span-2">
+                      <label className={CLS_LABEL}>Obergrenze (€)</label>
+                      <input type="number" min="0" value={p.cap} onChange={(e) => updateFundingProgram(idx, { cap: e.target.value })} placeholder="optional" className={CLS_INPUT} />
+                    </div>
+                    <div className="col-span-3">
+                      <label className={CLS_LABEL}>Notiz</label>
+                      <input value={p.note} onChange={(e) => updateFundingProgram(idx, { note: e.target.value })} placeholder="optional" className={CLS_INPUT} />
+                    </div>
+                    <div className="col-span-1 flex items-center justify-end gap-1 pb-1.5">
+                      <input
+                        type="checkbox"
+                        checked={p.active !== false}
+                        onChange={(e) => updateFundingProgram(idx, { active: e.target.checked })}
+                        title="Aktiv (zur Auswahl verfügbar)"
+                      />
+                      <button onClick={() => removeFundingProgram(idx)} className="p-1.5 rounded hover:bg-red-50 text-red-600" title="Entfernen">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* LinkedIn */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className={`bg-white rounded-xl border border-gray-200 p-5 ${activeTab === 'outreach' ? '' : 'hidden'}`}>
             <div className="flex items-center gap-2 mb-4">
-              <Linkedin className="w-4 h-4 text-violet-600" />
+              <Linkedin className="w-4 h-4 text-blue-600" />
               <h2 className="text-sm font-semibold text-gray-900">LinkedIn</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -479,73 +576,8 @@ export default function SprintSettingsPage() {
             </div>
           </div>
 
-          {/* Pakete & Rollen */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <div className="flex items-center gap-2 mb-1">
-              <Package className="w-4 h-4 text-violet-600" />
-              <h2 className="text-sm font-semibold text-gray-900">Pakete &amp; Rollen</h2>
-            </div>
-            <p className="text-sm text-gray-500 mb-4">
-              Lege je Paket fest, welche Rollen benötigt werden und welchen Umfang (Anzahl Mitarbeiter) sie haben.
-              Diese Vorgaben gelten als Standard für Kunden mit diesem Paket.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {SPRINT_PACKAGES.map((pkg) => (
-                <div key={pkg} className="rounded-lg border border-gray-200 p-4">
-                  <p className="text-sm font-semibold text-gray-900 mb-3">{SPRINT_PACKAGE_LABELS[pkg]}</p>
-                  <div className="space-y-2.5">
-                    {TEAM_ROLES.map((role) => {
-                      const on = isRequired(pkg, role.key)
-                      return (
-                        <div key={role.key} className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            id={`${pkg}-${role.key}`}
-                            checked={on}
-                            onChange={(e) => setRequired(pkg, role.key, e.target.checked)}
-                            className="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
-                          />
-                          <label htmlFor={`${pkg}-${role.key}`} className="flex-1 text-sm text-gray-700 cursor-pointer">
-                            {role.label}
-                          </label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={on ? headcountFor(pkg, role.key) : 1}
-                            disabled={!on}
-                            onChange={(e) => setHeadcount(pkg, role.key, e.target.value)}
-                            className="w-16 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-900 bg-white disabled:bg-gray-50 disabled:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            title="Anzahl Mitarbeiter (Umfang)"
-                          />
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-end pt-4">
-              <button
-                type="button"
-                onClick={savePackageRoles}
-                disabled={savingPkg}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700 disabled:opacity-50"
-              >
-                <Save className="w-4 h-4" /> {savingPkg ? 'Speichern...' : 'Paket-Rollen speichern'}
-              </button>
-            </div>
-          </div>
-
-          <div className="flex justify-end">
-            <button type="submit" disabled={saving} className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700 disabled:opacity-50">
-              <Save className="w-4 h-4" /> {saving ? 'Speichern...' : 'Alle Einstellungen speichern'}
-            </button>
-          </div>
-
           {/* Danger Zone */}
-          <div className="bg-white rounded-xl border border-red-200 p-5">
+          <div className={`bg-white rounded-xl border border-red-200 p-5 ${activeTab === 'system' ? '' : 'hidden'}`}>
             <div className="flex items-center gap-2 mb-1">
               <AlertTriangle className="w-4 h-4 text-red-600" />
               <h2 className="text-sm font-semibold text-red-700">Zurücksetzen</h2>
@@ -560,6 +592,12 @@ export default function SprintSettingsPage() {
               className="flex items-center gap-2 px-4 py-2 text-sm text-red-700 border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50"
             >
               <RotateCcw className="w-4 h-4" /> {resetting ? 'Zurücksetzen...' : 'Auf Standardwerte zurücksetzen'}
+            </button>
+          </div>
+
+          <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t border-gray-200 py-3 flex justify-end">
+            <button type="submit" disabled={saving} className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+              <Save className="w-4 h-4" /> {saving ? 'Speichern...' : 'Alle Einstellungen speichern'}
             </button>
           </div>
         </form>

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
+const { linkAccountOnWin } = require('../lib/sprintAccount');
 
 const prisma = new PrismaClient();
 
@@ -49,6 +50,10 @@ async function ensureTarget(targetId) {
       package: true,
       offerValue: true,
       handoverDate: true,
+      segment: true,
+      website: true,
+      numberOfEmployees: true,
+      accountId: true,
     },
   });
   return target;
@@ -164,6 +169,9 @@ router.post('/:targetId/confirm', async (req, res) => {
         data: { status: 'gewonnen', result: 'gewonnen' },
       }),
     ]);
+
+    // Abschluss → CRM-Account anlegen/verknüpfen
+    await linkAccountOnWin(prisma, { ...target, status: 'gewonnen' });
 
     res.json({ handover, done, total: CHECKLIST_POINTS.length });
   } catch (err) {

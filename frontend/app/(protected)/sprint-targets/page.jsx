@@ -468,13 +468,13 @@ function MultiSelect({ label, options, selected, onChange }) {
         onClick={() => setOpen((o) => !o)}
         className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border transition-colors ${
           selected.length
-            ? 'bg-violet-50 border-violet-200 text-violet-700'
+            ? 'bg-blue-50 border-blue-200 text-blue-700'
             : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
         }`}
       >
         {label}
         {selected.length > 0 && (
-          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-violet-600 text-white text-[10px] font-bold">
+          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-blue-600 text-white text-[10px] font-bold">
             {selected.length}
           </span>
         )}
@@ -491,7 +491,7 @@ function MultiSelect({ label, options, selected, onChange }) {
                 type="checkbox"
                 checked={selected.includes(o.value)}
                 onChange={() => toggle(o.value)}
-                className="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               {o.label}
             </label>
@@ -703,17 +703,17 @@ export default function SprintTargetsPage() {
       {/* Header */}
       <div className="flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-9 h-9 bg-violet-100 rounded-lg">
-            <Target className="w-5 h-5 text-violet-600" />
+          <div className="flex items-center justify-center w-9 h-9 bg-blue-100 rounded-lg">
+            <Target className="w-5 h-5 text-blue-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Sprint-Vertrieb</h1>
-            <p className="text-sm text-gray-500">KI-Readiness Sprint — Zielkunden</p>
+            <h1 className="text-2xl font-bold text-gray-900">Zielkunden</h1>
+            <p className="text-sm text-gray-500">Zielkunden in der Akquise</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => router.push('/sprint-targets/activities')}
+            onClick={() => router.push('/activities?onlySprint=true')}
             className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
           >
             <Activity className="w-4 h-4" /> Aktivitäten
@@ -732,7 +732,7 @@ export default function SprintTargetsPage() {
           </button>
           <button
             onClick={() => { setDefaultStatus('offen'); setShowCreate(true) }}
-            className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" /> Zielkunde
           </button>
@@ -746,7 +746,7 @@ export default function SprintTargetsPage() {
           {[
             { label: 'Gesamt', value: stats.total, icon: Users, color: 'text-gray-600', bg: 'bg-gray-50' },
             { label: 'Im Gespräch', value: stats.imGespraech, icon: Briefcase, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-            { label: 'Angebote', value: stats.angebote, icon: TrendingUp, color: 'text-violet-600', bg: 'bg-violet-50' },
+            { label: 'Angebote', value: stats.angebote, icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
             { label: 'Gewonnen', value: stats.gewonnen, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
             { label: 'Pipeline', value: formatCurrency(stats.pipelineValue || 0), icon: Euro, color: 'text-blue-600', bg: 'bg-blue-50' },
             { label: 'Konversion', value: `${stats.konversion || 0}%`, icon: Target, color: 'text-indigo-600', bg: 'bg-indigo-50' },
@@ -768,7 +768,7 @@ export default function SprintTargetsPage() {
       <div className="flex items-center gap-2 shrink-0 flex-wrap">
         <button
           onClick={() => setFilterSegment('')}
-          className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${!filterSegment ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
+          className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${!filterSegment ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
         >
           Alle
         </button>
@@ -776,7 +776,7 @@ export default function SprintTargetsPage() {
           <button
             key={g}
             onClick={() => setFilterSegment(filterSegment === g ? '' : g)}
-            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${filterSegment === g ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
+            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${filterSegment === g ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
           >
             {g}
           </button>
@@ -809,7 +809,7 @@ export default function SprintTargetsPage() {
           <button
             onClick={() => changeView('kanban')}
             className={`flex items-center gap-1.5 px-3 py-1 text-sm rounded-md transition-colors ${
-              view === 'kanban' ? 'bg-violet-600 text-white' : 'text-gray-600 hover:bg-gray-50'
+              view === 'kanban' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'
             }`}
             title="Kanban-Ansicht"
           >
@@ -818,7 +818,7 @@ export default function SprintTargetsPage() {
           <button
             onClick={() => changeView('liste')}
             className={`flex items-center gap-1.5 px-3 py-1 text-sm rounded-md transition-colors ${
-              view === 'liste' ? 'bg-violet-600 text-white' : 'text-gray-600 hover:bg-gray-50'
+              view === 'liste' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'
             }`}
             title="Listen-Ansicht"
           >
@@ -837,7 +837,7 @@ export default function SprintTargetsPage() {
               value={filters.q}
               onChange={(e) => setFilter('q', e.target.value)}
               placeholder="Unternehmen oder Kontakt suchen…"
-              className="w-64 border border-gray-300 rounded-md pl-9 pr-3 py-1.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+              className="w-64 border border-gray-300 rounded-md pl-9 pr-3 py-1.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <MultiSelect
@@ -879,7 +879,7 @@ export default function SprintTargetsPage() {
       {loading ? (
         <div className="flex items-center justify-center flex-1 py-20">
           <div className="flex flex-col items-center gap-3">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
             <p className="text-sm text-gray-500">Lade Zielkunden...</p>
           </div>
         </div>
@@ -928,7 +928,7 @@ export default function SprintTargetsPage() {
                         className="inline-flex items-center gap-1 hover:text-gray-800"
                       >
                         {label}
-                        <ArrowUpDown className={`w-3 h-3 ${sort.field === key ? 'text-violet-600' : 'text-gray-300'}`} />
+                        <ArrowUpDown className={`w-3 h-3 ${sort.field === key ? 'text-blue-600' : 'text-gray-300'}`} />
                       </button>
                     </th>
                   ))}
@@ -991,7 +991,7 @@ export default function SprintTargetsPage() {
                       <td className="px-4 py-2.5 text-right whitespace-nowrap">
                         <button
                           onClick={(e) => { e.stopPropagation(); setLogTarget(t) }}
-                          className="p-1.5 rounded hover:bg-violet-50 text-violet-600"
+                          className="p-1.5 rounded hover:bg-blue-50 text-blue-600"
                           title="Aktivität protokollieren"
                         >
                           <Activity className="w-4 h-4" />

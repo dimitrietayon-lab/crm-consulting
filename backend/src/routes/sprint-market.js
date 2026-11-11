@@ -17,13 +17,29 @@ function priority(value) {
   return toInt(value, { min: 1, max: 5, defaultValue: 3 });
 }
 
+// Pakete inklusive ihrer enthaltenen Leistungen (mit Umfang)
+const PACKAGE_INCLUDE = {
+  services: {
+    include: {
+      service: {
+        select: { id: true, name: true, category: true, unit: true, dayRate: true, fixedFee: true },
+      },
+    },
+    orderBy: { createdAt: 'asc' },
+  },
+};
+
+function loadPackages() {
+  return prisma.sprintPackageInfo.findMany({ include: PACKAGE_INCLUDE, orderBy: { price: 'asc' } });
+}
+
 // GET /api/sprint-market — komplette Marktkonfiguration
 router.get('/', async (req, res) => {
   try {
     const [regions, wzMappings, packages, segments] = await Promise.all([
       prisma.sprintRegion.findMany({ orderBy: [{ priority: 'asc' }, { bundesland: 'asc' }] }),
       prisma.sprintWzMapping.findMany({ orderBy: [{ priority: 'asc' }, { wzCode: 'asc' }] }),
-      prisma.sprintPackageInfo.findMany({ orderBy: { price: 'asc' } }),
+      loadPackages(),
       prisma.sprintSegment.findMany({ orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }] }),
     ]);
     res.json({ regions, wzMappings, packages, segments });
@@ -107,7 +123,7 @@ router.put('/wz-mappings', async (req, res) => {
   }
 });
 
-// PUT /api/sprint-market/packages — Pakete ersetzen
+// PUT /api/sprint-market/packages — Pakete inkl. Leistungen ersetzen
 router.put('/packages', async (req, res) => {
   try {
     const rows = asArray(req.body?.packages);
@@ -117,29 +133,60 @@ router.put('/packages', async (req, res) => {
       const label = text(p.label);
       if (!key || !label) continue;
       const price = Number(p.price);
+
+      // Leistungen mit Umfang (Menge) – Dubletten werden zusammengefasst
+      const services = [];
+      const seenServices = new Set();
+      for (const s of asArray(p.services)) {
+        const serviceId = text(s?.serviceId || s?.id);
+        if (!serviceId || seenServices.has(serviceId)) continue;
+        seenServices.add(serviceId);
+        services.push({
+          serviceId,
+          quantity: Math.max(1, toInt(s?.quantity, { defaultValue: 1 })),
+        });
+      }
+
       byKey.set(key, {
         key,
         label,
         price: Number.isFinite(price) ? price : 0,
         description: text(p.description),
         active: toBool(p.active, { defaultValue: true }),
+        services,
       });
     }
     if (byKey.size === 0) return res.status(400).json({ error: 'Keine gültigen Pakete übergeben' });
 
-    await prisma.$transaction([
-      prisma.sprintPackageInfo.deleteMany({ where: { key: { notIn: [...byKey.keys()] } } }),
-      ...Array.from(byKey.values()).map((row) =>
-        prisma.sprintPackageInfo.upsert({
-          where: { key: row.key },
-          create: row,
-          update: row,
-        })
-      ),
-    ]);
+    const keys = [...byKey.keys()];
+    await prisma.$transaction(async (tx) => {
+      // Entfernte Pakete löschen (Leistungen via FK-Cascade, Rollen explizit)
+      await tx.sprintPackageInfo.deleteMany({ where: { key: { notIn: keys } } });
+      await tx.sprintPackageRole.deleteMany({ where: { package: { notIn: keys } } });
 
-    const packages = await prisma.sprintPackageInfo.findMany({ orderBy: { price: 'asc' } });
-    res.json(packages);
+      for (const row of byKey.values()) {
+        const { services, ...info } = row;
+        await tx.sprintPackageInfo.upsert({
+          where: { key: row.key },
+          create: info,
+          update: info,
+        });
+
+        const serviceIds = services.map((s) => s.serviceId);
+        await tx.sprintPackageService.deleteMany({
+          where: { package: row.key, serviceId: { notIn: serviceIds } },
+        });
+        for (const s of services) {
+          await tx.sprintPackageService.upsert({
+            where: { package_serviceId: { package: row.key, serviceId: s.serviceId } },
+            create: { package: row.key, serviceId: s.serviceId, quantity: s.quantity },
+            update: { quantity: s.quantity },
+          });
+        }
+      }
+    });
+
+    res.json(await loadPackages());
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

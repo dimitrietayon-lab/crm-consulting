@@ -8,9 +8,6 @@ import { api } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
 import { getSprintSettings } from '@/lib/sprintSettings'
 
-const PACKAGES = ['compact', 'standard', 'premium']
-const PACKAGE_LABELS = { compact: 'Compact', standard: 'Standard', premium: 'Premium' }
-
 const CLS_INPUT = 'w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500'
 const CLS_LABEL = 'block text-xs font-medium text-gray-500 mb-1'
 
@@ -37,7 +34,8 @@ function NewOfferContent() {
   const searchParams = useSearchParams()
   const [targets, setTargets] = useState([])
   const [sprintTargetId, setSprintTargetId] = useState(searchParams.get('target') || '')
-  const [pkg, setPkg] = useState('standard')
+  const [packages, setPackages] = useState([])
+  const [pkg, setPkg] = useState('')
   const [validUntil, setValidUntil] = useState(() => defaultValidUntil(21))
   const [notes, setNotes] = useState('')
   const [items, setItems] = useState([emptyItem()])
@@ -47,6 +45,11 @@ function NewOfferContent() {
   useEffect(() => {
     const settings = getSprintSettings()
     setValidUntil(defaultValidUntil(settings.offerValidityDays))
+
+    // Pakete dynamisch aus den Einstellungen (vom Admin verwaltet)
+    const list = Array.isArray(settings.packages) ? settings.packages : []
+    setPackages(list)
+    setPkg((cur) => (list.some((p) => p.key === cur) ? cur : list[0]?.key || ''))
 
     // Auswahl aus der Proposals-Seite übernehmen
     try {
@@ -83,14 +86,12 @@ function NewOfferContent() {
   // Paketauswahl: hinterlegten Paketpreis als erste Position übernehmen, wenn leer
   function applyPackage(next) {
     setPkg(next)
-    const settings = getSprintSettings()
-    const packages = Array.isArray(settings.packages) ? settings.packages : []
     const match = packages.find((p) => p && (p.key === next || p.id === next))
     if (match && match.price) {
       setItems((prev) => {
         const cleaned = prev.filter((i) => i.description || i.unitPrice)
         const base = {
-          description: `Paket ${match.label || PACKAGE_LABELS[next] || next}`,
+          description: `Paket ${match.label || next}`,
           quantity: 1,
           unitPrice: String(match.price),
         }
@@ -154,12 +155,12 @@ function NewOfferContent() {
   return (
     <div className="space-y-4 max-w-4xl">
       <div className="flex items-center gap-3">
-        <button onClick={() => router.push('/sprint-targets/offers')} className="flex items-center gap-1 text-gray-500 hover:text-gray-800 text-sm">
+        <button onClick={() => router.push('/proposals?tab=akquise')} className="flex items-center gap-1 text-gray-500 hover:text-gray-800 text-sm">
           <ChevronLeft className="w-4 h-4" /> Zurück
         </button>
         <div className="h-5 w-px bg-gray-200" />
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Neues Angebot</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Neues Angebot</h1>
           <p className="text-sm text-gray-500">Zielkunde, Paket und Positionen erfassen</p>
         </div>
       </div>
@@ -177,7 +178,8 @@ function NewOfferContent() {
             <div>
               <label className={CLS_LABEL}>Paket</label>
               <select value={pkg} onChange={(e) => applyPackage(e.target.value)} className={CLS_INPUT}>
-                {PACKAGES.map((p) => <option key={p} value={p}>{PACKAGE_LABELS[p]}</option>)}
+                {packages.length === 0 && <option value="">-- kein Paket --</option>}
+                {packages.map((p) => <option key={p.key} value={p.key}>{p.label || p.key}</option>)}
               </select>
             </div>
           </div>
@@ -196,7 +198,7 @@ function NewOfferContent() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-gray-900">Positionen</h2>
-            <button type="button" onClick={addItem} className="flex items-center gap-1 text-sm text-violet-700 hover:text-violet-900">
+            <button type="button" onClick={addItem} className="flex items-center gap-1 text-sm text-blue-700 hover:text-blue-900">
               <Plus className="w-4 h-4" /> Position
             </button>
           </div>
@@ -253,10 +255,10 @@ function NewOfferContent() {
             Direkt versenden
           </label>
           <div className="flex gap-3">
-            <button type="button" onClick={() => router.push('/sprint-targets/offers')} className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50">
+            <button type="button" onClick={() => router.push('/proposals?tab=akquise')} className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50">
               Abbrechen
             </button>
-            <button type="submit" disabled={saving} className="px-5 py-2 text-sm text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50">
+            <button type="submit" disabled={saving} className="px-5 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">
               {saving ? 'Speichern...' : sendNow ? 'Erstellen & senden' : 'Als Entwurf speichern'}
             </button>
           </div>
@@ -268,7 +270,7 @@ function NewOfferContent() {
 
 export default function NewSprintOfferPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" /></div>}>
+    <Suspense fallback={<div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>}>
       <NewOfferContent />
     </Suspense>
   )

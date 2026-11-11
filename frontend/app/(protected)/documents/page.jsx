@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 import {
   Plus,
@@ -304,6 +305,12 @@ function DocumentCard({ doc, onDelete, onDownload, onNewVersion, onShowHistory }
             {doc.project.name}
           </p>
         )}
+        {doc.sprintTarget?.companyName && (
+          <p className="text-xs text-emerald-600 flex items-center gap-1">
+            <Building2 className="w-3 h-3" />
+            {doc.sprintTarget.companyName}
+          </p>
+        )}
         {doc.task?.title && (
           <p className="text-xs text-emerald-600 flex items-center gap-1">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
@@ -392,7 +399,7 @@ function DocumentRow({ doc, onDelete, onDownload, onNewVersion, onShowHistory })
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
             {doc.task.title}
           </span>
-        ) : (doc.account?.companyName || doc.project?.name || '—')}
+        ) : (doc.account?.companyName || doc.project?.name || (doc.sprintTarget?.companyName && `Akquise: ${doc.sprintTarget.companyName}`) || '—')}
       </td>
       <td className="px-4 py-3">
         {doc.isInternal !== false ? (
@@ -494,9 +501,12 @@ function FolderView({ documents, onDelete, onDownload, onNewVersion, onShowHisto
   // Build tree: accountKey → { account, projects: { projKey → { project, docs } }, noProject }
   const tree = {}
   for (const doc of documents) {
-    const accountKey = doc.accountId || '__none__'
+    const sprintId = doc.sprintTarget?.id || doc.sprintTargetId
+    const accountKey = doc.accountId || (sprintId ? `sprint:${sprintId}` : '__none__')
     if (!tree[accountKey]) {
-      tree[accountKey] = { account: doc.account || null, projects: {}, noProject: [] }
+      const account = doc.account
+        || (doc.sprintTarget ? { companyName: doc.sprintTarget.companyName } : null)
+      tree[accountKey] = { account, projects: {}, noProject: [] }
     }
     if (doc.projectId) {
       if (!tree[accountKey].projects[doc.projectId]) {
@@ -615,13 +625,14 @@ function FolderView({ documents, onDelete, onDownload, onNewVersion, onShowHisto
   )
 }
 
-function UploadModal({ isOpen, onClose, onUploaded, accounts, projects }) {
+function UploadModal({ isOpen, onClose, onUploaded, accounts, projects, sprintTargets = [] }) {
   const [file, setFile] = useState(null)
   const [form, setForm] = useState({
     name: '',
     category: 'Other',
     accountId: '',
     projectId: '',
+    sprintTargetId: '',
     isInternal: true,
     expiryDate: '',
   })
@@ -654,6 +665,7 @@ function UploadModal({ isOpen, onClose, onUploaded, accounts, projects }) {
       formData.append('isInternal', String(form.isInternal))
       if (form.accountId) formData.append('accountId', form.accountId)
       if (form.projectId) formData.append('projectId', form.projectId)
+      if (form.sprintTargetId) formData.append('sprintTargetId', form.sprintTargetId)
       if (form.expiryDate) formData.append('expiryDate', form.expiryDate)
 
       const result = await api.upload('/documents/upload', formData)
@@ -661,7 +673,7 @@ function UploadModal({ isOpen, onClose, onUploaded, accounts, projects }) {
       onUploaded(result)
       onClose()
       setFile(null)
-      setForm({ name: '', category: 'Other', accountId: '', projectId: '', isInternal: true, expiryDate: '' })
+      setForm({ name: '', category: 'Other', accountId: '', projectId: '', sprintTargetId: '', isInternal: true, expiryDate: '' })
     } catch (err) {
       toast.error('Upload fehlgeschlagen.')
     } finally {
@@ -760,6 +772,22 @@ function UploadModal({ isOpen, onClose, onUploaded, accounts, projects }) {
           )}
         </div>
 
+        {sprintTargets.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Zielkunde (optional, Akquise)</label>
+            <select
+              value={form.sprintTargetId}
+              onChange={(e) => update('sprintTargetId', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Kein Zielkunde</option>
+              {sprintTargets.map((t) => (
+                <option key={t.id} value={t.id}>{t.companyName}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Ablaufdatum (optional, für NDAs/Verträge)
@@ -798,16 +826,19 @@ function UploadModal({ isOpen, onClose, onUploaded, accounts, projects }) {
 }
 
 export default function DocumentsPage() {
+  const searchParams = useSearchParams()
   const [documents, setDocuments] = useState([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState('folder')
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
+  const [scope, setScope] = useState('all')
   const [entityFilter, setEntityFilter] = useState('all')
   const [expiryFilter, setExpiryFilter] = useState('all') // 'all' | 'expired' | 'expiring'
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [accounts, setAccounts] = useState([])
   const [projects, setProjects] = useState([])
+  const [sprintTargets, setSprintTargets] = useState([])
   const [newVersionDoc, setNewVersionDoc] = useState(null)
   const [historyDoc, setHistoryDoc] = useState(null)
 
@@ -816,6 +847,7 @@ export default function DocumentsPage() {
     try {
       const params = new URLSearchParams()
       if (categoryFilter !== 'all') params.set('category', categoryFilter)
+      if (scope === 'akquise') params.set('onlySprint', 'true')
       const qs = params.toString()
       const data = await api.get(`/documents${qs ? '?' + qs : ''}`)
       setDocuments(Array.isArray(data) ? data : data.documents || [])
@@ -824,19 +856,26 @@ export default function DocumentsPage() {
     } finally {
       setLoading(false)
     }
-  }, [categoryFilter])
+  }, [categoryFilter, scope])
 
   useEffect(() => { fetchDocuments() }, [fetchDocuments])
+
+  // Akquise-Filter aus der URL übernehmen (?onlySprint=true), sonst zurücksetzen
+  useEffect(() => {
+    setScope(searchParams.get('onlySprint') === 'true' ? 'akquise' : 'all')
+  }, [searchParams])
 
   useEffect(() => {
     const loadMeta = async () => {
       try {
-        const [accs, projs] = await Promise.all([
+        const [accs, projs, targets] = await Promise.all([
           api.get('/accounts'),
           api.get('/projects'),
+          api.get('/sprint-targets').catch(() => []),
         ])
         setAccounts(Array.isArray(accs) ? accs : accs.accounts || [])
         setProjects(Array.isArray(projs) ? projs : projs.projects || [])
+        setSprintTargets(Array.isArray(targets) ? targets : targets.data || [])
       } catch {}
     }
     loadMeta()
@@ -964,6 +1003,14 @@ export default function DocumentsPage() {
           {CATEGORIES.map((cat) => (
             <option key={cat} value={cat}>{CATEGORY_LABELS[cat]}</option>
           ))}
+        </select>
+        <select
+          value={scope}
+          onChange={(e) => setScope(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="all">Alle Bereiche</option>
+          <option value="akquise">Nur Akquise</option>
         </select>
         <select
           value={entityFilter}
@@ -1097,6 +1144,7 @@ export default function DocumentsPage() {
         onUploaded={handleUploaded}
         accounts={accounts}
         projects={projects}
+        sprintTargets={sprintTargets}
       />
 
       {newVersionDoc && (

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 import {
   Plus,
@@ -96,6 +97,11 @@ function ActivityCard({ activity, onDelete }) {
                     {activity.account.name}
                   </span>
                 )}
+                {activity.sprintTarget?.companyName && (
+                  <span className="text-xs text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                    {activity.sprintTarget.companyName}
+                  </span>
+                )}
                 {activity.deal?.title && (
                   <span className="text-xs text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">
                     {activity.deal.title}
@@ -178,12 +184,13 @@ function ActivityCard({ activity, onDelete }) {
   )
 }
 
-function CreateActivityModal({ isOpen, onClose, onCreated, accounts, contacts, users }) {
+function CreateActivityModal({ isOpen, onClose, onCreated, accounts, contacts, users, sprintTargets = [] }) {
   const [form, setForm] = useState({
     type: 'Meeting',
     date: new Date().toISOString().slice(0, 16),
     duration: '',
     accountId: '',
+    sprintTargetId: '',
     dealId: '',
     projectId: '',
     participantIds: [],
@@ -221,6 +228,7 @@ function CreateActivityModal({ isOpen, onClose, onCreated, accounts, contacts, u
         date: form.date,
         duration: form.duration ? parseInt(form.duration) : null,
         accountId: form.accountId || null,
+        sprintTargetId: form.sprintTargetId || null,
         summary: form.summary,
         nextSteps: form.nextSteps || null,
         participantIds: form.participantIds,
@@ -311,6 +319,27 @@ function CreateActivityModal({ isOpen, onClose, onCreated, accounts, contacts, u
             ))}
           </select>
         </div>
+
+        {/* Zielkunde (Akquise) */}
+        {sprintTargets.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Zielkunde (optional)
+            </label>
+            <select
+              value={form.sprintTargetId}
+              onChange={(e) => update('sprintTargetId', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Kein Zielkunde</option>
+              {sprintTargets.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.companyName}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Participants */}
         {contacts.length > 0 && (
@@ -449,14 +478,17 @@ function CreateActivityModal({ isOpen, onClose, onCreated, accounts, contacts, u
 }
 
 export default function ActivitiesPage() {
+  const searchParams = useSearchParams()
   const [activities, setActivities] = useState([])
   const [loading, setLoading] = useState(true)
   const [accounts, setAccounts] = useState([])
   const [contacts, setContacts] = useState([])
   const [users, setUsers] = useState([])
+  const [sprintTargets, setSprintTargets] = useState([])
   const [showCreateModal, setShowCreateModal] = useState(false)
 
   // Filters
+  const [scope, setScope] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -466,6 +498,7 @@ export default function ActivitiesPage() {
   const fetchActivities = useCallback(async () => {
     try {
       const params = new URLSearchParams()
+      if (scope === 'akquise') params.set('onlySprint', 'true')
       if (typeFilter !== 'all') params.set('type', typeFilter)
       if (dateFrom) params.set('from', dateFrom)
       if (dateTo) params.set('to', dateTo)
@@ -480,23 +513,30 @@ export default function ActivitiesPage() {
     } finally {
       setLoading(false)
     }
-  }, [typeFilter, dateFrom, dateTo, accountFilter, consultantFilter])
+  }, [scope, typeFilter, dateFrom, dateTo, accountFilter, consultantFilter])
 
   useEffect(() => {
     fetchActivities()
   }, [fetchActivities])
 
+  // Akquise-Filter aus der URL übernehmen (?onlySprint=true), sonst zurücksetzen
+  useEffect(() => {
+    setScope(searchParams.get('onlySprint') === 'true' ? 'akquise' : 'all')
+  }, [searchParams])
+
   useEffect(() => {
     const loadMeta = async () => {
       try {
-        const [accs, conts, usrs] = await Promise.all([
+        const [accs, conts, usrs, targets] = await Promise.all([
           api.get('/accounts'),
           api.get('/contacts'),
           api.get('/users'),
+          api.get('/sprint-targets').catch(() => []),
         ])
         setAccounts(Array.isArray(accs) ? accs : accs.accounts || [])
         setContacts(Array.isArray(conts) ? conts : conts.contacts || [])
         setUsers(Array.isArray(usrs) ? usrs : usrs.users || [])
+        setSprintTargets(Array.isArray(targets) ? targets : targets.data || [])
       } catch {
         // silently fail - filters may not be available
       }
@@ -520,6 +560,7 @@ export default function ActivitiesPage() {
   }
 
   const clearFilters = () => {
+    setScope('all')
     setTypeFilter('all')
     setDateFrom('')
     setDateTo('')
@@ -528,6 +569,7 @@ export default function ActivitiesPage() {
   }
 
   const hasFilters =
+    scope !== 'all' ||
     typeFilter !== 'all' ||
     dateFrom ||
     dateTo ||
@@ -621,6 +663,14 @@ export default function ActivitiesPage() {
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-6">
         <div className="flex items-center gap-2 flex-wrap">
           <Filter className="w-4 h-4 text-gray-400" />
+          <select
+            value={scope}
+            onChange={(e) => setScope(e.target.value)}
+            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="all">Alle Bereiche</option>
+            <option value="akquise">Nur Akquise</option>
+          </select>
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
@@ -749,6 +799,7 @@ export default function ActivitiesPage() {
         accounts={accounts}
         contacts={contacts}
         users={users}
+        sprintTargets={sprintTargets}
       />
     </div>
   )

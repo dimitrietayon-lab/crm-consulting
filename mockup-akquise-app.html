@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Akquise-App · Klickbarer Prototyp (Zusammenführung)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#2563eb; --blue-700:#1d4ed8; --blue-50:#eff6ff; --blue-100:#dbeafe;
+    --ink:#111827; --muted:#6b7280; --muted2:#9ca3af;
+    --line:#e5e7eb; --line2:#f3f4f6; --bg:#f8fafc; --card:#fff;
+    --green:#16a34a; --green-bg:#dcfce7; --green-700:#15803d;
+    --red:#dc2626; --red-bg:#fef2f2; --red-700:#b91c1c;
+    --amber:#b45309; --amber-bg:#fef3c7;
+    --violet:#6d28d9; --violet-bg:#f5f3ff;
+    --cyan:#0e7490; --cyan-bg:#ecfeff;
+    --slate:#0f172a; --slate-800:#1e293b; --slate-700:#334155; --slate-300:#cbd5e1;
+    --radius:12px; --shadow:0 1px 2px rgba(15,23,42,.06),0 1px 3px rgba(15,23,42,.05);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  [hidden]{display:none!important}
+  html,body{height:100%}
+  body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit}
+  .shell{display:flex;min-height:100vh}
+  .sidebar{width:248px;flex:none;background:var(--slate);color:var(--slate-300);padding:16px 10px;position:sticky;top:0;height:100vh;overflow-y:auto}
+  .brand{display:flex;align-items:center;gap:10px;padding:4px 8px 16px}
+  .brand-mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#3b82f6,#2563eb);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex:none}
+  .brand-name{font-size:14px;font-weight:800;color:#fff;letter-spacing:-.01em}
+  .brand-sub{font-size:10px;color:#94a3b8;margin-top:1px}
+  .nav-group{margin-bottom:14px}
+  .nav-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#64748b;padding:0 8px;margin-bottom:5px}
+  .nav-item{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:8px;font-size:12.5px;color:var(--slate-300);margin-bottom:1px;cursor:pointer}
+  .nav-item:hover{background:var(--slate-800);color:#fff}
+  .nav-item.active{background:var(--slate-700);color:#fff;font-weight:600}
+  .nav-item .di{width:6px;height:6px;border-radius:2px;background:#475569;flex:none}
+  .nav-item.active .di{background:#60a5fa}
+  .nav-item .count{margin-left:auto;font-size:9.5px;font-weight:700;background:#1e293b;color:#94a3b8;padding:1px 6px;border-radius:20px}
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{height:62px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 24px;position:sticky;top:0;z-index:30}
+  .tb-left{min-width:0}
+  .crumbs{font-size:11.5px;color:var(--muted2);display:flex;align-items:center;gap:6px;margin-bottom:1px;flex-wrap:wrap}
+  .crumbs b{color:#374151;font-weight:600}
+  .crumbs .sep{color:#d1d5db}
+  .tb-title{font-size:16px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tb-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .content{width:100%;max-width:1320px;margin:0 auto;padding:20px 24px 48px}
+  .mocklet{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#6d28d9;background:var(--violet-bg);border:1px solid #ddd6fe;border-radius:20px;padding:2px 9px;white-space:nowrap}
+  .btn{display:inline-flex;align-items:center;gap:7px;border-radius:9px;font-size:13px;font-weight:600;padding:8px 13px;border:1px solid transparent;cursor:pointer;transition:background .12s,border-color .12s;white-space:nowrap}
+  .btn-sm{padding:5px 10px;font-size:12px;border-radius:8px}
+  .btn-primary{background:var(--blue);color:#fff}
+  .btn-primary:hover{background:var(--blue-700)}
+  .btn-primary:disabled{background:#c7d2e3;cursor:not-allowed}
+  .btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#15803d}
+  .btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#b91c1c}
+  .btn-ghost{background:#fff;color:#374151;border-color:var(--line)}
+  .btn-ghost:hover{background:#f9fafb}
+  .btn-link{background:transparent;color:var(--muted);padding:4px 2px;font-size:12px}
+  .btn-link:hover{color:#111827}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .card+.card{margin-top:16px}
+  .card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line2);flex-wrap:wrap}
+  .card-title{font-size:13px;font-weight:700;letter-spacing:-.01em}
+  .card-body{padding:16px 18px}
+  .grid{display:grid;gap:16px;align-items:start}
+  .g2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .g-main{grid-template-columns:minmax(0,1fr) 360px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)}
+  .kpi-label{font-size:10.5px;font-weight:600;color:var(--muted);margin-bottom:3px}
+  .kpi-value{font-size:20px;font-weight:800;letter-spacing:-.02em}
+  .kpi-hint{font-size:10.5px;color:var(--muted2);margin-top:2px}
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600;border:1px solid transparent;white-space:nowrap}
+  .badge .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.8}
+  .b-gray{background:#f1f5f9;color:#475569;border-color:#e2e8f0}
+  .b-blue{background:var(--blue-50);color:var(--blue-700);border-color:var(--blue-100)}
+  .b-cyan{background:var(--cyan-bg);color:var(--cyan);border-color:#cffafe}
+  .b-amber{background:var(--amber-bg);color:var(--amber);border-color:#fde68a}
+  .b-violet{background:var(--violet-bg);color:var(--violet);border-color:#ede9fe}
+  .b-green{background:var(--green-bg);color:var(--green-700);border-color:#bbf7d0}
+  .b-red{background:var(--red-bg);color:var(--red-700);border-color:#fecaca}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--line);background:#fff;color:#374151}
+  .pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.75}
+  .pill.target{background:var(--blue);border-color:var(--blue);color:#fff}
+  .pill.target .dot{background:#fff}
+  .muted{color:var(--muted)}.muted2{color:var(--muted2)}
+  .tiny{font-size:11px}
+  .sec-title{font-size:13px;font-weight:700;margin-bottom:10px;letter-spacing:-.01em}
+  .rowline{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .table-wrap{overflow-x:auto}
+  .table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .table th{text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;font-weight:700;padding:9px 12px;border-bottom:1px solid var(--line);background:#f9fafb;white-space:nowrap}
+  .table td{padding:10px 12px;border-bottom:1px solid var(--line2);vertical-align:middle}
+  .table tbody tr:hover td{background:#fafbff}
+  .table a{color:var(--blue-700);font-weight:600}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .input,.select,textarea.input{width:auto;border:1px solid #d1d5db;border-radius:8px;padding:7px 10px;font-size:12.5px;font-family:inherit;color:#111827;background:#fff;outline:none}
+  .input:focus,.select:focus,textarea.input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.14)}
+  .input.wide{min-width:220px}
+  .select{padding-right:26px}
+  textarea.input{width:100%;resize:vertical;min-height:76px;line-height:1.5}
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field.full{grid-column:1/-1}
+  .field label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted2)}
+  .field label .req{color:var(--red)}
+  .field .hintline{font-size:10.5px;color:var(--muted2)}
+  .checklist{display:flex;flex-direction:column;gap:7px}
+  .check{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer}
+  .check:hover{border-color:#c7d2fe;background:#fafbff}
+  .check input{appearance:none;-webkit-appearance:none;width:18px;height:18px;flex:none;margin-top:1px;border:1.5px solid #cbd5e1;border-radius:5px;background:#fff;cursor:pointer;position:relative}
+  .check input:checked{background:var(--blue);border-color:var(--blue)}
+  .check input:checked::after{content:"";position:absolute;left:4.5px;top:1.5px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  .check.is-done .check-text{color:var(--muted2);text-decoration:line-through}
+  .check-body{min-width:0;display:flex;flex-direction:column;gap:2px}
+  .check-text{font-size:12.5px;font-weight:500;color:#1f2937;line-height:1.4}
+  .check-hint{font-size:10.5px;color:var(--muted2);line-height:1.4}
+  .tag{margin-left:auto;flex:none;font-size:8.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:1px 7px;border-radius:20px;margin-top:1px}
+  .tag.auto{background:#e0f2fe;color:#0369a1}
+  .tag.manual{background:var(--amber-bg);color:var(--amber)}
+  .exit-check input:checked{background:var(--green);border-color:var(--green)}
+  .counter{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:20px;background:#f1f5f9;color:#475569}
+  .counter.ok{background:var(--green-bg);color:var(--green-700)}
+  .progress{height:7px;border-radius:20px;background:#eef2f7;overflow:hidden}
+  .progress>span{display:block;height:100%;background:var(--blue);border-radius:20px;transition:width .3s}
+  .banner{display:flex;gap:12px;padding:12px 14px;border-radius:10px;border:1px solid;margin-bottom:14px;font-size:12.5px;line-height:1.5}
+  .banner.red{background:var(--red-bg);border-color:#fecaca;color:#7f1d1d}
+  .banner.blue{background:var(--blue-50);border-color:var(--blue-100);color:#1e3a8a}
+  .banner.amber{background:#fffbeb;border-color:#fde68a;color:#78350f}
+  .kanban{display:grid;grid-template-columns:repeat(5,minmax(232px,1fr));gap:12px;overflow-x:auto;padding-bottom:8px}
+  .kan-col{background:#f1f5f9;border:1px solid var(--line);border-radius:12px;padding:9px;min-height:200px;transition:background .12s,border-color .12s}
+  .kan-col.over{border-color:#93c5fd;background:var(--blue-50)}
+  .kan-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:2px 3px}
+  .kan-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#64748b}
+  .kan-count{font-size:10px;font-weight:700;background:#e2e8f0;color:#475569;padding:1px 7px;border-radius:20px}
+  .kan-card{display:block;background:#fff;border:1px solid var(--line);border-radius:9px;padding:10px;margin-bottom:8px;cursor:grab;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+  .kan-card:hover{border-color:#bfdbfe;box-shadow:0 3px 8px rgba(37,99,235,.09)}
+  .kan-card.dragging{opacity:.4}
+  .kan-card .co{font-size:12.5px;font-weight:700;line-height:1.3}
+  .kan-card .meta{font-size:10.5px;color:var(--muted2);margin-top:2px}
+  .kan-card .foot{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .kan-card .mini{font-size:9.5px;color:#64748b;background:#f1f5f9;border-radius:20px;padding:1px 6px;font-weight:600}
+  .stage{border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin-bottom:7px;background:#fff}
+  .stage.done{border-color:#bbf7d0;background:#f7fefb}
+  .stage.current{border-color:#bfdbfe;background:var(--blue-50)}
+  .stage.locked{background:#fbfbfc;opacity:.75}
+  .stage-top{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+  .stage-num{width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;background:#eef2f7;color:#94a3b8;flex:none}
+  .stage.done .stage-num{background:var(--green-bg);color:var(--green-700)}
+  .stage.current .stage-num{background:var(--blue);color:#fff}
+  .stage-name{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#94a3b8}
+  .stage.done .stage-name{color:var(--green-700)}
+  .stage.current .stage-name{color:var(--blue-700)}
+  .steps{display:flex;flex-direction:column;gap:2px}
+  .step-row{display:flex;align-items:center;gap:7px;font-size:11.5px;padding:3px 4px;border-radius:6px;color:var(--muted)}
+  .step-row .sdot{width:6px;height:6px;border-radius:50%;background:#dbe2ea;flex:none}
+  .step-row.done{color:#475569}.step-row.done .sdot{background:var(--green)}
+  .step-row.current{background:#fff;color:var(--blue-700);font-weight:700;box-shadow:inset 0 0 0 1px #dbeafe;cursor:pointer}
+  .step-row.current .sdot{background:var(--blue)}
+  .step-row.open{cursor:pointer;color:#475569}.step-row.open:hover{background:#f8faff}
+  .step-row.locked{color:#b6c2cf}
+  .mini-b{margin-left:auto;font-size:9px;font-weight:700;color:#64748b;background:#f1f5f9;border-radius:20px;padding:1px 6px;white-space:nowrap}
+  .mini-b.ok{background:var(--green-bg);color:var(--green-700)}
+  .mini-b.lock{background:transparent;color:#cbd5e1}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+  .tab{appearance:none;background:none;border:none;padding:8px 12px;font-size:12.5px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+  .tab:hover{color:#111827}
+  .tab.active{color:var(--blue-700);border-bottom-color:var(--blue)}
+  .timeline{display:flex;flex-direction:column}
+  .tl{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line2)}
+  .tl:last-child{border-bottom:none}
+  .tl-ic{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex:none;background:#f1f5f9;color:#64748b}
+  .tl-ic.call{background:#eff6ff;color:#1d4ed8}.tl-ic.meeting{background:#fffbeb;color:#b45309}
+  .tl-ic.email{background:#ecfeff;color:#0e7490}.tl-ic.linkedin{background:#eef2ff;color:#4338ca}
+  .tl-ic.note{background:#f3f4f6;color:#4b5563}.tl-ic.task{background:#ecfdf5;color:#047857}
+  .tl-body{flex:1;min-width:0}
+  .tl-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+  .tl-type{font-size:11px;font-weight:700;color:#374151}
+  .tl-date{font-size:10px;color:var(--muted2);white-space:nowrap}
+  .tl-sum{font-size:12px;color:#4b5563;margin-top:1px;line-height:1.4}
+  .tl-next{font-size:11px;color:var(--blue-700);margin-top:2px}
+  .empty{text-align:center;padding:28px 12px;color:var(--muted2);font-size:12.5px}
+  .av{width:24px;height:24px;border-radius:50%;background:#e2e8f0;color:#475569;display:inline-flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;border:2px solid #fff;margin-left:-6px}
+  .av:first-child{margin-left:0}
+  .tags{display:flex;gap:5px;flex-wrap:wrap}
+  .tag2{font-size:10px;padding:1px 7px;border-radius:20px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+  .code{background:var(--slate);color:#e2e8f0;border-radius:10px;padding:14px 16px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;line-height:1.6;overflow:auto;white-space:pre}
+  .code .c{color:#64748b}.code .k{color:#93c5fd}.code .s{color:#86efac}
+  .funnel{display:flex;flex-direction:column;gap:7px}
+  .frow{display:flex;align-items:center;gap:10px}
+  .flabel{width:120px;font-size:11px;color:#475569;flex:none}
+  .fbar{flex:1;height:22px;background:#f1f5f9;border-radius:6px;overflow:hidden;position:relative}
+  .fbar>span{display:block;height:100%;background:var(--blue);border-radius:6px}
+  .fval{width:34px;text-align:right;font-size:11px;font-weight:700;color:#374151;flex:none}
+  .calc{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .bigval{font-size:24px;font-weight:800;color:var(--green-700);letter-spacing:-.02em}
+  /* KI-Assistent */
+  .ai-card{border-color:#c7d2fe;background:linear-gradient(180deg,#f5f7ff,#fff)}
+  .ai-card .card-head{border-bottom-color:#e0e7ff}
+  .ai-head{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+  .ai-spark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#6366f1,#2563eb);color:#fff;display:inline-flex;align-items:center;justify-content:center;flex:none;box-shadow:0 3px 8px rgba(79,70,229,.25)}
+  .ai-spark svg{width:17px;height:17px}
+  .ai-kicker{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#4f46e5}
+  .ai-chip{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#4338ca;background:#eef2ff;border:1px solid #e0e7ff;border-radius:20px;padding:2px 8px;flex:none}
+  .ai-actions{display:flex;flex-direction:column;gap:7px}
+  .ai-actions .btn{justify-content:flex-start;width:100%}
+  .ai-out{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.65;color:#1f2937;white-space:pre-wrap}
+  .ai-out .ai-subject{font-weight:800;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .ai-line{padding:2px 0}
+  .ai-foot-note{font-size:10.5px;color:var(--muted2);margin-top:8px}
+  #modal-root{position:fixed;inset:0;display:none;align-items:flex-start;justify-content:center;background:rgba(15,23,42,.45);z-index:80;padding:40px 20px;overflow-y:auto}
+  #modal-root.open{display:flex}
+  .modal{background:#fff;border-radius:14px;width:100%;max-width:560px;box-shadow:0 20px 50px rgba(15,23,42,.3);margin:auto}
+  .modal.wide{max-width:820px}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 20px;border-bottom:1px solid var(--line2)}
+  .modal-title{font-size:14px;font-weight:800}
+  .xbtn{border:none;background:#f1f5f9;color:#475569;width:28px;height:28px;border-radius:8px;font-size:16px;cursor:pointer;line-height:1}
+  .xbtn:hover{background:#e2e8f0}
+  .modal-body{padding:18px 20px}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line2)}
+  .toast{position:fixed;right:24px;bottom:24px;background:var(--slate);color:#fff;padding:11px 16px;border-radius:10px;font-size:12.5px;box-shadow:0 12px 30px rgba(15,23,42,.3);opacity:0;transform:translateY(8px);transition:opacity .18s,transform .18s;pointer-events:none;max-width:420px;z-index:90}
+  .toast.show{opacity:1;transform:none}
+  .toast.err{background:#7f1d1d}
+  .toast b{color:#93c5fd}
+  .toast.err b{color:#fecaca}
+  @media (max-width:1150px){.g-main{grid-template-columns:1fr}.sidebar{display:none}.g4{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:760px){.g2,.g3,.calc{grid-template-columns:1fr}.fields{grid-template-columns:1fr}.content{padding:16px}.topbar{padding:0 14px}.tb-right .mocklet{display:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main"><div id="viewport"></div></div>
+</div>
+<div id="modal-root"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ═══════════════ Pipeline (17 Schritte, 5 Phasen) ═══════════════ */
+  const STAGES = [
+    { key: 'lead', label: 'Lead-Gewinnung' },
+    { key: 'qualifizierung', label: 'Qualifizierung' },
+    { key: 'erstgespraech', label: 'Erstgespräch' },
+    { key: 'angebot', label: 'Angebot' },
+    { key: 'abschluss', label: 'Abschluss' }
+  ];
+
+  const STEPS = [
+    { stage:'lead', status:'offen', slug:'offen', label:'offen', title:'Zielkunde anlegen', desc:'Neuen Zielkunden erfassen und der Akquise zuordnen.', activity:'Note',
+      guide:['Unternehmen und Anlass erfassen','Branche und Region prüfen','Ansprechpartner-Rolle festlegen'],
+      exit:[{k:'created',t:'Firma, Branche und Region erfasst',auto:'field:companyName'},{k:'role',t:'Ansprechpartner-Rolle benannt'}] },
+    { stage:'lead', status:'recherchiert', slug:'recherchiert', label:'recherchiert', title:'Unternehmen recherchieren', desc:'Branche, Größe, KI-Initiativen und passende Entscheider recherchieren und erfassen.', activity:'Note',
+      guide:['KI-Recherche starten','KI-Initiativen und Schmerzpunkte sammeln','Entscheider-Rollen eingrenzen'],
+      exit:[{k:'data',t:'Branche und Mitarbeiterzahl erfasst',auto:'num:employees'},{k:'pain',t:'Schmerz-Hypothese notiert'}] },
+    { stage:'lead', status:'vernetzt', slug:'vernetzt', label:'vernetzt', title:'Entscheider vernetzen', desc:'Ansprechpartner identifizieren und über LinkedIn oder das Netzwerk verbinden.', activity:'Note',
+      guide:['Warmen Weg prüfen (Empfehlung, Event)','LinkedIn-Profil verifizieren','Kontaktanfrage senden'],
+      exit:[{k:'person',t:'Ansprechpartner identifiziert',auto:'field:contactName'},{k:'way',t:'Kontaktweg dokumentiert'}] },
+    { stage:'lead', status:'kontaktiert', slug:'kontaktiert', label:'kontaktiert', title:'Erstkontakt herstellen', desc:'Telefonisch oder per E-Mail kontaktieren – Anlass und Rechtsgrundlage nach § 7 UWG prüfen.', activity:'Call',
+      guide:['Anlass und Rechtsgrundlage klären (§ 7 UWG)','Genau einen Kanal pro Versuch nutzen','Ergebnis festhalten'],
+      exit:[{k:'legal',t:'Anruf-Trigger oder Einwilligung dokumentiert',auto:'field:callTrigger'},{k:'contact',t:'Kontakt-Aktivität mit Ergebnis',auto:'activity:Call'},{k:'next',t:'Nächster Schritt mit Datum gesetzt'}] },
+    { stage:'qualifizierung', status:'Qualifizierungsgespräch', slug:'qualifizierungsgespraech', label:'Qualifizierungsgespräch planen', title:'Qualifizierungsgespräch planen', desc:'Termin mit dem Kunden abstimmen, Teilnehmer festlegen und im Kalender festhalten.', activity:'Meeting',
+      guide:['Teilnehmer und Agenda abstimmen','Termin im Kalender festhalten','Unterlagen vorbereiten'],
+      exit:[{k:'date',t:'Termin gesetzt',auto:'field:firstMeetingDate'},{k:'attendees',t:'Teilnehmer bestätigt'}] },
+    { stage:'qualifizierung', status:'Qualifizierungsgespräch durchgeführt', slug:'qualifizierungsgespraech-durchgefuehrt', label:'Qualifizierungsgespräch durchgeführt', title:'Qualifizierungsgespräch durchführen', desc:'Bedarf, Budget, Zeitrahmen und Entscheiderstruktur klären und das Gespräch dokumentieren.', activity:'Meeting',
+      guide:['Bedarf, Budget und Zeitrahmen klären','Entscheiderstruktur erfassen','Gesprächsnotiz festhalten'],
+      exit:[{k:'date',t:'Gesprächsdatum erfasst',auto:'field:firstMeetingDate'},{k:'scope',t:'Bedarf und Budget dokumentiert'},{k:'next',t:'Nächster Schritt oder Übergabe vorbereitet'}] },
+    { stage:'qualifizierung', status:'Übergabe an Engagement Manager', slug:'uebergabe-an-engagement-manager', label:'Übergabe an EM', title:'An Engagement Manager übergeben', desc:'Kontext, Erkenntnisse und nächste Schritte vollständig an den EM übergeben.', activity:'Meeting',
+      guide:['Kontext und Erkenntnisse zusammenfassen','Nächste Schritte mit dem EM abstimmen','Übergabeprotokoll anlegen'],
+      exit:[{k:'done',t:'Übergabe dokumentiert',auto:'field:handoverDate'},{k:'em',t:'EM bestätigt'}] },
+    { stage:'erstgespraech', status:'Erstgespräch terminiert', slug:'erstgespraech-terminiert', label:'Erstgespräch terminiert', title:'Erstgespräch planen', desc:'Termin mit dem Kunden abstimmen, Teilnehmer festlegen und im Kalender festhalten.', activity:'Meeting',
+      guide:['Termin mit Kunde abstimmen','Teilnehmer festlegen','Agenda senden'],
+      exit:[{k:'date',t:'Termin gesetzt',auto:'field:firstMeetingDate'},{k:'invite',t:'Einladung verschickt'}] },
+    { stage:'erstgespraech', status:'Erstgespräch durchgeführt', slug:'erstgespraech-durchgefuehrt', label:'Erstgespräch durchgeführt', title:'Erstgespräch durchführen', desc:'Termin wahrnehmen, Ist-Situation aufnehmen und den Readiness-Fragebogen ankündigen.', activity:'Meeting',
+      guide:['Ist-Situation aufnehmen','Readiness-Fragebogen ankündigen','Ergebnis festhalten'],
+      exit:[{k:'held',t:'Termin wahrgenommen',auto:'activity:Meeting'},{k:'questionnaire',t:'Fragebogen angekündigt'}] },
+    { stage:'erstgespraech', status:'Fragebogen geschickt', slug:'fragebogen-geschickt', label:'Fragebogen geschickt', title:'Fragebogen senden', desc:'Readiness-Fragebogen an den Kunden senden und den Rücklauf nachhalten.', activity:'Email',
+      guide:['Fragebogen personalisieren','Link senden','Rücklauf nachhalten'],
+      exit:[{k:'sent',t:'Fragebogen versendet',auto:'activity:Email'},{k:'due',t:'Rücklauf-Termin gesetzt'}] },
+    { stage:'angebot', status:'Angebot in Vorbereitung', slug:'angebot-in-vorbereitung', label:'Angebot in Vorbereitung', title:'Angebot vorbereiten', desc:'Antworten auswerten, Use Cases ableiten und Paket, Leistungen und Preis zusammenstellen.', activity:'Note',
+      guide:['Antworten auswerten','Use Cases ableiten','Paket, Leistungen und Preis zusammenstellen'],
+      exit:[{k:'value',t:'Angebotswert gesetzt',auto:'num:offerValue'},{k:'usecases',t:'Use Cases ausgewählt'}] },
+    { stage:'angebot', status:'Angebot versendet', slug:'angebot-versendet', label:'Angebot versendet', title:'Angebot versenden', desc:'Angebot finalisieren und an den Kunden senden.', activity:'Email',
+      guide:['Angebot finalisieren','An Kunden senden','Nachfass-Termin setzen'],
+      exit:[{k:'sent',t:'Angebot versendet',auto:'field:offerDate'},{k:'valid',t:'Gültigkeit gesetzt'}] },
+    { stage:'angebot', status:'Nachverhandlung', slug:'nachverhandlung', label:'Nachverhandlung', title:'Angebot nachfassen', desc:'Rückmeldung einholen, offene Fragen klären und Konditionen verhandeln.', activity:'Call',
+      guide:['Rückmeldung einholen','Offene Fragen klären','Konditionen dokumentieren'],
+      exit:[{k:'feedback',t:'Rückmeldung dokumentiert',auto:'activity:Call'},{k:'terms',t:'Finale Konditionen festgehalten'}] },
+    { stage:'abschluss', status:'gewonnen', slug:'gewonnen', label:'gewonnen', title:'Abschluss speichern', desc:'Kunde gewonnen: Account verknüpfen, Vertrag bzw. Projekt anlegen und an die Delivery übergeben.', activity:'Note',
+      guide:['Account verknüpfen','Vertrag bzw. Projekt anlegen','An Delivery übergeben'],
+      exit:[{k:'date',t:'Entscheidungsdatum gesetzt',auto:'field:decisionDate'},{k:'value',t:'Auftragswert gesetzt',auto:'num:offerValue'}] },
+    { stage:'abschluss', status:'Folgeprojekt', slug:'folgeprojekt', label:'Folgeprojekt', title:'Folgeprojekt starten', desc:'Folgeprojekt anlegen und den Kick-off mit dem Kunden vereinbaren.', activity:'Note',
+      guide:['Folgeprojekt anlegen','Kick-off vereinbaren','Budget klären'],
+      exit:[{k:'project',t:'Projekt angelegt'},{k:'kickoff',t:'Kick-off terminiert'}] },
+    { stage:'abschluss', status:'Verlust', slug:'verlust', label:'Verlust', title:'Verlust erfassen', desc:'Grund für den verlorenen Abschluss dokumentieren.', activity:'Note',
+      guide:['Verlustgrund dokumentieren','Learnings festhalten','Wiedervorlage prüfen'],
+      exit:[{k:'reason',t:'Verlustgrund gesetzt',auto:'field:lossReason'}] },
+    { stage:'abschluss', status:'kein Interesse', slug:'kein-interesse', label:'kein Interesse', title:'Kein Interesse erfassen', desc:'Absage dokumentieren – Kontaktsperre nach DSGVO wird gesetzt.', activity:'Note',
+      guide:['Absage dokumentieren','Kontaktsperre setzen','Datenminimierung prüfen'],
+      exit:[{k:'reason',t:'Grund dokumentiert',auto:'field:lossReason'},{k:'block',t:'Sperrliste-Eintrag bestätigt'}] }
+  ].map((s, i) => Object.assign(s, { order: i + 1 }));
+
+  const WON = ['gewonnen', 'Folgeprojekt'];
+  const LOST = ['Verlust', 'kein Interesse'];
+  const OFFER_SENT = ['Angebot versendet', 'Nachverhandlung'];
+  const ROLE_LABELS = { lead: 'Lead Berater', ki: 'KI-Experte', sales: 'Vertrieb' };
+  const PACKAGE_ROLES = {
+    compact:  { ki: 1, sales: 1 },
+    standard: { lead: 1, ki: 1, sales: 1 },
+    premium:  { lead: 1, ki: 2, sales: 1 }
+  };
+  const LOSS_REASONS = ['Preis', 'Kein Bedarf', 'Wettbewerb', 'Timing', 'Budget', 'Sonstiges'];
+
+  /* ═══════════════ Helpers ═══════════════ */
+  const el = (id) => document.getElementById(id);
+  const qa = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  const eur = (n) => new Intl.NumberFormat('de-DE', { style:'currency', currency:'EUR', maximumFractionDigits:0 }).format(Number(n) || 0);
+  const dfmt = (iso) => iso ? new Intl.DateTimeFormat('de-DE').format(new Date(iso)) : '—';
+  const todayISO = () => new Date().toISOString().slice(0, 10);
+  const uid = (p) => p + Math.random().toString(36).slice(2, 8);
+  const stepByStatus = (s) => STEPS.find((x) => x.status === s) || null;
+  const stepBySlug = (s) => STEPS.find((x) => x.slug === s) || null;
+  const stepsOfStage = (k) => STEPS.filter((s) => s.stage === k);
+  const stageIdxOfStatus = (s) => { const st = stepByStatus(s); if (!st) return -1; return STAGES.findIndex((x) => x.key === st.stage); };
+  const statusLabel = (s) => (stepByStatus(s) || {}).label || s || '—';
+  const statusDot = (s) => '<span class="dot"></span>';
+  const isWon = (s) => WON.includes(s);
+  const isLost = (s) => LOST.includes(s);
+  const isInTalk = (s) => ['qualifizierung','erstgespraech'].includes((stepByStatus(s) || {}).stage);
+  const isOfferStatus = (s) => (stepByStatus(s) || {}).stage === 'angebot';
+  const isOfferSent = (s) => OFFER_SENT.includes(s);
+  const badgeClass = (s) => { const st = stepByStatus(s); if (!st) return 'b-gray'; if (WON.includes(s)) return 'b-green'; if (LOST.includes(s)) return 'b-red'; return { lead:'b-gray', qualifizierung:'b-cyan', erstgespraech:'b-amber', angebot:'b-violet', abschluss:'b-green' }[st.stage] || 'b-gray'; };
+  const statusBadge = (s) => '<span class="badge ' + badgeClass(s) + '">' + statusDot(s) + esc(statusLabel(s)) + '</span>';
+  const initials = (name) => String(name || '?').split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+
+  /* ═══════════════ Seed-Daten ═══════════════ */
+  const DEFAULT_SEED = () => {
+    const t = (o) => Object.assign({
+      segment:'Versicherungen & Finanzvermittler', bundesland:'Nordrhein-Westfalen', location:'', street:'', postalCode:'',
+      employees:0, priority:'P2', status:'offen', contactName:'', contactTitle:'', contactEmail:'', contactPhone:'', contactLinkedIn:'',
+      contactSource:'LinkedIn', callAttempts:0, callTrigger:'', emailAllowed:null, emailConsentAt:'', emailConsentSource:'',
+      emailConsentRevokedAt:'', privacyNoticeAt:'', privacyNoticeSource:'', callConsentAt:'', callConsentSource:'',
+      offerValue:0, offerDate:'', nextStep:'', nextStepDue:'', notes:'', selfTestScore:null, selfTestDate:'', selfTestLink:'',
+      bafaStatus:'', bafaApprovedAmount:0, lossReason:'', result:'', handoverDate:'', firstMeetingDate:'', decisionDate:'',
+      package:'standard', stepChecks:{}, assignments:[], account:'', assessments:[], handoverChecklist:{}, createdAt:'2026-10-01'
+    }, o);
+    return {
+      users: [
+        { id:'u1', name:'Anna Müller', email:'a.mueller@innolab.de', role:'Vertrieb', portalRole:'Vertrieb' },
+        { id:'u2', name:'Jonas Weber', email:'j.weber@innolab.de', role:'Lead Berater', portalRole:'Lead Berater' },
+        { id:'u3', name:'Sara Klein', email:'s.klein@innolab.de', role:'KI-Experte', portalRole:'KI-Experte' },
+        { id:'u4', name:'Tom Berger', email:'t.berger@innolab.de', role:'KI-Experte', portalRole:'KI-Experte' }
+      ],
+      currentUserId: 'u1',
+      targets: [
+        t({ id:'t1', companyName:'AXA Konzern AG', bundesland:'Nordrhein-Westfalen', location:'Köln', street:'Colonia-Allee 10-20', postalCode:'51067', employees:5600, priority:'P2', status:'Qualifizierungsgespräch', contactName:'R. Lehmann', contactTitle:'Leiter IT-Strategie', contactEmail:'r.lehmann@axa.de', contactPhone:'+49 221 9006-0', contactLinkedIn:'linkedin.com/in/rlehmann', callAttempts:2, callTrigger:'Pressemeldung', emailAllowed:true, emailConsentAt:'2026-10-20', emailConsentSource:'E-Mail', privacyNoticeAt:'2026-10-20', privacyNoticeSource:'E-Mail', callConsentAt:'2026-10-22', callConsentSource:'Gespräch', offerValue:70000, nextStep:'Qualifizierungsgespräch durchführen', nextStepDue:'2026-11-19', notes:'Pilot mit zwei Use Cases geplant.', selfTestScore:64, selfTestDate:'2026-10-28', selfTestLink:'https://readiness.example/axa', bafaStatus:'geplant', handoverDate:'2026-11-05', firstMeetingDate:'2026-11-12', package:'premium', assignments:[{userId:'u2',role:'lead'},{userId:'u3',role:'ki'},{userId:'u4',role:'ki'},{userId:'u1',role:'sales'}], stepChecks:{ 'qualifizierungsgespraech-durchgefuehrt':{ guide:{0:true,1:true,2:true}, exit:{scope:true} } } }),
+        t({ id:'t2', companyName:'Allianz SE', bundesland:'Bayern', location:'München', employees:12000, priority:'P1', status:'Angebot versendet', contactName:'M. Weber', contactTitle:'CDO', contactEmail:'m.weber@allianz.de', callAttempts:1, callTrigger:'Fachbeitrag', emailAllowed:true, emailConsentAt:'2026-10-12', offerValue:95000, offerDate:'2026-11-05', nextStep:'Angebot nachfassen', nextStepDue:'2026-11-18', bafaStatus:'beantragt', firstMeetingDate:'2026-10-30', package:'premium', assignments:[{userId:'u2',role:'lead'},{userId:'u3',role:'ki'},{userId:'u1',role:'sales'}] }),
+        t({ id:'t3', companyName:'Deutsche Bank AG', segment:'Banken', bundesland:'Hessen', location:'Frankfurt', employees:80000, priority:'P1', status:'recherchiert', contactName:'', package:'standard', assignments:[{userId:'u2',role:'lead'},{userId:'u1',role:'sales'}] }),
+        t({ id:'t4', companyName:'Signal Iduna', bundesland:'Nordrhein-Westfalen', location:'Dortmund', employees:9000, priority:'P2', status:'kontaktiert', contactName:'K. Schmidt', contactTitle:'Bereichsleiter', contactEmail:'k.schmidt@signal-iduna.de', callAttempts:1, callTrigger:'Messe', nextStep:'Zweiter Anruf', nextStepDue:'2026-11-21', package:'compact', assignments:[{userId:'u1',role:'sales'}] }),
+        t({ id:'t5', companyName:'Sparkasse KölnBonn', segment:'Banken', bundesland:'Nordrhein-Westfalen', location:'Köln', employees:2500, priority:'P2', status:'Erstgespräch durchgeführt', contactName:'S. Becker', contactEmail:'s.becker@sparkasse-koelnbonn.de', firstMeetingDate:'2026-11-10', nextStep:'Fragebogen senden', nextStepDue:'2026-11-19', package:'standard', assignments:[{userId:'u2',role:'lead'},{userId:'u3',role:'ki'},{userId:'u1',role:'sales'}] }),
+        t({ id:'t6', companyName:'Zurich Gruppe', segment:'Versicherungen & Finanzvermittler', bundesland:'Hessen', location:'Frankfurt', employees:4000, priority:'P1', status:'gewonnen', result:'gewonnen', offerValue:120000, offerDate:'2026-10-22', decisionDate:'2026-10-29', bafaStatus:'bewilligt', package:'premium', account:'Zurich Gruppe', assignments:[{userId:'u2',role:'lead'},{userId:'u3',role:'ki'},{userId:'u4',role:'ki'},{userId:'u1',role:'sales'}] }),
+        t({ id:'t7', companyName:'Barmenia', bundesland:'Nordrhein-Westfalen', location:'Wuppertal', employees:1800, priority:'P3', status:'kein Interesse', result:'verloren', lossReason:'Kein Bedarf', package:'compact' }),
+        t({ id:'t8', companyName:'Talanx AG', segment:'Versicherungen & Finanzvermittler', bundesland:'Niedersachsen', location:'Hannover', employees:3000, priority:'P2', status:'vernetzt', contactName:'L. Hoffmann', nextStep:'LinkedIn-Erstkontakt', nextStepDue:'2026-11-17', package:'standard', assignments:[{userId:'u1',role:'sales'}] }),
+        t({ id:'t9', companyName:'Wüstenrot', segment:'Banken', bundesland:'Baden-Württemberg', location:'Ludwigsburg', employees:3200, priority:'P3', status:'Verlust', result:'verloren', lossReason:'Wettbewerb', package:'compact' }),
+        t({ id:'t10', companyName:'Nürnberger', bundesland:'Bayern', location:'Nürnberg', employees:2200, priority:'P2', status:'offen', package:'standard' })
+      ],
+      activities: [
+        { id:'a1', targetId:'t1', type:'Meeting', date:'2026-11-12', duration:60, summary:'Qualifizierungsgespräch geführt. Bedarf: Assessment + 2 Use Cases. Budget 60–75k€.', nextSteps:'Übergabe an EM vorbereiten', createdBy:'Anna Müller' },
+        { id:'a2', targetId:'t1', type:'Call', date:'2026-11-05', duration:15, summary:'Erstkontakt hergestellt, Termin für Qualifizierungsgespräch vereinbart.', nextSteps:'Termin 12.11.', createdBy:'Anna Müller' },
+        { id:'a3', targetId:'t2', type:'Email', date:'2026-11-05', summary:'Angebot Premium-Paket versendet.', nextSteps:'Nachfassen am 18.11.', createdBy:'Anna Müller' },
+        { id:'a4', targetId:'t2', type:'Call', date:'2026-11-14', duration:10, summary:'Nachfassen: Entscheidung fällt nächste Woche.', nextSteps:'Rückruf 18.11.', createdBy:'Anna Müller' },
+        { id:'a5', targetId:'t6', type:'Note', date:'2026-10-29', summary:'Auftrag bestätigt, Account verknüpft.', nextSteps:'Kick-off planen', createdBy:'Jonas Weber' },
+        { id:'a6', targetId:'t3', type:'Note', date:'2026-11-10', summary:'Recherche abgeschlossen, KI-Initiativen identifiziert.', nextSteps:'Entscheider vernetzen', createdBy:'Tom Berger' },
+        { id:'a7', targetId:'t5', type:'Meeting', date:'2026-11-10', duration:45, summary:'Erstgespräch geführt, Ist-Situation aufgenommen.', nextSteps:'Fragebogen senden', createdBy:'Jonas Weber' },
+        { id:'a8', targetId:'t4', type:'Call', date:'2026-11-15', duration:2, summary:'Nicht erreicht, Mailbox.', nextSteps:'Zweiter Anruf', createdBy:'Anna Müller' },
+        { id:'a9', targetId:'t7', type:'Call', date:'2026-11-01', duration:5, summary:'Kein Interesse, Kontaktsperre gesetzt.', nextSteps:'', createdBy:'Anna Müller' },
+        { id:'a10', targetId:'t8', type:'LinkedIn', date:'2026-11-08', summary:'Vernetzungsanfrage gesendet.', nextSteps:'Erstkontakt', createdBy:'Anna Müller' }
+      ],
+      offers: [
+        { id:'o1', number:'SP-2026-0001', targetId:'t2', status:'versendet', validUntil:'2026-12-05', createdAt:'2026-11-05', items:[{label:'Premium-Paket',qty:1,price:14990},{label:'Zusatz-Use-Case',qty:2,price:2500}] },
+        { id:'o2', number:'SP-2026-0002', targetId:'t6', status:'angenommen', validUntil:'2026-11-30', createdAt:'2026-10-22', items:[{label:'Premium-Paket',qty:1,price:14990},{label:'Onboarding-Workshop',qty:1,price:3500}] },
+        { id:'o3', number:'SP-2026-0003', targetId:'t1', status:'entwurf', validUntil:'2026-12-15', createdAt:'2026-11-15', items:[{label:'Standard-Paket',qty:1,price:9990}] }
+      ],
+      contacts: [
+        { id:'c1', targetId:'t1', name:'R. Lehmann', role:'Leiter IT-Strategie', email:'r.lehmann@axa.de', phone:'+49 221 9006-0', linkedin:'linkedin.com/in/rlehmann', isPrimary:true },
+        { id:'c2', targetId:'t2', name:'M. Weber', role:'CDO', email:'m.weber@allianz.de', phone:'', linkedin:'', isPrimary:true },
+        { id:'c3', targetId:'t4', name:'K. Schmidt', role:'Bereichsleiter', email:'k.schmidt@signal-iduna.de', phone:'+49 231 444-0', linkedin:'', isPrimary:true },
+        { id:'c4', targetId:'t6', name:'P. Fischer', role:'CTO', email:'p.fischer@zurich.de', phone:'', linkedin:'', isPrimary:true }
+      ],
+      tasks: [
+        { id:'k1', targetId:'t1', title:'Übergabe an EM vorbereiten', dueDate:'2026-11-18', assignedToId:'u2', status:'In Progress', priority:'Hoch' },
+        { id:'k2', targetId:'t2', title:'Angebot nachfassen', dueDate:'2026-11-18', assignedToId:'u1', status:'Open', priority:'Hoch' },
+        { id:'k3', targetId:'t5', title:'Fragebogen senden', dueDate:'2026-11-19', assignedToId:'u3', status:'Open', priority:'Mittel' },
+        { id:'k4', targetId:'t8', title:'LinkedIn-Nachfassen', dueDate:'2026-11-21', assignedToId:'u1', status:'Open', priority:'Niedrig' },
+        { id:'k5', targetId:'t2', title:'Angebot intern prüfen', dueDate:'2026-11-04', assignedToId:'u1', status:'Done', priority:'Mittel' }
+      ],
+      documents: [
+        { id:'d1', targetId:'t1', name:'Assessment-AXA-2026-10.pdf', createdAt:'2026-10-28' },
+        { id:'d2', targetId:'t2', name:'Angebot-SP-2026-0001.pdf', createdAt:'2026-11-05' },
+        { id:'d3', targetId:'t6', name:'Vertrag-Zurich.pdf', createdAt:'2026-10-30' }
+      ],
+      templates: [
+        { id:'tp1', name:'Erstkontakt E-Mail', channel:'E-Mail', subject:'KI-Readiness in [Branche]', body:'Hallo {ansprechpartner},\n\nich habe gesehen, dass {unternehmen} …\n\nBeste Grüße\n{absender}', notes:'Kurz halten, ein Anlass.', usageCount:12, active:true },
+        { id:'tp2', name:'LinkedIn Vernetzung', channel:'LinkedIn', subject:'', body:'Hallo {ansprechpartner}, ich vernetze mich gern zu KI-Readiness in {branche}.', notes:'Ohne Verkauf im ersten Schritt.', usageCount:34, active:true },
+        { id:'tp3', name:'Terminanfrage', channel:'E-Mail', subject:'Termin: KI-Readiness', body:'Hallo {ansprechpartner},\n\npasst Ihnen {datum} für ein 30-minütiges Gespräch?', notes:'', usageCount:8, active:true },
+        { id:'tp4', name:'Nachfassen Angebot', channel:'E-Mail', subject:'Ihr Angebot', body:'Hallo {ansprechpartner},\n\nhaben Sie Rückfragen zu unserem Angebot?', notes:'', usageCount:5, active:true }
+      ],
+      blocklist: [
+        { id:'b1', companyName:'Barmenia', reason:'Kein Bedarf', date:'2026-11-01' }
+      ],
+      regions: [
+        { bundesland:'Nordrhein-Westfalen', priority:1, note:'Höchste Dichte an Finanzdienstleistern', active:true },
+        { bundesland:'Hessen', priority:1, note:'Frankfurt als Finanzhub', active:true },
+        { bundesland:'Bayern', priority:2, note:'München, viele Versicherer', active:true },
+        { bundesland:'Baden-Württemberg', priority:2, note:'', active:true },
+        { bundesland:'Niedersachsen', priority:3, note:'', active:true }
+      ],
+      wz: [
+        { wzCode:'64-66', segment:'Banken', priority:'hoch', note:'Finanzdienstleistungen' },
+        { wzCode:'65', segment:'Versicherungen & Finanzvermittler', priority:'hoch', note:'' },
+        { wzCode:'62/63', segment:'IT & Software', priority:'mittel', note:'' },
+        { wzCode:'70-72', segment:'Beratung', priority:'mittel', note:'' }
+      ],
+      settings: {
+        quotas: { linkedin:75, calls:100, hoursPerWeek:8.4, days:21, firms:878 },
+        sprint: { start:'2026-10-01', end:'2027-03-31' },
+        bafa: { quote:50, max:33000 },
+        linkedin: { dailyLimit:25, weeklyTarget:75 },
+        notify: { followUp:true, offers:true },
+        packages: [
+          { key:'compact', label:'Compact', price:5990, description:'Einstieg mit einem Use Case' },
+          { key:'standard', label:'Standard', price:9990, description:'Readiness + zwei Use Cases' },
+          { key:'premium', label:'Premium', price:14990, description:'Volles Programm inkl. Begleitung' }
+        ],
+        segments: ['Banken','Versicherungen & Finanzvermittler','IT & Software','Beratung','Industrie','Gesundheitswesen','Handel','Handwerk']
+      }
+    };
+  };
+
+  const LS_KEY = 'akquise_mock_v3';
+  let DB;
+  let UI = { view:'kanban', detailTab:null, outreachTab:'linkedin', settingsTab:'quotas', filters:{ q:'', status:'', priority:'', segment:'' }, importRows:null, capacity:{ targets:12, hours:8.4, weeks:21 }, reportRange:{ from:'', to:'' }, aiCache:null };
+
+  function load() { try { const raw = localStorage.getItem(LS_KEY); if (raw) return JSON.parse(raw); } catch (e) {} return null; }
+  function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(DB)); } catch (e) {} }
+  DB = load() || DEFAULT_SEED();
+
+  const user = (id) => DB.users.find((u) => u.id === id) || { name:'Unbekannt' };
+  const findTarget = (id) => DB.targets.find((t) => t.id === id) || null;
+  const findOffer = (id) => DB.offers.find((o) => o.id === id) || null;
+  const offerTotal = (o) => (o.items || []).reduce((s, it) => s + Number(it.qty || 0) * Number(it.price || 0), 0);
+  const ownerAvatars = (t) => (t.assignments || []).map((a) => '<span class="av" title="' + esc(user(a.userId).name + ' · ' + ROLE_LABELS[a.role]) + '">' + esc(initials(user(a.userId).name)) + '</span>').join('');
+  const searchText = (t) => [t.companyName,t.segment,t.bundesland,t.location,t.contactName,t.contactEmail,t.status].join(' ').toLowerCase();
+  const currentUser = () => user(DB.currentUserId);
+  const targetLabel = (id) => (findTarget(id) || {}).companyName || '—';
+
+  /* ═══════════════ KI-Assistent (simuliert) ═══════════════ */
+  const AI_SPARK = '<span class="ai-spark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5 13.8 11.3 12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18 15l.9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9z"/></svg></span>';
+  const AI_PLAYBOOK = {
+    'Banken': { init:'KYC-/Compliance-Prüfung, Kreditdokumenten-Analyse und Betrugserkennung', pain:'manuelle Dokumentenprüfung und hoher regulatorischer Aufwand', roles:'CDO, Leiter Compliance, Leiter Kreditoperations', uc:[
+      { title:'Automatisierte KYC-Vorprüfung', desc:'KI-gestützte Vorprüfung von Kundenunterlagen und Risikohinweisen.', value:'~140 h/Jahr' },
+      { title:'Kreditdokumenten-Assistent', desc:'Zusammenfassung und Plausibilisierung eingehender Kreditunterlagen.', value:'~90 h/Jahr' },
+      { title:'Betrugs-Signalerkennung', desc:'Auffällige Transaktionsmuster priorisieren und zur Prüfung vorlegen.', value:'~60 h/Jahr' } ] },
+    'Versicherungen & Finanzvermittler': { init:'Schadenbearbeitung, Vertragsprüfung und Kundenanfragen', pain:'hoher manueller Aufwand in Schaden und Kundenservice', roles:'CDO, Leiter Schaden, Leiter Kundenservice', uc:[
+      { title:'Schadenfall-Triage', desc:'KI sortiert und priorisiert eingehende Schadenmeldungen.', value:'~120 h/Jahr' },
+      { title:'Assistent für Kundenanfragen', desc:'Antwortvorschläge aus der Wissensbasis für den Service.', value:'~80 h/Jahr' },
+      { title:'Vertragsklausel-Prüfung', desc:'Prüfung von Vertragsunterlagen auf Abweichungen.', value:'~70 h/Jahr' } ] },
+    'IT & Software': { init:'Support-Tickets, Code-Review und Wissensmanagement', pain:'skalierender Support und wiederkehrende Anfragen', roles:'CTO, Head of Support, Produktleitung', uc:[
+      { title:'Ticket-Klassifikation & Routing', desc:'Support-Tickets automatisch kategorisieren und zuweisen.', value:'~100 h/Jahr' },
+      { title:'Wissens-Assistent für den Support', desc:'Antworten aus Dokumentation und Tickets ableiten.', value:'~85 h/Jahr' },
+      { title:'Release-Notes-Generator', desc:'Änderungen automatisch zu verständlichen Notizen zusammenfassen.', value:'~40 h/Jahr' } ] },
+    'Beratung': { init:'Angebotserstellung, Recherche und Projektberichte', pain:'zeitintensive Recherche und Dokumentation', roles:'Geschäftsführung, Partner, Wissensmanagement', uc:[
+      { title:'Recherche-Assistent', desc:'Quellen zusammenfassen und Kernaussagen extrahieren.', value:'~90 h/Jahr' },
+      { title:'Angebots-Textgenerator', desc:'Leistungsbeschreibungen und Angebotstexte vorstrukturieren.', value:'~60 h/Jahr' },
+      { title:'Projektbericht-Aufbereitung', desc:'Workshop-Notizen zu strukturierten Berichten verdichten.', value:'~50 h/Jahr' } ] },
+    'default': { init:'Dokumentenprozesse, Kundenanfragen und Wissensmanagement', pain:'wiederkehrende manuelle Routinearbeit', roles:'Geschäftsführung, Bereichsleitung, IT', uc:[
+      { title:'Dokumenten-Klassifikation', desc:'Eingangsdokumente automatisch erkennen und ablegen.', value:'~80 h/Jahr' },
+      { title:'Assistent für Standardanfragen', desc:'Antwortvorschläge für wiederkehrende Anfragen.', value:'~60 h/Jahr' },
+      { title:'Wissens-Assistent', desc:'Antworten aus internen Dokumenten bereitstellen.', value:'~45 h/Jahr' } ] }
+  };
+  const aiPlaybook = (t) => AI_PLAYBOOK[t.segment] || AI_PLAYBOOK['default'];
+  const plusDays = (iso, n) => { const d = iso ? new Date(iso) : new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+  function aiCard(title, inner) {
+    return '<section class="card ai-card"><div class="card-head"><div class="card-title">' + esc(title) + '</div><span class="ai-chip">KI</span></div><div class="card-body">' + inner + '</div></section>';
+  }
+  function aiEmail(t) {
+    const pb = aiPlaybook(t), pkg = (DB.settings.packages.find((p) => p.key === t.package) || {}).label || 'KI-Readiness';
+    const contact = t.contactName || 'Damen und Herren';
+    const subject = 'KI-Readiness bei ' + t.companyName + (t.segment ? ' (' + t.segment + ')' : '');
+    const body = 'Hallo ' + contact + ',\n\n' +
+      'mein Name ist ' + currentUser().name + ' von innolab. Im Bereich ' + t.segment + ' sehen wir häufig, dass ' + pb.pain + ' Kapazität bindet.\n\n' +
+      'Mit dem Paket „' + pkg + '“ unterstützen wir Sie konkret bei:\n' +
+      pb.uc.map((u) => '• ' + u.title).join('\n') + '\n\n' +
+      'Vorschlag: ein kurzes Gespräch (30 Min.) zu ' + pb.init + '.\n' +
+      'Passt Ihnen z. B. ' + plusDays(todayISO(), 5) + '?\n\n' +
+      'Beste Grüße\n' + currentUser().name + '\ninnolab';
+    return { subject, body, meta:'Erzeugt aus Branche, Paket und letzter Aktivität – Angaben vor Versand prüfen.' };
+  }
+  function aiResearch(t) {
+    const pb = aiPlaybook(t);
+    return [
+      'Unternehmen: ' + t.companyName,
+      'Branche/Region: ' + t.segment + ' · ' + t.bundesland + (t.location ? ' · ' + t.location : ''),
+      'Mitarbeiter: ' + (t.employees || 'unbekannt'),
+      '',
+      'Erkannte KI-Ansatzpunkte:',
+      ...pb.uc.map((u, i) => (i + 1) + '. ' + u.title + ' – ' + u.desc),
+      '',
+      'Mögliche Schmerzpunkte: ' + pb.pain,
+      'Entscheider-Rollen: ' + pb.roles,
+      '',
+      'Hinweis: Simulation im Prototyp – im Betrieb aus öffentlichen Quellen zu belegen.'
+    ].join('\n');
+  }
+  function aiNextStepHint(t) {
+    const ns = nextUnlocked(t.status);
+    const s = ns ? stepByStatus(ns) : null;
+    if (!s) return 'Prozess abgeschlossen – Folgeprojekt oder Nachfassen einplanen.';
+    const open = (s.exit || []).filter((e) => !exitMet(t, s, e)).map((e) => e.t);
+    return 'Nächster Schritt „' + s.label + '“ – offen: ' + (open.join('; ') || 'keine') + '.';
+  }
+  function aiNextSteps(t) {
+    const chain = [];
+    let cur = t.status;
+    for (let i = 0; i < 3; i++) { const n = nextUnlocked(cur); if (!n) break; chain.push(stepByStatus(n)); cur = n; }
+    const lines = chain.map((s, i) => (i + 1) + '. ' + s.label + ' — fällig ' + plusDays(todayISO(), (i + 1) * 4) + ' · ' + s.activity);
+    const html = lines.map((l) => '<div class="ai-line">' + esc(l) + '</div>').join('') + '<div class="ai-line" style="margin-top:6px;color:var(--blue-700)">' + esc(aiNextStepHint(t)) + '</div>';
+    return { plain: lines.join('\n') + '\n' + aiNextStepHint(t), html };
+  }
+  function aiSummary(t, stepSlug) {
+    const noteEl = el('step-note');
+    const raw = (noteEl && noteEl.value ? noteEl.value : '') || ((DB.activities.find((a) => a.targetId === t.id) || {}).summary || '');
+    const recent = DB.activities.filter((a) => a.targetId === t.id).slice(0, 3);
+    const lines = [];
+    lines.push('• Unternehmen: ' + t.companyName + ' · ' + t.segment + ' · ' + t.bundesland);
+    lines.push('• Status: ' + statusLabel(t.status) + ' — ' + (t.nextStep || 'kein nächster Schritt gesetzt'));
+    if (raw) lines.push('• Aus der Notiz: ' + raw.replace(/\s+/g, ' ').slice(0, 180));
+    recent.forEach((a) => lines.push('• ' + a.type + ' (' + dfmt(a.date) + '): ' + String(a.summary || '').slice(0, 110)));
+    lines.push('');
+    lines.push('Empfehlung: ' + aiNextStepHint(t));
+    return lines.join('\n');
+  }
+  function aiInsights() {
+    const out = [];
+    const won = DB.targets.filter((t) => WON.includes(t.status));
+    const conv = DB.targets.length ? Math.round((won.length / DB.targets.length) * 100) : 0;
+    const topSeg = (() => { const m = {}; won.forEach((t) => { m[t.segment] = (m[t.segment] || 0) + 1; }); const k = Object.keys(m).sort((a, b) => m[b] - m[a])[0]; return k || '—'; })();
+    const noFollow = DB.targets.filter((t) => !isLost(t.status) && !t.nextStepDue);
+    if (noFollow.length) out.push('⚠ ' + noFollow.length + ' aktive Zielkunden ohne Follow-up-Datum: ' + noFollow.slice(0, 3).map((t) => t.companyName).join(', '));
+    out.push('Trend: Conversion ' + conv + '% – stärkste gewonnene Branche: ' + topSeg + '.');
+    const overdue = DB.targets.filter((t) => t.nextStepDue && t.nextStepDue < todayISO() && !isLost(t.status));
+    if (overdue.length) out.push('Überfällig: ' + overdue.length + ' Follow-up(s) (' + overdue.slice(0, 2).map((t) => t.companyName).join(', ') + ').');
+    const cap = DB.targets.filter((t) => (t.callAttempts || 0) >= 3);
+    if (cap.length) out.push('UWG: ' + cap.length + ' Zielkunde(n) am Anruf-Limit (3/3) – nächsten Kanal wählen.');
+    const exp = DB.offers.filter((o) => o.status === 'versendet' && o.validUntil && o.validUntil < todayISO());
+    if (exp.length) out.push('Angebote: ' + exp.length + ' versendete(s) Angebot(e) sind abgelaufen – verlängern oder abschließen.');
+    return out;
+  }
+  function aiFoot(btns) {
+    return '<div class="modal-actions">' + btns.map((b) => '<button type="button" class="btn btn-ghost btn-sm" data-act="' + b.act + '">' + esc(b.label) + '</button>').join('') + '<button type="button" class="btn btn-primary btn-sm" data-act="closeModal">Schließen</button></div>';
+  }
+  function openAi(kind, id, stepSlug) {
+    const t = id ? findTarget(id) : null;
+    const head = '<div class="ai-head">' + AI_SPARK + '<div><div class="ai-kicker">KI-Assistent</div><div class="tiny muted">Entwurf · bitte prüfen</div></div>' + (t ? '<span class="ai-chip" style="margin-left:auto">' + esc(t.companyName) + '</span>' : '') + '</div>';
+    let html = '';
+    if (kind === 'insights') {
+      const list = aiInsights();
+      UI.aiCache = { kind, text:list.join('\n') };
+      html = head + '<div class="ai-out">' + list.map((x) => '<div class="ai-line">' + esc(x) + '</div>').join('') + '</div>' + aiFoot([{ act:'aiCopy', label:'Kopieren' }]);
+    } else if (!t) {
+      html = head + '<div class="tiny muted">Kein Zielkunde gewählt.</div>';
+    } else if (kind === 'email' || kind === 'template') {
+      const e = aiEmail(t);
+      UI.aiCache = { kind:'email', targetId:t.id, stepSlug, text:e.subject + '\n\n' + e.body };
+      html = head + '<div class="ai-out"><div class="ai-subject">Betreff: ' + esc(e.subject) + '</div>' + esc(e.body) + '</div><div class="ai-foot-note">' + esc(e.meta) + '</div>' + aiFoot([{ act:'aiAsActivity', label:'Als E-Mail-Aktivität speichern' }, { act:'aiToNote', label:'In Schritt-Notiz einfügen' }, { act:'aiCopy', label:'Kopieren' }]);
+    } else if (kind === 'summary') {
+      const text = aiSummary(t, stepSlug);
+      UI.aiCache = { kind:'summary', targetId:t.id, stepSlug, text };
+      html = head + '<div class="ai-out">' + esc(text) + '</div>' + aiFoot([{ act:'aiAsActivity', label:'Als Notiz speichern' }, { act:'aiToNote', label:'In Schritt-Notiz einfügen' }, { act:'aiCopy', label:'Kopieren' }]);
+    } else if (kind === 'research') {
+      const text = aiResearch(t);
+      UI.aiCache = { kind:'research', targetId:t.id, text };
+      html = head + '<div class="ai-out">' + esc(text) + '</div>' + aiFoot([{ act:'aiToNotes', label:'In Notizen übernehmen' }, { act:'aiCopy', label:'Kopieren' }]);
+    } else if (kind === 'nextsteps') {
+      const r = aiNextSteps(t);
+      UI.aiCache = { kind:'nextsteps', targetId:t.id, text:r.plain };
+      html = head + '<div class="ai-out">' + r.html + '</div>' + aiFoot([{ act:'aiSetNext', label:'Nächsten Schritt übernehmen' }, { act:'aiCopy', label:'Kopieren' }]);
+    } else if (kind === 'usecases') {
+      const ucs = aiPlaybook(t).uc;
+      UI.aiCache = { kind:'usecases', targetId:t.id, usecases:ucs };
+      html = head + '<div class="grid g2">' + ucs.map((u) => '<div class="check" style="cursor:default"><span class="check-body"><span class="check-text">' + esc(u.title) + '</span><span class="check-hint">' + esc(u.desc) + ' · ' + esc(u.value) + '</span></span></div>').join('') + '</div>' + aiFoot([{ act:'aiSaveUsecases', label:'Als Assessment-Version speichern' }, { act:'aiCopy', label:'Kopieren' }]);
+    }
+    openModal('KI-Assistent' + (t ? ' · ' + t.companyName : ''), html, { wide:true });
+  }
+
+  /* ═══════════════ Pipeline logic ═══════════════ */
+  function isSelectable(cur, next) {
+    const ns = stepByStatus(next);
+    if (!ns) return false;
+    if (cur === next) return true;
+    if (LOST.includes(next)) return true;
+    if (cur === 'kontaktiert' && next === 'Übergabe an Engagement Manager') return true;
+    const ci = stageIdxOfStatus(cur), ni = stageIdxOfStatus(next);
+    if (ni < 0) return false;
+    if (ci < 0) return ni === 0;
+    if (ni < ci) return true;
+    if (ni === ci) {
+      const list = stepsOfStage(STAGES[ci].key);
+      const a = list.findIndex((s) => s.status === cur);
+      const b = list.findIndex((s) => s.status === next);
+      return b <= a || b === a + 1;
+    }
+    const list = stepsOfStage(STAGES[ci].key);
+    const atEnd = cur === (list[list.length - 1] || {}).status;
+    if (!(ni === ci + 1 && atEnd)) return false;
+    if (ni === STAGES.length - 1) return true;
+    const nextList = stepsOfStage(STAGES[ni].key);
+    return (nextList[0] || {}).status === next;
+  }
+  function nextUnlocked(cur) {
+    const idx = STEPS.findIndex((s) => s.status === cur);
+    const order = STEPS.slice(idx + 1).concat(STEPS.slice(0, Math.max(idx, 0)));
+    const hit = order.find((s) => isSelectable(cur, s.status));
+    return hit ? hit.status : null;
+  }
+  function progressPct(status) {
+    const st = stepByStatus(status); if (!st) return 0;
+    const si = STAGES.findIndex((x) => x.key === st.stage);
+    const list = stepsOfStage(st.stage);
+    const i = list.findIndex((s) => s.status === status);
+    return Math.round(((si + (i + 1) / (list.length || 1)) / STAGES.length) * 100);
+  }
+  function autoMet(auto, t) {
+    if (!auto) return false;
+    const parts = String(auto).split(':');
+    const kind = parts[0], key = parts[1];
+    if (kind === 'field') return !!t[key];
+    if (kind === 'num') return Number(t[key]) > 0;
+    if (kind === 'activity') return DB.activities.some((a) => a.targetId === t.id && (!key || a.type === key));
+    if (kind === 'offers') return DB.offers.some((o) => o.targetId === t.id && o.status === key);
+    return false;
+  }
+  const exitMet = (t, step, spec) => spec.auto ? autoMet(spec.auto, t) : !!(t.stepChecks && t.stepChecks[step.slug] && t.stepChecks[step.slug].exit && t.stepChecks[step.slug].exit[spec.k]);
+  const exitCount = (t, step) => (step.exit || []).filter((s) => exitMet(t, step, s)).length;
+  const allExits = (t, step) => (step.exit || []).every((s) => exitMet(t, step, s));
+  const guideDone = (t, step) => (step.guide || []).filter((g, i) => t.stepChecks && t.stepChecks[step.slug] && t.stepChecks[step.slug].guide && t.stepChecks[step.slug].guide[i]).length;
+
+  function logActivity(targetId, type, summary, nextSteps) {
+    DB.activities.unshift({ id: uid('a'), targetId, type, date: todayISO(), summary: summary || '', nextSteps: nextSteps || '', createdBy: currentUser().name });
+    if (type === 'Call') { const t = findTarget(targetId); if (t) t.callAttempts = Math.min(3, (t.callAttempts || 0) + 1); }
+  }
+  function addBlocklist(t) {
+    if (!DB.blocklist.some((b) => b.companyName.toLowerCase() === t.companyName.toLowerCase())) {
+      DB.blocklist.push({ id: uid('b'), companyName: t.companyName, reason: t.lossReason || 'Kein Interesse', date: todayISO() });
+    }
+  }
+  function ensureAccount(t) { if (!t.account) t.account = t.companyName; }
+  function setStatus(t, status) {
+    t.status = status;
+    if (WON.includes(status)) { t.result = 'gewonnen'; ensureAccount(t); }
+    if (LOST.includes(status)) { t.result = 'verloren'; if (status === 'kein Interesse') addBlocklist(t); }
+    logActivity(t.id, 'Note', 'Statuswechsel → ' + statusLabel(status));
+    save();
+  }
+  function advanceToPhase(t, phaseKey) {
+    const candidates = stepsOfStage(phaseKey).map((s) => s.status);
+    const hit = candidates.find((s) => isSelectable(t.status, s));
+    if (!hit) return false;
+    setStatus(t, hit);
+    return true;
+  }
+
+  /* ═══════════════ UI primitives ═══════════════ */
+  function toast(msg, err) {
+    const node = el('toast');
+    node.innerHTML = msg;
+    node.classList.toggle('err', !!err);
+    node.classList.add('show');
+    clearTimeout(node._t);
+    node._t = setTimeout(() => node.classList.remove('show'), 3000);
+  }
+  function openModal(title, bodyHtml, opts) {
+    const root = el('modal-root');
+    root.innerHTML = '<div class="modal ' + ((opts && opts.wide) ? 'wide' : '') + '"><div class="modal-head"><div class="modal-title">' + esc(title) + '</div><button class="xbtn" data-act="closeModal">×</button></div><div class="modal-body">' + bodyHtml + '</div></div>';
+    root.classList.add('open');
+  }
+  function closeModal() { const r = el('modal-root'); r.classList.remove('open'); r.innerHTML = ''; }
+  function field(label, name, value, type, opts) {
+    const o = opts || {};
+    const req = o.req ? ' <span class="req">*</span>' : '';
+    const cls = 'field' + (o.full ? ' full' : '');
+    let input;
+    if (type === 'select') {
+      input = '<select class="select" name="' + name + '">' + (o.options || []).map((op) => { const val = typeof op === 'object' ? op.value : op; const lab = typeof op === 'object' ? op.label : op; return '<option value="' + esc(val) + '"' + (String(value) === String(val) ? ' selected' : '') + '>' + esc(lab) + '</option>'; }).join('') + '</select>';
+    } else if (type === 'textarea') {
+      input = '<textarea class="input" name="' + name + '"' + (o.placeholder ? ' placeholder="' + esc(o.placeholder) + '"' : '') + '>' + esc(value || '') + '</textarea>';
+    } else {
+      input = '<input class="input" type="' + (type || 'text') + '" name="' + name + '" value="' + esc(value == null ? '' : value) + '"' + (o.placeholder ? ' placeholder="' + esc(o.placeholder) + '"' : '') + ' style="width:100%">';
+    }
+    return '<div class="' + cls + '"><label>' + esc(label) + req + '</label>' + input + (o.hint ? '<span class="hintline">' + esc(o.hint) + '</span>' : '') + '</div>';
+  }
+
+  /* ═══════════════ Layout ═══════════════ */
+  const NAV = [
+    { group:'Portal', items:[ ['dashboard','Dashboard'], ['me','Mein Bereich'] ] },
+    { group:'Akquise', items:[ ['akquise','Zielkunden'], ['outreach','Outreach'], ['bafa','Förderungen'], ['import','Listen-Import'], ['blocklist','Sperrliste'] ] },
+    { group:'Akquise-Planung', items:[ ['team','Team'], ['market','Marktauswahl'], ['capacity','Planung'], ['reporting','Reporting'], ['playbook','Playbook'] ] },
+    { group:'Kunden & Vertrieb', items:[ ['accounts','Accounts'], ['contacts','Kontakte'], ['activities','Aktivitäten'], ['offers','Angebote'], ['contracts','Verträge'] ] },
+    { group:'Mandate', items:[ ['tasks','Aufgaben'], ['documents','Dokumente'] ] },
+    { group:'System', items:[ ['settings','Einstellungen'] ] }
+  ];
+  function buildSidebar() {
+    el('sidebar').innerHTML = '<div class="brand"><div class="brand-mark">C</div><div><div class="brand-name">CRM</div><div class="brand-sub">Consulting Business Suite</div></div></div>' + NAV.map((g) =>
+      '<div class="nav-group"><div class="nav-label">' + g.group + '</div>' + g.items.map(([key, label]) =>
+        '<a class="nav-item" data-nav="' + key + '" href="#/' + key + '"><span class="di"></span>' + label +
+        (key === 'akquise' ? '<span class="count">' + DB.targets.filter((t) => !isLost(t.status)).length + '</span>' : '') + '</a>'
+      ).join('') + '</div>'
+    ).join('');
+  }
+  function markNav(key) {
+    qa('.nav-item').forEach((n) => n.classList.toggle('active', n.dataset.nav === key));
+  }
+  function topbar(v) {
+    return '<header class="topbar"><div class="tb-left"><div class="crumbs">' + (v.crumbs || '') + '</div><div class="tb-title">' + esc(v.title || '') + '</div></div>' +
+      '<div class="tb-right"><span class="mocklet">Prototyp · klickbar</span>' + (v.actions || '') +
+      '<button class="btn btn-ghost btn-sm" data-act="resetDemo">Demo zurücksetzen</button></div></header>';
+  }
+  function route() {
+    const raw = (location.hash || '').replace(/^#\/?/, '');
+    const parts = raw.split('?');
+    const segs = parts[0].split('/').filter(Boolean);
+    const query = {};
+    new URLSearchParams(parts[1] || '').forEach((val, key) => { query[key] = val; });
+    return { segs, query };
+  }
+  function render() {
+    const r = route();
+    const v = resolve(r);
+    el('viewport').innerHTML = topbar(v) + '<div class="content">' + v.body + '</div>';
+    markNav(r.segs[0] || 'dashboard');
+    window.scrollTo(0, 0);
+    if (v.after) v.after();
+  }
+
+  /* ═══════════════ Views ═══════════════ */
+  const emptyBox = (txt) => '<div class="empty">' + esc(txt) + '</div>';
+  const card = (title, body, actions) => '<section class="card"><div class="card-head"><div class="card-title">' + esc(title) + '</div>' + (actions || '') + '</div><div class="card-body">' + body + '</div></section>';
+  const kpi = (label, value, hint) => '<div class="kpi"><div class="kpi-label">' + esc(label) + '</div><div class="kpi-value">' + value + '</div><div class="kpi-hint">' + esc(hint || '') + '</div></div>';
+
+  function resolve(r) {
+    const p = r.segs;
+    if (!p.length || p[0] === 'dashboard') return viewDashboard();
+    if (p[0] === 'me') return viewMe();
+    if (p[0] === 'akquise') {
+      if (p.length === 1) return viewTargets();
+      const t = findTarget(p[1]);
+      if (!t) return viewNotFound();
+      if (p.length === 2) return viewTargetDetail(t);
+      if (p[2] === 'edit') return viewTargetEdit(t);
+      if (p[2] === 'prozess') return p[3] ? viewStep(t, p[3]) : viewProcess(t);
+      if (p[2] === 'assessment') return viewAssessment(t);
+      if (p[2] === 'proposals') return viewProposals(t);
+      if (p[2] === 'handover') return viewHandover(t);
+    }
+    if (p[0] === 'offers') {
+      if (p.length === 1) return viewOffers();
+      if (p[1] === 'new') return viewOfferNew();
+      const o = findOffer(p[1]); if (!o) return viewNotFound();
+      return viewOfferDetail(o);
+    }
+    if (p[0] === 'team') {
+      if (p.length === 1) return viewTeam();
+      if (p[1] === 'zuweisung' && p[2]) { const t = findTarget(p[2]); return t ? viewAssignment(t) : viewNotFound(); }
+      return viewMember(p[1]);
+    }
+    const map = { outreach: viewOutreach, contacts: viewContacts, reporting: viewReporting, market: viewMarket, capacity: viewCapacity, bafa: viewBafa, import: viewImport, blocklist: viewBlocklist, settings: viewSettings, activities: viewActivities, tasks: viewTasks, documents: viewDocuments, accounts: viewAccounts, contracts: viewContracts, playbook: viewPlaybook };
+    if (map[p[0]]) return map[p[0]]();
+    return viewNotFound();
+  }
+
+  function viewNotFound() {
+    return { title:'Nicht gefunden', crumbs:'<b>Fehler</b>', actions:'', body: emptyBox('Diese Seite existiert im Prototyp nicht.') + '<div style="text-align:center"><a class="btn btn-primary" href="#/akquise">Zu den Zielkunden</a></div>' };
+  }
+
+  /* ── Dashboard / Heute ───────────────────────────────────── */
+  function viewDashboard() {
+    const active = DB.targets.filter((t) => isInTalk(t.status) || isOfferStatus(t.status));
+    const won = DB.targets.filter((t) => WON.includes(t.status));
+    const lost = DB.targets.filter((t) => LOST.includes(t.status));
+    const pipelineValue = DB.targets.filter((t) => isInTalk(t.status) || isOfferStatus(t.status)).reduce((s, t) => s + (t.offerValue || 0), 0);
+    const wonValue = won.reduce((s, t) => s + (t.offerValue || 0), 0);
+    const next7 = (() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().slice(0, 10); })();
+    const agenda = DB.targets.filter((t) => t.nextStepDue && t.nextStepDue <= next7 && !isLost(t.status)).sort((a, b) => (a.nextStepDue < b.nextStepDue ? -1 : 1));
+    const funnel = STAGES.map((s) => ({ label:s.label, count:DB.targets.filter((t) => (stepByStatus(t.status) || {}).stage === s.key).length }));
+    const maxStage = Math.max.apply(null, funnel.map((f) => f.count).concat([1]));
+    const top = DB.targets.filter((t) => t.offerValue > 0 && !isLost(t.status)).sort((a, b) => b.offerValue - a.offerValue).slice(0, 5);
+    const recent = DB.activities.slice(0, 6);
+
+    const body =
+      '<div class="kpis">' +
+        kpi('Zielkunden', DB.targets.length, active.length + ' aktiv') +
+        kpi('Aktive Opportunities', active.length, 'Qualifizierung bis Angebot') +
+        kpi('Pipeline-Wert', eur(pipelineValue), 'Im Gespräch + Angebote') +
+        kpi('Gewonnen', eur(wonValue), won.length + ' Kunden') +
+        kpi('Verloren', lost.length, 'inkl. kein Interesse') +
+      '</div>' +
+      '<div class="grid g2">' +
+        card('Heute &amp; nächste 7 Tage', agenda.length ? agenda.map((t) =>
+          '<div class="tl"><div class="tl-ic ' + (t.nextStepDue < todayISO() ? 'note' : 'meeting') + '">' + (t.nextStepDue < todayISO() ? '!' : '•') + '</div><div class="tl-body"><div class="tl-top"><a class="tl-type" href="#/akquise/' + t.id + '">' + esc(t.companyName) + '</a><span class="tl-date">' + dfmt(t.nextStepDue) + '</span></div><div class="tl-sum">' + esc(t.nextStep || 'Nächster Schritt') + '</div></div></div>'
+        ).join('') : emptyBox('Keine fälligen Follow-ups.'), '<a class="btn-link" href="#/akquise">Alle</a>') +
+        card('Funnel', '<div class="funnel">' + funnel.map((f) =>
+          '<div class="frow"><div class="flabel">' + esc(f.label) + '</div><div class="fbar"><span style="width:' + Math.round((f.count / maxStage) * 100) + '%"></span></div><div class="fval">' + f.count + '</div></div>'
+        ).join('') + '</div>') +
+      '</div>' +
+      '<div class="grid g2" style="margin-top:16px">' +
+        card('Top-Zielkunden', top.length ? '<div class="table-wrap"><table class="table"><thead><tr><th>Unternehmen</th><th>Status</th><th style="text-align:right">Wert</th></tr></thead><tbody>' + top.map((t) =>
+          '<tr><td><a href="#/akquise/' + t.id + '">' + esc(t.companyName) + '</a></td><td>' + statusBadge(t.status) + '</td><td style="text-align:right;font-weight:700">' + eur(t.offerValue) + '</td></tr>'
+        ).join('') + '</tbody></table></div>' : emptyBox('Keine Angebote.')) +
+        card('Letzte Aktivitäten', recent.map(activityRow).join('') || emptyBox('Keine Aktivitäten.'), '<a class="btn-link" href="#/activities">Alle</a>') +
+      '</div>' +
+      '<div style="margin-top:16px">' + aiCard('KI-Insights', '<div class="ai-head">' + AI_SPARK + '<div class="tiny muted">Automatisch aus den aktuellen Daten abgeleitet.</div><button class="btn btn-ghost btn-sm" style="margin-left:auto" data-act="ai" data-kind="insights">Öffnen</button></div><div class="ai-out">' + aiInsights().map((x) => '<div class="ai-line">' + esc(x) + '</div>').join('') + '</div>') + '</div>';
+    return { title:'Akquise-Übersicht', crumbs:'<b>Dashboard</b>', actions:'<a class="btn btn-primary btn-sm" href="#/akquise">Zu den Zielkunden</a>', body };
+  }
+  function activityRow(a) {
+    const cls = (a.type || '').toLowerCase();
+    const t = findTarget(a.targetId);
+    return '<div class="tl"><div class="tl-ic ' + cls + '">' + esc((a.type || '?').slice(0, 1)) + '</div><div class="tl-body"><div class="tl-top"><span class="tl-type">' + esc(a.type) + (t ? ' · ' + esc(t.companyName) : '') + '</span><span class="tl-date">' + dfmt(a.date) + '</span></div><div class="tl-sum">' + esc(a.summary || '') + '</div>' + (a.nextSteps ? '<div class="tl-next">→ ' + esc(a.nextSteps) + '</div>' : '') + '</div></div>';
+  }
+
+  /* ── Mein Bereich ────────────────────────────────────────── */
+  function viewMe() {
+    const me = currentUser();
+    const mine = DB.targets.filter((t) => (t.assignments || []).some((a) => a.userId === me.id));
+    const active = mine.filter((t) => !isLost(t.status));
+    const offers = DB.offers.filter((o) => mine.some((t) => t.id === o.targetId));
+    const followUps = mine.filter((t) => t.nextStepDue).sort((a, b) => (a.nextStepDue < b.nextStepDue ? -1 : 1));
+    const body =
+      '<div class="banner blue"><div><b>' + esc(me.name) + '</b> · ' + esc(me.portalRole) + ' — persönliches Cockpit über alle Zuweisungen.</div></div>' +
+      '<div class="kpis">' + kpi('Zugewiesen', mine.length, 'Zielkunden') + kpi('Aktiv', active.length, 'in Bearbeitung') + kpi('Offene Angebote', offers.filter((o) => o.status !== 'angenommen' && o.status !== 'abgelehnt').length, '') + kpi('Aktivitäten', DB.activities.filter((a) => a.createdBy === me.name).length, 'gesamt') + '</div>' +
+      '<div class="grid g-main">' +
+        card('Meine Zielkunden', '<div class="table-wrap"><table class="table"><thead><tr><th>Unternehmen</th><th>Status</th><th>Nächster Schritt</th></tr></thead><tbody>' + (mine.map((t) => '<tr><td><a href="#/akquise/' + t.id + '">' + esc(t.companyName) + '</a></td><td>' + statusBadge(t.status) + '</td><td class="tiny">' + esc(t.nextStep || '—') + (t.nextStepDue ? ' · ' + dfmt(t.nextStepDue) : '') + '</td></tr>').join('') || '<tr><td colspan=3>' + emptyBox('Keine Zuweisungen.') + '</td></tr>') + '</tbody></table></div>') +
+        card('Follow-ups', followUps.map((t) => '<div class="tl"><div class="tl-ic ' + (t.nextStepDue < todayISO() ? 'note' : 'meeting') + '">•</div><div class="tl-body"><div class="tl-top"><a class="tl-type" href="#/akquise/' + t.id + '">' + esc(t.companyName) + '</a><span class="tl-date">' + dfmt(t.nextStepDue) + '</span></div><div class="tl-sum">' + esc(t.nextStep || '') + '</div></div></div>').join('') || emptyBox('Keine Follow-ups.')) +
+      '</div>';
+    return { title:'Mein Bereich', crumbs:'<b>Portal</b> <span class="sep">/</span> Mein Bereich', actions:'', body };
+  }
+
+  /* ── Zielkunden (Kanban + Liste) ─────────────────────────── */
+  function viewTargets() {
+    const actions = '<button class="btn btn-primary btn-sm" data-act="newTarget">+ Zielkunde</button>' +
+      '<div style="display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden">' +
+      '<button class="btn btn-sm ' + (UI.view === 'kanban' ? 'btn-primary' : 'btn-ghost') + '" data-act="setView" data-view="kanban" style="border-radius:0">Kanban</button>' +
+      '<button class="btn btn-sm ' + (UI.view === 'liste' ? 'btn-primary' : 'btn-ghost') + '" data-act="setView" data-view="liste" style="border-radius:0">Liste</button></div>' +
+      '<button class="btn btn-ghost btn-sm" data-act="exportTargets">CSV</button>';
+
+    const opts = (arr, sel) => arr.map((v) => '<option value="' + esc(v) + '"' + (sel === v ? ' selected' : '') + '>' + esc(v) + '</option>').join('');
+    const statusList = STEPS.map((s) => s.status);
+    const filters = '<div class="filters">' +
+      '<input class="input wide" id="f-q" data-filter="q" placeholder="Suche Unternehmen, Kontakt, Ort …" value="' + esc(UI.filters.q) + '">' +
+      '<select class="select" data-filter="status"><option value="">Alle Status</option>' + opts(statusList, UI.filters.status) + '</select>' +
+      '<select class="select" data-filter="priority"><option value="">Alle Prioritäten</option>' + opts(['P1','P2','P3'], UI.filters.priority) + '</select>' +
+      '<select class="select" data-filter="segment"><option value="">Alle Branchen</option>' + opts(DB.settings.segments, UI.filters.segment) + '</select>' +
+      '<span id="f-count" class="tiny muted"></span></div>';
+
+    let content;
+    if (UI.view === 'kanban') {
+      content = '<div class="kanban">' + STAGES.map((stage) => {
+        const list = DB.targets.filter((t) => (stepByStatus(t.status) || {}).stage === stage.key);
+        return '<div class="kan-col" data-phase="' + stage.key + '"><div class="kan-head"><div class="kan-title">' + esc(stage.label) + '</div><span class="kan-count">' + list.length + '</span></div>' +
+          list.map((t) => {
+            const st = stepByStatus(t.status);
+            const gc = st ? guideDone(t, st) + '/' + (st.guide || []).length : '';
+            const ec = st ? exitCount(t, st) + '/' + (st.exit || []).length : '';
+            return '<a class="kan-card" draggable="true" data-card data-id="' + t.id + '" data-status="' + esc(t.status) + '" data-priority="' + esc(t.priority) + '" data-segment="' + esc(t.segment) + '" data-search="' + esc(searchText(t)) + '" href="#/akquise/' + t.id + '">' +
+              '<div class="co">' + esc(t.companyName) + '</div><div class="meta">' + esc(t.segment) + ' · ' + esc(t.bundesland) + '</div>' +
+              '<div style="margin-top:7px">' + statusBadge(t.status) + '</div>' +
+              '<div class="foot"><span class="mini">' + esc(t.priority) + (t.offerValue ? ' · ' + eur(t.offerValue) : '') + '</span><span class="mini">L ' + gc + ' · E ' + ec + '</span></div>' +
+              '<div style="margin-top:7px;display:flex;align-items:center;justify-content:space-between">' + (t.assignments && t.assignments.length ? '<div style="display:flex">' + ownerAvatars(t) + '</div>' : '<span class="tiny muted2">unzugewiesen</span>') + '<span class="tiny muted2">' + (t.nextStepDue ? dfmt(t.nextStepDue) : '') + '</span></div>' +
+              '</a>';
+          }).join('') + (list.length ? '' : '<div class="tiny muted2" style="padding:14px 4px;text-align:center">leer</div>') + '</div>';
+      }).join('') + '</div>';
+    } else {
+      content = '<div class="table-wrap"><table class="table"><thead><tr><th>Unternehmen</th><th>Branche</th><th>Bundesland</th><th>Mitarbeiter</th><th>Priorität</th><th>Status</th><th>Angebot</th><th>Anrufe</th><th>Nächster Schritt</th></tr></thead><tbody>' +
+        DB.targets.map((t) => '<tr data-card data-id="' + t.id + '" data-status="' + esc(t.status) + '" data-priority="' + esc(t.priority) + '" data-segment="' + esc(t.segment) + '" data-search="' + esc(searchText(t)) + '"><td><a href="#/akquise/' + t.id + '">' + esc(t.companyName) + '</a></td><td class="tiny">' + esc(t.segment) + '</td><td class="tiny">' + esc(t.bundesland) + '</td><td class="tiny">' + (t.employees || '—') + '</td><td class="tiny">' + esc(t.priority) + '</td><td>' + statusBadge(t.status) + '</td><td class="tiny">' + (t.offerValue ? eur(t.offerValue) : '—') + '</td><td class="tiny">' + (t.callAttempts || 0) + '/3</td><td class="tiny">' + esc(t.nextStep || '—') + (t.nextStepDue ? '<br><span class="muted2">' + dfmt(t.nextStepDue) + '</span>' : '') + '</td></tr>').join('') +
+        '</tbody></table></div>';
+    }
+
+    return { title:'Zielkunden', crumbs:'<b>Akquise</b> <span class="sep">/</span> Zielkunden', actions, body: filters + content };
+  }
+
+  /* ── Zielkunde Detail ────────────────────────────────────── */
+  function stageStrip(t) {
+    const cur = stepByStatus(t.status);
+    const curOrder = cur ? cur.order : 0;
+    const currentStageIdx = stageIdxOfStatus(t.status);
+    const tabs = STAGES.map((s, i) => {
+      const list = stepsOfStage(s.key);
+      const done = list.filter((x) => x.order < curOrder).length;
+      const active = (UI.detailTab || (STAGES[currentStageIdx] || STAGES[0]).key) === s.key;
+      return '<button class="tab ' + (active ? 'active' : '') + '" data-act="detailTab" data-tab="' + s.key + '">' + esc(s.label) + ' · ' + done + '/' + list.length + '</button>';
+    }).join('') + '<button class="tab ' + ((UI.detailTab === 'ueberblick') ? 'active' : '') + '" data-act="detailTab" data-tab="ueberblick">Überblick</button>';
+
+    const activeKey = UI.detailTab || (STAGES[currentStageIdx] || STAGES[0]).key;
+    let inner;
+    if (activeKey === 'ueberblick') {
+      const next = nextUnlocked(t.status);
+      const ns = next ? stepByStatus(next) : null;
+      inner = '<div class="grid g2"><div><div class="tiny muted2" style="margin-bottom:4px">AKTUELLER STAND</div><div style="font-weight:800;font-size:15px">' + esc(statusLabel(t.status)) + '</div><div class="tiny muted">Stufe ' + (currentStageIdx + 1) + ' von ' + STAGES.length + ' · ' + progressPct(t.status) + '%</div><div class="progress" style="margin-top:8px"><span style="width:' + progressPct(t.status) + '%"></span></div></div>' +
+        (ns ? '<div class="banner blue" style="margin:0"><div><div class="tiny" style="font-weight:800">NÄCHSTER SCHRITT</div><div style="font-weight:700">' + esc(ns.title) + '</div><div class="tiny muted">' + esc(ns.desc) + '</div><a class="btn btn-primary btn-sm" style="margin-top:8px" href="#/akquise/' + t.id + '/prozess/' + ns.slug + '">Schritt öffnen</a></div></div>' : '<div class="banner amber" style="margin:0">Prozess beendet.</div>') + '</div>';
+    } else {
+      const list = stepsOfStage(activeKey);
+      inner = list.map((s) => {
+        const isCur = s.status === t.status;
+        const done = s.order < curOrder;
+        const unlocked = isSelectable(t.status, s.status);
+        const clickable = done || isCur || unlocked;
+        const st = 'step-row ' + (isCur ? 'current' : done ? 'done' : clickable ? 'open' : 'locked');
+        const badge = done ? '<span class="mini-b ok">Exit ✓</span>' : isCur ? '<span class="mini-b">L ' + guideDone(t, s) + '/' + (s.guide || []).length + ' · E ' + exitCount(t, s) + '/' + (s.exit || []).length + '</span>' : clickable ? '<span class="mini-b">offen</span>' : '<span class="mini-b lock">gesperrt</span>';
+        return '<a class="' + st + '"' + (clickable ? ' href="#/akquise/' + t.id + '/prozess/' + s.slug + '"' : '') + '><span class="sdot"></span><span>' + esc(s.label) + '</span>' + badge + '</a>';
+      }).join('');
+    }
+    return '<section class="card"><div class="tabs">' + tabs + '</div><div class="card-body" style="padding-top:4px">' + inner + '</div></section>';
+  }
+
+  function viewTargetDetail(t) {
+    const blocked = t.status === 'kein Interesse';
+    const acts = DB.activities.filter((a) => a.targetId === t.id);
+    const tasks = DB.tasks.filter((k) => k.targetId === t.id && !['Done','Cancelled'].includes(k.status));
+    const docs = DB.documents.filter((d) => d.targetId === t.id);
+    const canQualify = isSelectable(t.status, 'Qualifizierungsgespräch');
+    const canOffer = isSelectable(t.status, 'Angebot in Vorbereitung');
+    const first = acts[0];
+    const actions = '<a class="btn btn-ghost btn-sm" href="#/akquise/' + t.id + '/edit">Bearbeiten</a><a class="btn btn-ghost btn-sm" href="#/akquise">Zurück</a>';
+
+    const stamm =
+      '<div class="fields">' +
+        '<div class="field"><label>Branche</label><div style="font-size:13px;font-weight:600">' + esc(t.segment) + '</div></div>' +
+        '<div class="field"><label>Bundesland</label><div style="font-size:13px;font-weight:600">' + esc(t.bundesland) + '</div></div>' +
+        '<div class="field"><label>Mitarbeiter</label><div style="font-size:13px;font-weight:600">' + (t.employees || '—') + '</div></div>' +
+        '<div class="field"><label>Ort</label><div style="font-size:13px;font-weight:600">' + esc(t.location || '—') + '</div></div>' +
+        '<div class="field"><label>Quelle</label><div style="font-size:13px;font-weight:600">' + esc(t.contactSource || '—') + '</div></div>' +
+        '<div class="field"><label>Paket</label><div style="font-size:13px;font-weight:600">' + esc(t.package) + '</div></div>' +
+        '<div class="field full"><label>Adresse</label><div style="font-size:13px;font-weight:600">' + esc([t.street, [t.postalCode, t.location].filter(Boolean).join(' ')].filter(Boolean).join(', ') || '—') + '</div></div>' +
+        '<div class="field full"><label>Notizen</label><div class="tiny" style="white-space:pre-wrap">' + esc(t.notes || '—') + '</div></div>' +
+      '</div>';
+
+    const tracking =
+      '<div class="fields">' +
+        '<div class="field"><label>Ansprechpartner</label><div style="font-weight:600">' + esc(t.contactName || '—') + '</div><div class="tiny muted">' + esc(t.contactTitle || '') + '</div></div>' +
+        '<div class="field"><label>E-Mail</label><div class="tiny">' + esc(t.contactEmail || '—') + '</div></div>' +
+        '<div class="field"><label>Telefon</label><div class="tiny">' + esc(t.contactPhone || '—') + '</div></div>' +
+        '<div class="field"><label>Anruf-Trigger (UWG)</label><div class="tiny">' + esc(t.callTrigger || '—') + '</div></div>' +
+        '<div class="field"><label>Anrufversuche</label><div style="font-weight:700">' + (t.callAttempts || 0) + ' / 3</div></div>' +
+        '<div class="field"><label>E-Mail erlaubt</label><div class="tiny">' + (t.emailAllowed === true ? '<span class="badge b-green">Ja</span>' : t.emailAllowed === false ? '<span class="badge b-red">Nein</span>' : '<span class="badge b-gray">nicht gefragt</span>') + '</div></div>' +
+      '</div>';
+
+    const privacy =
+      '<div class="fields">' +
+        '<div class="field"><label>Datenschutzhinweis am</label><div class="tiny">' + dfmt(t.privacyNoticeAt) + '</div></div>' +
+        '<div class="field"><label>Weg</label><div class="tiny">' + esc(t.privacyNoticeSource || '—') + '</div></div>' +
+        '<div class="field"><label>E-Mail-Einwilligung am</label><div class="tiny">' + dfmt(t.emailConsentAt) + '</div></div>' +
+        '<div class="field"><label>Telefon-Einwilligung am</label><div class="tiny">' + dfmt(t.callConsentAt) + '</div></div>' +
+      '</div>';
+
+    const selftest =
+      '<div class="fields">' +
+        '<div class="field"><label>Score</label><div style="font-weight:700">' + (t.selfTestScore != null ? t.selfTestScore + ' / 100' : '—') + '</div></div>' +
+        '<div class="field"><label>Datum</label><div class="tiny">' + dfmt(t.selfTestDate) + '</div></div>' +
+        '<div class="field full"><label>Link</label><div class="tiny">' + (t.selfTestLink ? '<a href="' + esc(t.selfTestLink) + '" target="_blank" style="color:var(--blue-700)">' + esc(t.selfTestLink) + '</a>' : '—') + '</div></div>' +
+      '</div>';
+
+    const prozess =
+      '<div class="fields">' +
+        '<div class="field"><label>Übergabe EM</label><div class="tiny">' + dfmt(t.handoverDate) + '</div></div>' +
+        '<div class="field"><label>Erstgespräch</label><div class="tiny">' + dfmt(t.firstMeetingDate) + '</div></div>' +
+        '<div class="field"><label>Angebotswert</label><div class="tiny">' + (t.offerValue ? eur(t.offerValue) : '—') + '</div></div>' +
+        '<div class="field"><label>Förderstatus</label><div class="tiny">' + esc(t.bafaStatus || '—') + '</div></div>' +
+        '<div class="field"><label>Ergebnis</label><div class="tiny">' + esc(t.result || '—') + '</div></div>' +
+        '<div class="field"><label>Verlustgrund</label><div class="tiny">' + esc(t.lossReason || '—') + '</div></div>' +
+      '</div>';
+
+    const tasksHtml = tasks.length ? tasks.map((k) => '<div class="tl"><div class="tl-ic task">A</div><div class="tl-body"><div class="tl-top"><span class="tl-type">' + esc(k.title) + '</span><span class="tl-date">' + dfmt(k.dueDate) + '</span></div><div class="tl-sum">' + esc(k.status) + ' · ' + esc(user(k.assignedToId).name) + '</div></div></div>').join('') : emptyBox('Keine offenen Aufgaben.');
+    const docsHtml = docs.length ? docs.map((d) => '<div class="tl"><div class="tl-ic note">D</div><div class="tl-body"><div class="tl-top"><span class="tl-type">' + esc(d.name) + '</span><span class="tl-date">' + dfmt(d.createdAt) + '</span></div></div></div>').join('') : emptyBox('Keine Dokumente.');
+
+    const assessments = (t.assessments || []).slice().reverse();
+    const assessHtml = assessments.length ? assessments.map((a) => '<div class="tl"><div class="tl-ic note">KI</div><div class="tl-body"><div class="tl-top"><a class="tl-type" href="#/akquise/' + t.id + '/assessment">Version ' + a.version + '</a><span class="tl-date">' + dfmt(a.createdAt) + '</span></div><div class="tl-sum">Score ' + a.score + ' / 5 · ' + esc(a.usecases.length) + ' Use Cases</div></div></div>').join('') : emptyBox('Noch kein Assessment.');
+
+    const body =
+      (blocked ? '<div class="banner red"><div><b>Kontaktsperre · DSGVO Art. 21</b><br>Widerspruch dokumentiert. Kontaktaufnahme gesperrt, nur interne Doku.</div></div>' : '') +
+      '<div class="kpis">' + kpi('Status', statusBadge(t.status), 'Prio ' + t.priority) + kpi('Angebotswert', t.offerValue ? eur(t.offerValue) : '—', t.offerDate ? dfmt(t.offerDate) : 'kein Angebot') + kpi('Anrufe', (t.callAttempts || 0) + ' / 3', (t.callAttempts || 0) >= 3 ? 'Limit erreicht' : 'im Rahmen') + kpi('Letzte Aktivität', first ? dfmt(first.date) : '—', acts.length + ' Einträge') + '</div>' +
+      (t.account ? '<div class="banner blue" style="margin-top:0"><div>Account verknüpft: <b>' + esc(t.account) + '</b> · <a href="#/accounts" style="color:var(--blue-700)">alle Accounts</a></div></div>' : '') +
+      stageStrip(t) +
+      '<div class="grid g-main" style="margin-top:16px"><div>' +
+        card('Stammdaten', stamm) +
+        '<div class="card"><div class="card-head"><div class="card-title">Akquise-Tracking</div></div><div class="card-body">' + tracking + '</div></div>' +
+        '<div class="card"><div class="card-head"><div class="card-title">Datenschutz &amp; Einwilligungen</div></div><div class="card-body">' + privacy + '</div></div>' +
+        '<div class="card"><div class="card-head"><div class="card-title">Selbsttest</div></div><div class="card-body">' + selftest + '</div></div>' +
+        '<div class="card"><div class="card-head"><div class="card-title">Prozessfortschritt</div></div><div class="card-body">' + prozess + '</div></div>' +
+        '<div class="grid g2"><div>' + card('Aufgaben', tasksHtml, '<a class="btn-link" href="#/tasks">Alle</a>') + '</div><div>' + card('Dokumente', docsHtml, '<a class="btn-link" href="#/documents">Alle</a>') + '</div></div>' +
+      '</div><div>' +
+        card('Aktionen',
+          '<div style="display:flex;flex-direction:column;gap:8px">' +
+          '<button class="btn btn-ghost" data-act="qualify" data-id="' + t.id + '"' + (blocked || !canQualify ? ' disabled' : '') + '>Qualifizieren &amp; übergeben</button>' +
+          '<button class="btn btn-ghost" data-act="logActivity" data-id="' + t.id + '">Aktivität protokollieren</button>' +
+          '<div style="display:flex;align-items:center;gap:6px;margin:2px 0"><span class="ai-chip">KI</span><span class="tiny muted2">Assistent</span></div>' +
+          '<button class="btn btn-ghost" data-act="ai" data-kind="research" data-id="' + t.id + '">Unternehmen recherchieren</button>' +
+          '<button class="btn btn-ghost" data-act="ai" data-kind="email" data-id="' + t.id + '">E-Mail-Entwurf</button>' +
+          '<button class="btn btn-ghost" data-act="ai" data-kind="summary" data-id="' + t.id + '">Aktivitäten zusammenfassen</button>' +
+          '<button class="btn btn-ghost" data-act="ai" data-kind="nextsteps" data-id="' + t.id + '">Nächsten Schritt vorschlagen</button>' +
+          '<a class="btn btn-ghost" href="#/akquise/' + t.id + '/assessment">KI-Assessment</a>' +
+          '<a class="btn btn-ghost" href="#/akquise/' + t.id + '/proposals">Projektvorschläge</a>' +
+          '<a class="btn btn-ghost" href="#/offers/new?target=' + t.id + '"' + (blocked || !canOffer ? ' style="pointer-events:none;opacity:.5"' : '') + '>Angebot anlegen</a>' +
+          '<a class="btn btn-ghost" href="#/akquise/' + t.id + '/handover">Übergabe-Checkliste</a>' +
+          '</div>') +
+        card('KI-Assessments', assessHtml, '<a class="btn-link" href="#/akquise/' + t.id + '/assessment">Öffnen</a>') +
+        card('Aktivitäten', acts.map(activityRow).join('') || emptyBox('Noch keine Aktivitäten.'), '<button class="btn-link" data-act="logActivity" data-id="' + t.id + '">+ Neu</button>') +
+      '</div></div>';
+
+    return { title:t.companyName, crumbs:'<a href="#/akquise">Zielkunden</a> <span class="sep">/</span> <b>' + esc(t.companyName) + '</b>', actions, body };
+  }
+
+  /* ── Zielkunde bearbeiten ────────────────────────────────── */
+  function viewTargetEdit(t) {
+    const segOpts = DB.settings.segments.map((s) => ({ value:s, label:s }));
+    const bundes = ['Baden-Württemberg','Bayern','Berlin','Brandenburg','Bremen','Hamburg','Hessen','Mecklenburg-Vorpommern','Niedersachsen','Nordrhein-Westfalen','Rheinland-Pfalz','Saarland','Sachsen','Sachsen-Anhalt','Schleswig-Holstein','Thüringen'];
+    const body =
+      '<div class="card"><div class="card-body"><form data-form="targetEdit"><input type="hidden" name="id" value="' + t.id + '">' +
+      '<div class="fields">' +
+        field('Unternehmen','companyName',t.companyName,'text',{req:true,full:true}) +
+        field('Branche','segment',t.segment,'select',{options:segOpts}) +
+        field('Bundesland','bundesland',t.bundesland,'select',{options:bundes.map((b) => ({ value:b, label:b }))}) +
+        field('Ort','location',t.location,'text') +
+        field('Straße','street',t.street,'text') +
+        field('PLZ','postalCode',t.postalCode,'text') +
+        field('Mitarbeiter','employees',t.employees,'number') +
+        field('Priorität','priority',t.priority,'select',{options:['P1','P2','P3']}) +
+        field('Paket','package',t.package,'select',{options:DB.settings.packages.map((p) => ({ value:p.key, label:p.label }))}) +
+        field('Ansprechpartner','contactName',t.contactName,'text') +
+        field('Titel / Position','contactTitle',t.contactTitle,'text') +
+        field('E-Mail','contactEmail',t.contactEmail,'email') +
+        field('Telefon','contactPhone',t.contactPhone,'text') +
+        field('LinkedIn','contactLinkedIn',t.contactLinkedIn,'text') +
+        field('Anruf-Trigger (UWG)','callTrigger',t.callTrigger,'text') +
+        field('Angebotswert (€)','offerValue',t.offerValue || '', 'number') +
+        field('Nächster Schritt','nextStep',t.nextStep,'text') +
+        field('Fällig am','nextStepDue',t.nextStepDue,'date') +
+        field('Verlustgrund','lossReason',t.lossReason,'select',{options:['']. concat(LOSS_REASONS)}) +
+        field('Notizen','notes',t.notes,'textarea',{full:true}) +
+      '</div>' +
+      '<div class="modal-actions"><a class="btn btn-ghost" href="#/akquise/' + t.id + '">Abbrechen</a><button class="btn btn-primary" type="submit">Speichern</button></div>' +
+      '</form></div></div>';
+    return { title:'Bearbeiten · ' + t.companyName, crumbs:'<a href="#/akquise">Zielkunden</a> <span class="sep">/</span> <a href="#/akquise/' + t.id + '">' + esc(t.companyName) + '</a> <span class="sep">/</span> <b>Bearbeiten</b>', actions:'', body };
+  }
+
+  /* ── Prozess-Übersicht ───────────────────────────────────── */
+  function viewProcess(t) {
+    const cur = stepByStatus(t.status);
+    const curOrder = cur ? cur.order : 0;
+    const curStage = stageIdxOfStatus(t.status);
+    const next = nextUnlocked(t.status);
+    const ns = next ? stepByStatus(next) : null;
+    const acts = DB.activities.filter((a) => a.targetId === t.id);
+
+    const rail = STAGES.map((stage, si) => {
+      const list = stepsOfStage(stage.key);
+      const doneStage = curStage > si;
+      const isCur = curStage === si;
+      return '<div class="stage ' + (doneStage ? 'done' : isCur ? 'current' : 'locked') + '"><div class="stage-top"><span class="stage-num">' + (doneStage ? '✓' : si + 1) + '</span><span class="stage-name">' + esc(stage.label) + '</span></div><div class="steps">' +
+        list.map((s) => {
+          const isCurStep = s.status === t.status;
+          const done = s.order < curOrder;
+          const unlocked = isSelectable(t.status, s.status);
+          const clickable = done || isCurStep || unlocked;
+          const cls = 'step-row ' + (isCurStep ? 'current' : done ? 'done' : clickable ? 'open' : 'locked');
+          const badge = isCurStep ? '<span class="mini-b">L ' + guideDone(t, s) + '/' + (s.guide || []).length + ' · E ' + exitCount(t, s) + '/' + (s.exit || []).length + '</span>' : done ? '<span class="mini-b ok">Exit ✓</span>' : clickable ? '<span class="mini-b">offen</span>' : '<span class="mini-b lock">gesperrt</span>';
+          return '<a class="' + cls + '"' + (clickable ? ' href="#/akquise/' + t.id + '/prozess/' + s.slug + '"' : '') + '><span class="sdot"></span><span>' + esc(s.label) + '</span>' + badge + '</a>';
+        }).join('') + '</div></div>';
+    }).join('');
+
+    const nextCard = ns ? '<div class="card"><div class="card-head"><div class="card-title">Nächster Schritt</div><span class="tiny muted">' + esc(STAGES[stageIdxOfStatus(ns.status)].label) + '</span></div><div class="card-body">' +
+      '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:8px">' + statusBadge(t.status) + '<span class="muted">→</span>' + statusBadge(ns.status) + '</div>' +
+      '<div style="font-weight:800;font-size:15px;margin-bottom:3px">' + esc(ns.title) + '</div><div class="tiny muted" style="margin-bottom:10px">' + esc(ns.desc) + '</div>' +
+      '<div class="tiny" style="font-weight:700;margin-bottom:5px">Exit-Kriterien</div>' +
+      '<div class="checklist">' + ns.exit.map((spec) => { const met = exitMet(t, ns, spec); return '<div class="check ' + (met ? 'is-done' : '') + '" style="cursor:default"><input type="checkbox" disabled ' + (met ? 'checked' : '') + '><span class="check-body"><span class="check-text">' + esc(spec.t) + '</span></span>' + (spec.auto ? '<span class="tag auto">auto</span>' : '<span class="tag manual">manuell</span>') + '</div>'; }).join('') + '</div>' +
+      '<a class="btn btn-primary" style="margin-top:12px" href="#/akquise/' + t.id + '/prozess/' + ns.slug + '">Schritt öffnen</a>' +
+      '</div></div>' : '<div class="card"><div class="card-body"><div class="banner amber" style="margin:0">Der Prozess ist beendet. Ergebnis: <b>' + esc(t.result || t.status) + '</b></div></div></div>';
+
+    const body = '<div class="grid g-main">' +
+      card('Akquise-Prozess', '<div class="tiny muted" style="margin-bottom:10px">Jeder Schritt hat eine eigene Seite — Leitfaden und Exit-Kriterien schalten den nächsten Schritt frei.</div>' + '<div class="progress" style="margin-bottom:12px"><span style="width:' + progressPct(t.status) + '%"></span></div>' + rail + '<div style="margin-top:12px">' + nextCard + '</div>', '<span class="badge ' + badgeClass(t.status) + '">' + progressPct(t.status) + ' %</span>') +
+      card('Aktivitäten', acts.map(activityRow).join('') || emptyBox('Noch keine Aktivitäten.'), '<button class="btn-link" data-act="logActivity" data-id="' + t.id + '">+ Neu</button>') +
+      '</div>';
+    return { title:t.companyName + ' · Prozess', crumbs:'<a href="#/akquise">Zielkunden</a> <span class="sep">/</span> <a href="#/akquise/' + t.id + '">' + esc(t.companyName) + '</a> <span class="sep">/</span> <b>Prozess</b>', actions:'<a class="btn btn-ghost btn-sm" href="#/akquise/' + t.id + '">Kundendetails</a>', body };
+  }
+
+  /* ── Schritt-Seite (Leitfaden + Exit-Kriterien) ──────────── */
+  function viewStep(t, slug) {
+    const step = stepBySlug(slug);
+    if (!step) return viewNotFound();
+    const cur = t.status;
+    const isCur = cur === step.status;
+    const unlocked = isSelectable(cur, step.status);
+    const blocked = cur === 'kein Interesse';
+    const canUse = (isCur || unlocked) && !blocked;
+    const checks = (t.stepChecks && t.stepChecks[step.slug]) || {};
+    const guideFlags = checks.guide || {};
+    const exits = step.exit || [];
+    const metCount = exits.filter((s) => exitMet(t, step, s)).length;
+    const all = metCount === exits.length;
+    const phase = STAGES.find((s) => s.key === step.stage);
+
+    const guideHtml = (step.guide || []).map((g, i) => {
+      const done = !!guideFlags[i];
+      return '<label class="check ' + (done ? 'is-done' : '') + '"><input type="checkbox" data-guide data-step="' + step.slug + '" data-idx="' + i + '" ' + (done ? 'checked' : '') + (canUse ? '' : ' disabled') + '><span class="check-body"><span class="check-text">' + esc(g) + '</span></span></label>';
+    }).join('');
+
+    const exitHtml = exits.map((spec) => {
+      const met = exitMet(t, step, spec);
+      return '<label class="check exit-check ' + (met ? 'is-done' : '') + '"><input type="checkbox" data-exit data-step="' + step.slug + '" data-key="' + esc(spec.k) + '" ' + (met ? 'checked' : '') + (spec.auto || !canUse ? ' disabled' : '') + '><span class="check-body"><span class="check-text">' + esc(spec.t) + '</span>' + (spec.auto ? '<span class="check-hint">Wird automatisch geprüft.</span>' : '') + '</span>' + (spec.auto ? '<span class="tag auto">auto</span>' : '<span class="tag manual">manuell</span>') + '</label>';
+    }).join('');
+
+    const fieldHtml = (step.requiredFields || []).length
+      ? '<div class="fields">' + step.requiredFields.map((f) => {
+          let type = f.type === 'number' ? 'number' : f.type === 'date' ? 'date' : f.type === 'select' ? 'select' : 'text';
+          return field(f.label, 'rf_' + f.payload, t[f.payload] == null ? '' : t[f.payload], type, { req: f.required, options: f.options });
+        }).join('') + '</div>'
+      : '<div class="tiny muted">Keine Pflichtfelder für diesen Schritt.</div>';
+
+    const banner = blocked ? '<div class="banner red"><div>Kontaktsperre (DSGVO Art. 21) – nur interne Dokumentation erlaubt.</div></div>' :
+      (!canUse ? '<div class="banner" style="background:#f9fafb;border-color:var(--line);color:#4b5563"><div><b>Schritt noch gesperrt.</b> Erst die vorherigen Schritte der Pipeline abschließen.</div></div>' : '');
+
+    const body =
+      '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">' + statusBadge(cur) + (isCur ? '' : '<span class="muted">→</span>' + '<span class="pill target"><span class="dot"></span>' + esc(step.label) + '</span>') + '<span class="tiny muted" style="margin-left:auto">Aktivität: ' + esc(step.activity) + '</span></div>' +
+      banner +
+      '<div class="grid g-main">' +
+        '<div><section class="card"><div class="card-body">' +
+          '<div class="banner blue" style="margin-bottom:14px"><div><b>Ziel</b> · ' + esc(step.desc) + '</div></div>' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div class="sec-title" style="margin:0">Leitfaden</div><span class="tiny muted2">hilft, blockiert nicht</span><span class="counter" id="guide-counter" style="margin-left:auto">' + guideDone(t, step) + '/' + (step.guide || []).length + ' erledigt</span></div>' +
+          '<div class="checklist" id="guide-list">' + guideHtml + '</div>' +
+          '<div style="display:flex;align-items:center;gap:8px;margin:20px 0 6px"><div class="sec-title" style="margin:0">Exit-Kriterien</div><span class="tiny muted2">„Weiter, wenn …“</span><span class="counter' + (all ? ' ok' : '') + '" id="exit-counter" style="margin-left:auto">' + metCount + '/' + exits.length + ' erfüllt</span></div>' +
+          '<div class="checklist" id="exit-list">' + exitHtml + '</div>' +
+          '<div style="margin-top:20px"><div class="sec-title" style="margin-bottom:8px">Pflichtfelder &amp; Ergebnis</div>' + fieldHtml + '</div>' +
+          '<div style="margin-top:14px"><div class="sec-title" style="margin-bottom:6px">Aktivität protokollieren</div><textarea class="input" id="step-note" placeholder="Was ist passiert? Nächster Schritt …">' + esc((t.stepChecks && t.stepChecks[step.slug] && t.stepChecks[step.slug].note) || '') + '</textarea></div>' +
+          '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line2)">' +
+          '<button class="btn ' + (step.status === 'Verlust' || step.status === 'kein Interesse' ? 'btn-red' : isWon(step.status) ? 'btn-green' : 'btn-primary') + '" id="step-save" data-act="saveStep" data-id="' + t.id + '" data-step="' + step.slug + '"' + (canUse && all ? '' : ' disabled') + '>Speichern &amp; weiter</button>' +
+          '<a class="btn btn-ghost" href="#/akquise/' + t.id + '/prozess">Abbrechen</a>' +
+          '<span class="tiny" id="step-hint" style="color:' + (all ? 'var(--green-700)' : 'var(--amber)') + '">' + (all ? 'Alle Exit-Kriterien erfüllt – Statuswechsel möglich' : 'Noch ' + (exits.length - metCount) + ' Exit-Kriterium offen') + '</span>' +
+          '</div>' +
+        '</div></section></div>' +
+        '<div>' + aiCard('KI-Assistent', '<div class="ai-head">' + AI_SPARK + '<div class="tiny muted">Entwürfe und Analysen – bitte prüfen.</div></div><div class="ai-actions">' +
+          (step.stage === 'lead' || step.stage === 'qualifizierung' ? '<button class="btn btn-ghost btn-sm" data-act="ai" data-kind="research" data-id="' + t.id + '">Unternehmen recherchieren</button>' : '') +
+          '<button class="btn btn-ghost btn-sm" data-act="ai" data-kind="email" data-id="' + t.id + '" data-step="' + step.slug + '">E-Mail-Entwurf</button>' +
+          '<button class="btn btn-ghost btn-sm" data-act="ai" data-kind="summary" data-id="' + t.id + '" data-step="' + step.slug + '">Notiz zusammenfassen</button>' +
+          '<button class="btn btn-ghost btn-sm" data-act="ai" data-kind="nextsteps" data-id="' + t.id + '">Nächste Schritte vorschlagen</button>' +
+          '</div>') + card('Kontext', '<div class="tiny muted" style="margin-bottom:6px">Phase</div><div style="font-weight:800">' + esc(phase ? phase.label : '') + '</div><div class="progress" style="margin:8px 0 12px"><span style="width:' + progressPct(step.status) + '%"></span></div>' +
+          '<div class="tiny muted" style="margin-bottom:4px">Zielkunde</div><a href="#/akquise/' + t.id + '" style="font-weight:700;color:var(--blue-700)">' + esc(t.companyName) + '</a>' +
+          '<div class="tiny muted" style="margin-top:10px;margin-bottom:4px">Aktueller Status</div>' + statusBadge(cur)) +
+          card('Schritt-Navigation', '<div class="steps">' + stepsOfStage(step.stage).map((s) => '<a class="step-row ' + (s.status === cur ? 'current' : s.order < (stepByStatus(cur) || {}).order ? 'done' : isSelectable(cur, s.status) ? 'open' : 'locked') + '" href="#/akquise/' + t.id + '/prozess/' + s.slug + '"><span class="sdot"></span><span>' + esc(s.label) + '</span></a>').join('') + '</div>') + '</div>' +
+      '</div>';
+    return { title:step.title, crumbs:'<a href="#/akquise">Zielkunden</a> <span class="sep">/</span> <a href="#/akquise/' + t.id + '">' + esc(t.companyName) + '</a> <span class="sep">/</span> <a href="#/akquise/' + t.id + '/prozess">Prozess</a> <span class="sep">/</span> <b>' + esc(step.label) + '</b>', actions:'<a class="btn btn-ghost btn-sm" href="#/akquise/' + t.id + '">Kundendetails</a>', body };
+  }
+
+  /* ── Assessment ──────────────────────────────────────────── */
+  function viewAssessment(t) {
+    const list = (t.assessments || []).slice().reverse();
+    const body = '<div class="banner blue"><div>KI-Readiness-Assessment für <b>' + esc(t.companyName) + '</b>. Die Generierung läuft über die externe Readiness-Plattform.</div></div>' +
+      '<div class="rowline"><div class="tiny muted">Assessments werden als Version gespeichert; ältere Versionen bleiben erhalten.</div><div style="display:flex;gap:8px"><button class="btn btn-ghost" data-act="ai" data-kind="usecases" data-id="' + t.id + '">KI: Use Cases vorschlagen</button><button class="btn btn-primary" data-act="assess" data-id="' + t.id + '">Assessment generieren</button></div></div>' +
+      (list.length ? list.map((a) => card('Version ' + a.version + ' · ' + dfmt(a.createdAt), '<div class="grid g2"><div><div class="tiny muted">Gesamtscore</div><div style="font-size:26px;font-weight:800;color:' + (a.score >= 4 ? 'var(--green-700)' : a.score >= 2.5 ? 'var(--amber)' : 'var(--red)') + '">' + a.score.toFixed(1) + ' / 5</div><div class="tags" style="margin-top:8px">' + a.categories.map((c) => '<span class="tag2">' + esc(c.name) + ': ' + c.score + '</span>').join('') + '</div></div><div><div class="tiny muted" style="margin-bottom:4px">Abgeleitete Use Cases</div>' + a.usecases.map((u) => '<div class="tl"><div class="tl-ic note">UC</div><div class="tl-body"><div class="tl-top"><span class="tl-type">' + esc(u.title) + '</span><span class="tl-date">' + esc(u.value) + '</span></div><div class="tl-sum">' + esc(u.desc) + '</div></div></div>').join('') + '</div></div>', '<button class="btn-link" data-act="pdf">PDF</button>')).join('') : emptyBox('Noch kein Assessment generiert.')) +
+      '<a class="btn btn-ghost" href="#/akquise/' + t.id + '">Zurück zum Zielkunden</a>';
+    return { title:'KI-Assessment · ' + t.companyName, crumbs:'<a href="#/akquise">Zielkunden</a> <span class="sep">/</span> <a href="#/akquise/' + t.id + '">' + esc(t.companyName) + '</a> <span class="sep">/</span> <b>Assessment</b>', actions:'', body };
+  }
+
+  /* ── Proposals ───────────────────────────────────────────── */
+  function viewProposals(t) {
+    const latest = (t.assessments || [])[(t.assessments || []).length - 1];
+    const usecases = latest ? latest.usecases : [];
+    const body = '<div class="banner blue"><div>Projektvorschläge aus dem letzten Assessment. Wähle Use Cases für ein Angebot.</div></div>' +
+      '<div class="rowline"><button class="btn btn-ghost" data-act="ai" data-kind="usecases" data-id="' + t.id + '">KI: Use Cases vorschlagen</button><a class="btn btn-primary" href="#/offers/new?target=' + t.id + '">Angebot aus Auswahl</a></div>' +
+      (usecases.length ? '<div class="grid g3">' + usecases.map((u) => '<div class="card"><div class="card-body"><div style="font-weight:800">' + esc(u.title) + '</div><div class="tiny muted" style="margin:4px 0 8px">' + esc(u.desc) + '</div><div class="badge b-green">' + esc(u.value) + '</div></div></div>').join('') + '</div>' : emptyBox('Keine Vorschläge – zuerst ein Assessment generieren.') ) +
+      '<a class="btn btn-ghost" href="#/akquise/' + t.id + '" style="margin-top:12px">Zurück zum Zielkunden</a>';
+    return { title:'Projektvorschläge · ' + t.companyName, crumbs:'<a href="#/akquise">Zielkunden</a> <span class="sep">/</span> <a href="#/akquise/' + t.id + '">' + esc(t.companyName) + '</a> <span class="sep">/</span> <b>Vorschläge</b>', actions:'', body };
+  }
+
+  /* ── Übergabe-Checkliste ─────────────────────────────────── */
+  const HANDOVER = ['Kontext und Historie dokumentiert','Bedarf, Budget und Zeitrahmen geklärt','Entscheiderstruktur erfasst','Erstgespräch protokolliert','Angebot bzw. nächste Schritte abgestimmt','Engagement Manager benannt'];
+  function viewHandover(t) {
+    const chk = t.handoverChecklist || {};
+    const done = HANDOVER.filter((h, i) => chk[i]).length;
+    const body = '<div class="banner blue"><div>Übergabe an den Engagement Manager für <b>' + esc(t.companyName) + '</b>. Die Bestätigung setzt den Zielkunden auf „gewonnen“.</div></div>' +
+      '<div class="grid g-main"><div>' + card('6-Punkte-Checkliste', '<div class="checklist">' + HANDOVER.map((h, i) => '<label class="check ' + (chk[i] ? 'is-done' : '') + '"><input type="checkbox" data-handover="' + i + '" data-id="' + t.id + '" ' + (chk[i] ? 'checked' : '') + '><span class="check-body"><span class="check-text">' + esc(h) + '</span></span></label>').join('') + '</div>' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap"><button class="btn btn-green" data-act="confirmHandover" data-id="' + t.id + '"' + (done === HANDOVER.length ? '' : ' disabled') + '>Übergabe bestätigen</button><span class="tiny muted">' + done + ' / ' + HANDOVER.length + ' erfüllt</span></div>', '<span class="badge ' + (done === HANDOVER.length ? 'b-green' : 'b-gray') + '">' + done + '/' + HANDOVER.length + '</span>') + '</div><div>' +
+        card('Termine &amp; Format', '<div class="fields"><div class="field"><label>Übergabedatum</label><div class="tiny">' + dfmt(t.handoverDate) + '</div></div><div class="field"><label>Erstgespräch</label><div class="tiny">' + dfmt(t.firstMeetingDate) + '</div></div><div class="field full"><label>Format</label><div class="tiny">Video-Call, 60 Minuten</div></div></div>') +
+        card('Hinweis', '<div class="tiny muted">Nach der Bestätigung werden Account, Vertrag und Projekt im CRM angelegt (im Prototyp simuliert).</div>') + '</div></div>' +
+      '<a class="btn btn-ghost" href="#/akquise/' + t.id + '" style="margin-top:12px">Zurück zum Zielkunden</a>';
+    return { title:'Übergabe · ' + t.companyName, crumbs:'<a href="#/akquise">Zielkunden</a> <span class="sep">/</span> <a href="#/akquise/' + t.id + '">' + esc(t.companyName) + '</a> <span class="sep">/</span> <b>Übergabe</b>', actions:'', body };
+  }
+
+  /* ── Angebote ────────────────────────────────────────────── */
+  function viewOffers() {
+    const body = '<div class="rowline"><div class="tiny muted">' + DB.offers.length + ' Angebote · Nummernkreis SP-YYYY-0001</div><a class="btn btn-primary" href="#/offers/new">+ Neues Angebot</a></div>' +
+      '<div class="card"><div class="table-wrap"><table class="table"><thead><tr><th>Nummer</th><th>Zielkunde</th><th>Status</th><th style="text-align:right">Summe</th><th>Gültig bis</th><th></th></tr></thead><tbody>' +
+      (DB.offers.map((o) => '<tr><td><a href="#/offers/' + o.id + '"><b>' + esc(o.number) + '</b></a></td><td>' + esc(targetLabel(o.targetId)) + '</td><td>' + offerBadge(o.status) + '</td><td style="text-align:right;font-weight:700">' + eur(offerTotal(o)) + '</td><td class="tiny">' + dfmt(o.validUntil) + '</td><td><a class="btn-link" href="#/offers/' + o.id + '">Öffnen</a></td></tr>').join('') || '<tr><td colspan=6>' + emptyBox('Keine Angebote.') + '</td></tr>') +
+      '</tbody></table></div></div>';
+    return { title:'Angebote', crumbs:'<b>Kunden &amp; Vertrieb</b> <span class="sep">/</span> Angebote', actions:'', body };
+  }
+  function offerBadge(s) {
+    const map = { entwurf:'b-gray', versendet:'b-blue', angenommen:'b-green', abgelehnt:'b-red', abgelaufen:'b-amber' };
+    return '<span class="badge ' + (map[s] || 'b-gray') + '"><span class="dot"></span>' + esc(s) + '</span>';
+  }
+  function viewOfferNew() {
+    const r = route();
+    const preset = r.query.target || '';
+    const targetOpts = DB.targets.filter((t) => t.status !== 'kein Interesse').map((t) => ({ value:t.id, label:t.companyName }));
+    const pkgOpts = DB.settings.packages.map((p) => ({ value:p.key, label:p.label + ' · ' + eur(p.price) }));
+    const body = '<div class="card"><div class="card-body"><form data-form="offerNew">' +
+      '<div class="fields">' +
+        field('Zielkunde','targetId',preset,'select',{req:true,options:[{value:'',label:'— wählen —'}].concat(targetOpts)}) +
+        field('Paket','package',DB.settings.packages[1].key,'select',{options:pkgOpts}) +
+        field('Gültig bis','validUntil','2026-12-15','date') +
+        field('Geschäftsjahr','year','2026','number') +
+      '</div>' +
+      '<div class="banner blue" style="margin-top:14px"><div>Beim Anlegen wird eine laufende Nummer vergeben und das Paket als Position übernommen. Weitere Positionen können danach im Angebot ergänzt werden.</div></div>' +
+      '<div class="modal-actions"><a class="btn btn-ghost" href="#/offers">Abbrechen</a><button class="btn btn-primary" type="submit">Angebot anlegen</button></div>' +
+      '</form></div></div>';
+    return { title:'Neues Angebot', crumbs:'<a href="#/offers">Angebote</a> <span class="sep">/</span> <b>Neu</b>', actions:'', body };
+  }
+  function viewOfferDetail(o) {
+    const t = findTarget(o.targetId);
+    const actions = (o.status === 'entwurf' ? '<button class="btn btn-primary btn-sm" data-act="offerSend" data-id="' + o.id + '">Senden</button>' : '') +
+      (o.status === 'versendet' ? '<button class="btn btn-green btn-sm" data-act="offerAccept" data-id="' + o.id + '">Annehmen</button><button class="btn btn-red btn-sm" data-act="offerReject" data-id="' + o.id + '">Ablehnen</button><button class="btn btn-ghost btn-sm" data-act="offerExtend" data-id="' + o.id + '">Verlängern</button>' : '') +
+      '<button class="btn btn-ghost btn-sm" data-act="pdf">PDF</button>';
+    const body = '<div class="banner blue"><div><b>' + esc(o.number) + '</b> · ' + esc(targetLabel(o.targetId)) + ' · ' + offerBadge(o.status) + '</div></div>' +
+      '<div class="grid g-main"><div>' + card('Positionen', '<div class="table-wrap"><table class="table"><thead><tr><th>Leistung</th><th>Menge</th><th style="text-align:right">Einzelpreis</th><th style="text-align:right">Summe</th></tr></thead><tbody>' +
+        o.items.map((it) => '<tr><td>' + esc(it.label) + '</td><td>' + it.qty + '</td><td style="text-align:right">' + eur(it.price) + '</td><td style="text-align:right;font-weight:600">' + eur(it.qty * it.price) + '</td></tr>').join('') +
+        '<tr><td colspan=3 style="text-align:right;font-weight:700">Gesamt</td><td style="text-align:right;font-weight:800">' + eur(offerTotal(o)) + '</td></tr>' +
+        '</tbody></table></div>') + '</div><div>' +
+        card('Details', '<div class="fields"><div class="field"><label>Zielkunde</label><div class="tiny">' + (t ? '<a href="#/akquise/' + t.id + '" style="color:var(--blue-700);font-weight:600">' + esc(t.companyName) + '</a>' : '—') + '</div></div><div class="field"><label>Erstellt</label><div class="tiny">' + dfmt(o.createdAt) + '</div></div><div class="field"><label>Gültig bis</label><div class="tiny">' + dfmt(o.validUntil) + '</div></div><div class="field"><label>Status</label><div>' + offerBadge(o.status) + '</div></div></div>') +
+        card('Aktionen', '<div style="display:flex;flex-direction:column;gap:8px">' + (actions || '<div class="tiny muted">Keine Aktion offen.</div>') + '</div>') +
+      '</div></div><a class="btn btn-ghost" href="#/offers" style="margin-top:12px">Zurück zu Angebote</a>';
+    return { title:o.number, crumbs:'<a href="#/offers">Angebote</a> <span class="sep">/</span> <b>' + esc(o.number) + '</b>', actions:'', body };
+  }
+
+  /* ── Outreach ────────────────────────────────────────────── */
+  function viewOutreach() {
+    const tab = UI.outreachTab;
+    const tabs = '<div class="tabs"><button class="tab ' + (tab === 'linkedin' ? 'active' : '') + '" data-act="outreachTab" data-tab="linkedin">LinkedIn-Outreach</button><button class="tab ' + (tab === 'templates' ? 'active' : '') + '" data-act="outreachTab" data-tab="templates">Vorlagen</button></div>';
+    let body;
+    if (tab === 'linkedin') {
+      const weekly = DB.activities.filter((a) => a.type === 'LinkedIn').length;
+      const q = DB.settings.quotas;
+      body = tabs + '<div class="kpis">' + kpi('Wochenziel', q.linkedin, 'Anfragen') + kpi('Gesendet', weekly, 'diese Woche') + kpi('Tageslimit', DB.settings.linkedin.dailyLimit, 'Anfragen/Tag') + kpi('Zielkunden vernetzt', DB.targets.filter((t) => ['vernetzt','kontaktiert'].includes(t.status)).length, '') + '</div>' +
+        card('Wochenquote', '<div class="progress" style="height:10px"><span style="width:' + Math.min(100, Math.round((weekly / q.linkedin) * 100)) + '%"></span></div><div class="tiny muted" style="margin-top:6px">' + weekly + ' von ' + q.linkedin + ' Anfragen</div>') +
+        card('Vernetzte Zielkunden', '<div class="table-wrap"><table class="table"><thead><tr><th>Unternehmen</th><th>Kontakt</th><th>Status</th></tr></thead><tbody>' + DB.targets.filter((t) => t.status === 'vernetzt' || t.status === 'kontaktiert').map((t) => '<tr><td><a href="#/akquise/' + t.id + '">' + esc(t.companyName) + '</a></td><td class="tiny">' + esc(t.contactName || '—') + '</td><td>' + statusBadge(t.status) + '</td></tr>').join('') + '</tbody></table></div>');
+    } else {
+      body = tabs + '<div class="rowline"><div class="tiny muted">' + DB.templates.length + ' Vorlagen · Platzhalter: {unternehmen}, {ansprechpartner}, {branche}, {datum}, {absender}</div><button class="btn btn-primary btn-sm" data-act="newTemplate">+ Vorlage</button></div>' +
+        aiCard('KI-Textbaustein', '<div class="ai-head">' + AI_SPARK + '<div class="tiny muted">Personalisierter E-Mail-Entwurf aus Zielkundendaten und Branchen-Playbook.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select class="select" id="ai-target">' + DB.targets.filter((x) => x.status !== 'kein Interesse').map((x) => '<option value="' + x.id + '">' + esc(x.companyName) + '</option>').join('') + '</select><button class="btn btn-primary btn-sm" data-act="aiTemplateGen">Entwurf erzeugen</button></div>') +
+        '<div class="grid g3">' + DB.templates.map((tp) => '<div class="card"><div class="card-body"><div style="display:flex;justify-content:space-between;gap:8px"><div style="font-weight:800">' + esc(tp.name) + '</div><span class="badge b-blue">' + esc(tp.channel) + '</span></div><div class="tiny muted" style="margin:4px 0 8px">' + esc(tp.subject || '—') + '</div><div class="tiny" style="white-space:pre-wrap;max-height:80px;overflow:hidden;color:#4b5563">' + esc(tp.body) + '</div><div style="display:flex;gap:10px;margin-top:10px"><button class="btn-link" data-act="useTemplate" data-id="' + tp.id + '">Einsetzen</button><button class="btn-link" data-act="editTemplate" data-id="' + tp.id + '">Bearbeiten</button><button class="btn-link" data-act="deleteTemplate" data-id="' + tp.id + '">Löschen</button><span class="tiny muted2" style="margin-left:auto">' + tp.usageCount + '×</span></div></div></div>').join('') + '</div>';
+    }
+    return { title:'Outreach', crumbs:'<b>Akquise</b> <span class="sep">/</span> Outreach', actions:'', body };
+  }
+
+  /* ── Kontakte ────────────────────────────────────────────── */
+  function viewContacts() {
+    const body = '<div class="rowline"><div class="tiny muted">' + DB.contacts.length + ' Kontakte</div><button class="btn btn-primary btn-sm" data-act="newContact">+ Kontakt</button></div>' +
+      '<div class="card"><div class="table-wrap"><table class="table"><thead><tr><th>Name</th><th>Rolle</th><th>Zielkunde</th><th>E-Mail</th><th>Telefon</th><th>Primär</th><th></th></tr></thead><tbody>' +
+      (DB.contacts.map((c) => '<tr><td style="font-weight:600">' + esc(c.name) + '</td><td class="tiny">' + esc(c.role || '—') + '</td><td class="tiny"><a href="#/akquise/' + c.targetId + '">' + esc(targetLabel(c.targetId)) + '</a></td><td class="tiny">' + esc(c.email || '—') + '</td><td class="tiny">' + esc(c.phone || '—') + '</td><td>' + (c.isPrimary ? '<span class="badge b-green">Ja</span>' : '<span class="badge b-gray">Nein</span>') + '</td><td><button class="btn-link" data-act="editContact" data-id="' + c.id + '">Bearbeiten</button> <button class="btn-link" data-act="deleteContact" data-id="' + c.id + '">Löschen</button></td></tr>').join('') || '<tr><td colspan=7>' + emptyBox('Keine Kontakte.') + '</td></tr>') +
+      '</tbody></table></div></div>';
+    return { title:'Kontakte', crumbs:'<b>Kunden &amp; Vertrieb</b> <span class="sep">/</span> Kontakte', actions:'', body };
+  }
+
+  /* ── Team ────────────────────────────────────────────────── */
+  function viewTeam() {
+    const cap = DB.settings.quotas.hoursPerWeek;
+    const members = DB.users.map((u) => {
+      const assigns = [];
+      DB.targets.forEach((t) => (t.assignments || []).forEach((a) => { if (a.userId === u.id) assigns.push({ t, role:a.role }); }));
+      return { u, assigns, util: Math.min(100, Math.round((assigns.length / 3) * 100)) };
+    });
+    const body = '<div class="kpis">' + kpi('Mitglieder', DB.users.length, 'im Akquise-Team') + kpi('Kapazität', (DB.users.length * cap).toFixed(1) + ' h', 'pro Woche') + kpi('Zuweisungen', DB.targets.reduce((s, t) => s + (t.assignments || []).length, 0), 'Rollen besetzt') + kpi('Engpass', members.filter((m) => m.util >= 100).length, 'Mitglieder ausgelastet') + '</div>' +
+      '<div class="rowline"><div class="tiny muted">Zielkunden-Zuweisung und Kapazität</div><button class="btn btn-ghost btn-sm" data-act="newMember">+ Mitglied</button></div>' +
+      '<div class="grid g2">' +
+        card('Team &amp; Kapazität', members.map((m) => '<div class="tl"><div class="tl-ic note">' + esc(initials(m.u.name)) + '</div><div class="tl-body"><div class="tl-top"><a class="tl-type" href="#/team/' + m.u.id + '">' + esc(m.u.name) + '</a><span class="tl-date">' + m.assigns.length + ' Zuweisungen</span></div><div class="tl-sum">' + esc(m.u.portalRole) + '</div><div class="progress" style="margin-top:6px"><span style="width:' + m.util + '%;background:' + (m.util >= 100 ? 'var(--red)' : 'var(--blue)') + '"></span></div></div></div>').join('')) +
+        card('Kundenzuweisung', '<div class="table-wrap"><table class="table"><thead><tr><th>Zielkunde</th><th>Status</th><th>Team</th></tr></thead><tbody>' + DB.targets.filter((t) => t.status !== 'kein Interesse').map((t) => '<tr><td><a href="#/team/zuweisung/' + t.id + '">' + esc(t.companyName) + '</a></td><td>' + statusBadge(t.status) + '</td><td><div style="display:flex">' + (t.assignments && t.assignments.length ? ownerAvatars(t) : '<span class="tiny muted2">—</span>') + '</div></td></tr>').join('') + '</tbody></table></div>') +
+      '</div>';
+    return { title:'Team', crumbs:'<b>Akquise-Planung</b> <span class="sep">/</span> Team', actions:'', body };
+  }
+  function viewMember(id) {
+    const u = DB.users.find((x) => x.id === id);
+    if (!u) return viewNotFound();
+    const assigns = [];
+    DB.targets.forEach((t) => (t.assignments || []).forEach((a) => { if (a.userId === u.id) assigns.push({ t, role:a.role }); }));
+    const body = '<div class="banner blue"><div><b>' + esc(u.name) + '</b> · ' + esc(u.portalRole) + ' · ' + esc(u.email) + '</div></div>' +
+      card('Zuweisungen', '<div class="table-wrap"><table class="table"><thead><tr><th>Zielkunde</th><th>Rolle</th><th>Status</th><th></th></tr></thead><tbody>' + (assigns.map((x) => '<tr><td><a href="#/akquise/' + x.t.id + '">' + esc(x.t.companyName) + '</a></td><td class="tiny">' + esc(ROLE_LABELS[x.role] || x.role) + '</td><td>' + statusBadge(x.t.status) + '</td><td><button class="btn-link" data-act="release" data-target="' + x.t.id + '" data-user="' + u.id + '" data-role="' + x.role + '">Entlasten</button></td></tr>').join('') || '<tr><td colspan=4>' + emptyBox('Keine Zuweisungen.') + '</td></tr>') + '</tbody></table></div>') +
+      '<a class="btn btn-ghost" href="#/team" style="margin-top:12px">Zurück zum Team</a>';
+    return { title:u.name, crumbs:'<a href="#/team">Team</a> <span class="sep">/</span> <b>' + esc(u.name) + '</b>', actions:'', body };
+  }
+  function viewAssignment(t) {
+    const needs = PACKAGE_ROLES[t.package] || PACKAGE_ROLES.standard;
+    const assigned = t.assignments || [];
+    const rolesHtml = Object.keys(needs).map((role) => {
+      const list = assigned.filter((a) => a.role === role);
+      return '<div class="card"><div class="card-head"><div class="card-title">' + esc(ROLE_LABELS[role]) + ' <span class="badge b-gray">' + list.length + ' / ' + needs[role] + '</span></div><button class="btn btn-ghost btn-sm" data-act="assign" data-target="' + t.id + '" data-role="' + role + '">+ Mitarbeiter</button></div><div class="card-body">' +
+        (list.length ? list.map((a) => { const u = user(a.userId); return '<div class="tl"><div class="tl-ic note">' + esc(initials(u.name)) + '</div><div class="tl-body"><div class="tl-top"><span class="tl-type">' + esc(u.name) + '</span><button class="btn-link" data-act="release" data-target="' + t.id + '" data-user="' + u.id + '" data-role="' + role + '">entfernen</button></div><div class="tl-sum">' + esc(u.portalRole) + '</div></div></div>'; }).join('') : emptyBox('Noch niemand zugewiesen.')) +
+        '</div></div>';
+    }).join('');
+    const body = '<div class="banner blue"><div>Kundenzuweisung für <b>' + esc(t.companyName) + '</b> · Paket „' + esc(t.package) + '“ bestimmt den Rollenbedarf.</div></div>' +
+      '<div class="grid g3">' + rolesHtml + '</div><a class="btn btn-ghost" href="#/team" style="margin-top:12px">Zurück zum Team</a>';
+    return { title:'Zuweisung · ' + t.companyName, crumbs:'<a href="#/team">Team</a> <span class="sep">/</span> <b>Zuweisung ' + esc(t.companyName) + '</b>', actions:'', body };
+  }
+
+  /* ── Reporting ───────────────────────────────────────────── */
+  function viewReporting() {
+    const inTalk = DB.targets.filter((t) => isInTalk(t.status));
+    const won = DB.targets.filter((t) => WON.includes(t.status));
+    const lost = DB.targets.filter((t) => LOST.includes(t.status));
+    const conversion = DB.targets.length ? Math.round((won.length / DB.targets.length) * 100) : 0;
+    const revenue = won.reduce((s, t) => s + (t.offerValue || 0), 0);
+    const target = 500000;
+    const funnel = STAGES.map((s) => ({ label:s.label, count:DB.targets.filter((t) => (stepByStatus(t.status) || {}).stage === s.key).length }));
+    const max = Math.max.apply(null, funnel.map((f) => f.count).concat([1]));
+    const segMap = {};
+    DB.targets.forEach((t) => { segMap[t.segment] = (segMap[t.segment] || 0) + 1; });
+    const chanMap = {};
+    DB.activities.forEach((a) => { chanMap[a.type] = (chanMap[a.type] || 0) + 1; });
+    const lossMap = {};
+    lost.forEach((t) => { lossMap[t.lossReason || 'ohne Grund'] = (lossMap[t.lossReason || 'ohne Grund'] || 0) + 1; });
+
+    const body = '<div class="rowline"><div class="tiny muted">Kennzahlen aus der Akquise-Pipeline</div><div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" data-act="exportTargets">CSV exportieren</button><button class="btn btn-ghost btn-sm" data-act="pdf">PDF-Bericht</button></div></div>' +
+      '<div class="kpis">' + kpi('Zielkunden', DB.targets.length, '') + kpi('Im Gespräch', inTalk.length, 'Qualifizierung + Erstgespräch') + kpi('Gewonnen', won.length, eur(revenue)) + kpi('Conversion', conversion + '%', 'gewonnen / gesamt') + kpi('Umsatzziel', Math.round((revenue / target) * 100) + '%', eur(target)) + '</div>' +
+      '<div class="grid g2">' +
+        card('Funnel', '<div class="funnel">' + funnel.map((f) => '<div class="frow"><div class="flabel">' + esc(f.label) + '</div><div class="fbar"><span style="width:' + Math.round((f.count / max) * 100) + '%"></span></div><div class="fval">' + f.count + '</div></div>').join('') + '</div>') +
+        card('Verlustgründe', Object.keys(lossMap).length ? '<div class="table-wrap"><table class="table"><thead><tr><th>Grund</th><th style="text-align:right">Anzahl</th></tr></thead><tbody>' + Object.keys(lossMap).map((k) => '<tr><td>' + esc(k) + '</td><td style="text-align:right">' + lossMap[k] + '</td></tr>').join('') + '</tbody></table></div>' : emptyBox('Keine Verluste.')) +
+      '</div>' +
+      '<div class="grid g2" style="margin-top:16px">' +
+        card('Branchen', '<div class="table-wrap"><table class="table"><thead><tr><th>Branche</th><th style="text-align:right">Zielkunden</th></tr></thead><tbody>' + Object.keys(segMap).map((k) => '<tr><td>' + esc(k) + '</td><td style="text-align:right">' + segMap[k] + '</td></tr>').join('') + '</tbody></table></div>') +
+        card('Aktivitäten nach Kanal', '<div class="table-wrap"><table class="table"><thead><tr><th>Kanal</th><th style="text-align:right">Anzahl</th></tr></thead><tbody>' + Object.keys(chanMap).map((k) => '<tr><td>' + esc(k) + '</td><td style="text-align:right">' + chanMap[k] + '</td></tr>').join('') + '</tbody></table></div>') +
+      '</div>' +
+      '<div style="margin-top:16px">' + aiCard('KI-Insights', '<div class="ai-head">' + AI_SPARK + '<div class="tiny muted">Zusammenfassung der Kennzahlen mit Hinweisen.</div><button class="btn btn-ghost btn-sm" style="margin-left:auto" data-act="ai" data-kind="insights">Öffnen</button></div><div class="ai-out">' + aiInsights().map((x) => '<div class="ai-line">' + esc(x) + '</div>').join('') + '</div>') + '</div>';
+    return { title:'Reporting', crumbs:'<b>Akquise-Planung</b> <span class="sep">/</span> Reporting', actions:'', body };
+  }
+
+  /* ── Marktauswahl ────────────────────────────────────────── */
+  function viewMarket() {
+    const body = '<form data-form="market">' +
+      card('Bundesländer-Priorität', '<div class="table-wrap"><table class="table"><thead><tr><th>Bundesland</th><th>Priorität</th><th>Notiz</th><th>Aktiv</th></tr></thead><tbody>' +
+        DB.regions.map((r, i) => '<tr><td style="font-weight:600">' + esc(r.bundesland) + '</td><td><select class="select" name="prio_' + i + '">' + [1,2,3].map((p) => '<option value="' + p + '"' + (r.priority === p ? ' selected' : '') + '>P' + p + '</option>').join('') + '</select></td><td><input class="input" name="note_' + i + '" value="' + esc(r.note) + '" style="width:100%"></td><td><input type="checkbox" name="active_' + i + '" ' + (r.active ? 'checked' : '') + '></td></tr>').join('') +
+        '</tbody></table></div>') +
+      card('WZ-2008-Zuordnung', '<div class="table-wrap"><table class="table"><thead><tr><th>WZ-Code</th><th>Branche</th><th>Priorität</th><th>Notiz</th></tr></thead><tbody>' + DB.wz.map((w, i) => '<tr><td style="font-family:monospace">' + esc(w.wzCode) + '</td><td>' + esc(w.segment) + '</td><td><input class="input" name="wzp_' + i + '" value="' + esc(w.priority) + '"></td><td><input class="input" name="wzn_' + i + '" value="' + esc(w.note) + '" style="width:100%"></td></tr>').join('') + '</tbody></table></div>') +
+      '<div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn btn-primary" type="submit">Marktauswahl speichern</button></div>' +
+      '</form>' +
+      '<div class="grid g2" style="margin-top:16px">' +
+        card('Pakete (aus Einstellungen)', DB.settings.packages.map((p) => '<div class="tl"><div class="tl-ic note">P</div><div class="tl-body"><div class="tl-top"><span class="tl-type">' + esc(p.label) + '</span><span class="tl-date">' + eur(p.price) + '</span></div><div class="tl-sum">' + esc(p.description) + '</div></div></div>').join(''), '<a class="btn-link" href="#/settings">Bearbeiten</a>') +
+        card('Branchen (aus Einstellungen)', '<div class="tags">' + DB.settings.segments.map((s) => '<span class="tag2">' + esc(s) + '</span>').join('') + '</div>', '<a class="btn-link" href="#/settings">Bearbeiten</a>') +
+      '</div>';
+    return { title:'Marktauswahl', crumbs:'<b>Akquise-Planung</b> <span class="sep">/</span> Marktauswahl', actions:'', body };
+  }
+
+  /* ── Planung / Kapazität ─────────────────────────────────── */
+  function viewCapacity() {
+    const c = UI.capacity;
+    const needed = c.targets && c.hours && c.weeks ? (c.targets * c.hours) / c.weeks : 0;
+    const cap = DB.users.length * DB.settings.quotas.hoursPerWeek;
+    const body = '<div class="grid g2">' +
+      card('Zeitbedarf-Rechner', '<form data-form="capacity"><div class="fields">' +
+        field('Neue Zielkunden','targets',c.targets,'number',{req:true}) +
+        field('Stunden pro Zielkunde','hours',c.hours,'number',{req:true}) +
+        field('Wochen im Sprint','weeks',c.weeks,'number',{req:true}) +
+      '</div><div class="modal-actions"><button class="btn btn-primary" type="submit">Berechnen</button></div></form>') +
+      card('Ergebnis', '<div class="calc" style="grid-template-columns:1fr"><div><div class="tiny muted">Benötigte Kapazität</div><div class="bigval">' + needed.toFixed(1) + ' h/Woche</div><div class="tiny muted" style="margin-top:4px">bei ' + c.targets + ' Zielkunden × ' + c.hours + ' h über ' + c.weeks + ' Wochen</div></div>' +
+        '<div class="banner ' + (needed > cap ? 'red' : 'blue') + '" style="margin:12px 0 0"><div><b>Verfügbare Kapazität:</b> ' + cap.toFixed(1) + ' h/Woche (' + DB.users.length + ' Mitglieder × ' + DB.settings.quotas.hoursPerWeek + ' h)<br>' + (needed > cap ? 'Engpass: ' + (needed - cap).toFixed(1) + ' h/Woche fehlen.' : 'Ausreichend: ' + (cap - needed).toFixed(1) + ' h/Woche frei.') + '</div></div></div>') +
+      '</div>' + card('Team-Kapazität', '<div class="table-wrap"><table class="table"><thead><tr><th>Mitglied</th><th>Rolle</th><th style="text-align:right">Stunden/Woche</th></tr></thead><tbody>' + DB.users.map((u) => '<tr><td>' + esc(u.name) + '</td><td class="tiny">' + esc(u.portalRole) + '</td><td style="text-align:right">' + DB.settings.quotas.hoursPerWeek + '</td></tr>').join('') + '</tbody></table></div>');
+    return { title:'Planung', crumbs:'<b>Akquise-Planung</b> <span class="sep">/</span> Planung', actions:'', body };
+  }
+
+  /* ── BAFA ────────────────────────────────────────────────── */
+  function viewBafa() {
+    const list = DB.targets.filter((t) => t.offerValue > 0 || t.bafaStatus);
+    const body = '<div class="banner amber"><div>Förderung: BAFA-Modul. Nachweise müssen innerhalb von 42 Tagen eingereicht werden.</div></div>' +
+      '<div class="rowline"><div class="tiny muted">Förder-Check je Zielkunde</div><button class="btn btn-ghost btn-sm" data-act="pdf">Merkblatt-PDF</button></div>' +
+      '<div class="grid g-main"><div>' + card('Förderstatus', '<div class="table-wrap"><table class="table"><thead><tr><th>Zielkunde</th><th>Angebotswert</th><th>Förderstatus</th><th>Fördersumme</th></tr></thead><tbody>' +
+        list.map((t) => '<tr><td><a href="#/akquise/' + t.id + '">' + esc(t.companyName) + '</a></td><td class="tiny">' + (t.offerValue ? eur(t.offerValue) : '—') + '</td><td><select class="select" data-bafa="' + t.id + '"><option value="">—</option>' + ['geplant','beantragt','bewilligt','abgelehnt'].map((s) => '<option value="' + s + '"' + (t.bafaStatus === s ? ' selected' : '') + '>' + s + '</option>').join('') + '</select></td><td class="tiny">' + (t.bafaApprovedAmount ? eur(t.bafaApprovedAmount) : '—') + '</td></tr>').join('') +
+        '</tbody></table></div>') + '</div><div>' +
+        card('Fördersummen-Rechner', '<form data-form="bafaCalc"><div class="fields">' + field('Förderfähige Kosten (€)','cost','20000','number') + field('Quote (%)','quote',DB.settings.bafa.quote,'number') + '</div><div class="tid" style="margin-top:10px;font-size:12px">Obergrenze: ' + eur(DB.settings.bafa.max) + '</div><div class="bigval" id="bafa-result" style="margin-top:6px">' + eur(Math.min(DB.settings.bafa.max, 20000 * DB.settings.bafa.quote / 100)) + '</div><div class="modal-actions"><button class="btn btn-primary" type="submit">Berechnen</button></div></form>') +
+        card('Hinweis', '<div class="tiny muted">Im Prototyp werden keine echten Nachweise hochgeladen. Förderstatus wird am Zielkunden gespeichert.</div>') +
+      '</div></div>';
+    return { title:'Förderungen', crumbs:'<b>Akquise</b> <span class="sep">/</span> Förderungen', actions:'', body };
+  }
+
+  /* ── Listen-Import ───────────────────────────────────────── */
+  const SAMPLE_CSV = 'Unternehmen;Branche;Bundesland;Mitarbeiter;Ort;Kontakt;E-Mail\nMusterbank AG;Banken;Hessen;3400;Frankfurt;A. Beispiel;a.beispiel@musterbank.de\nBeispiel Versicherung;Versicherungen & Finanzvermittler;Bayern;2100;München;M. Muster;m.muster@beispiel-vs.de\nNeue Beratung GmbH;Beratung;Nordrhein-Westfalen;180;Köln;K. Neu;k.neu@neue-beratung.de';
+  function parseCsv(text) {
+    const lines = String(text || '').trim().split(/\r?\n/).filter(Boolean);
+    if (lines.length < 2) return [];
+    const delim = lines[0].includes(';') ? ';' : ',';
+    const head = lines[0].split(delim).map((h) => h.trim().toLowerCase());
+    const get = (row, names) => { for (const n of names) { const i = head.indexOf(n); if (i >= 0) return (row[i] || '').trim(); } return ''; };
+    return lines.slice(1).map((line) => {
+      const row = line.split(delim);
+      return {
+        companyName: get(row, ['unternehmen','firma','company','name']),
+        segment: get(row, ['branche','segment','industry']),
+        bundesland: get(row, ['bundesland','region','state']),
+        employees: Number(get(row, ['mitarbeiter','employees','größe','grosse']) || 0) || 0,
+        location: get(row, ['ort','stadt','location','city']),
+        contactName: get(row, ['kontakt','ansprechpartner','contact']),
+        contactEmail: get(row, ['e-mail','email','mail'])
+      };
+    }).filter((r) => r.companyName);
+  }
+  function viewImport() {
+    const rows = UI.importRows;
+    const body = '<div class="banner blue"><div>CSV-Listen importieren. Spalten: Unternehmen; Branche; Bundesland; Mitarbeiter; Ort; Kontakt; E-Mail. Dubletten werden erkannt.</div></div>' +
+      '<div class="grid g2"><div>' + card('CSV einfügen', '<textarea class="input" id="csv-input" style="min-height:200px;font-family:monospace;font-size:11px">' + esc(SAMPLE_CSV) + '</textarea><div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-primary btn-sm" data-act="importPreview">Vorschau</button><button class="btn btn-ghost btn-sm" data-act="template">CSV-Vorlage</button></div>') + '</div><div>' +
+        card('Ergebnis', rows ? '<div class="tiny muted" style="margin-bottom:8px">' + rows.length + ' Zeilen erkannt</div><div class="table-wrap"><table class="table"><thead><tr><th>Unternehmen</th><th>Branche</th><th>Bundesland</th><th>Status</th></tr></thead><tbody>' + rows.map((r) => { const dup = DB.targets.some((t) => t.companyName.toLowerCase() === r.companyName.toLowerCase()) || (DB.blocklist || []).some((b) => b.companyName.toLowerCase() === r.companyName.toLowerCase()); return '<tr><td>' + esc(r.companyName) + '</td><td class="tiny">' + esc(r.segment) + '</td><td class="tiny">' + esc(r.bundesland) + '</td><td>' + (dup ? '<span class="badge b-amber">Dublette/Sperre</span>' : '<span class="badge b-green">neu</span>') + '</td></tr>'; }).join('') + '</tbody></table></div><button class="btn btn-primary" style="margin-top:10px" data-act="importCommit">Importieren</button>' : emptyBox('Noch keine Vorschau.')) +
+      '</div></div>';
+    return { title:'Listen-Import', crumbs:'<b>Akquise</b> <span class="sep">/</span> Listen-Import', actions:'', body };
+  }
+
+  /* ── Sperrliste ──────────────────────────────────────────── */
+  function viewBlocklist() {
+    const body = '<div class="banner red"><div><b>DSGVO-Kontaktsperre</b> · Einträge verhindern jede weitere Kontaktaufnahme. Aufbewahrung: 3 Jahre (Rechenschaftspflicht). Einträge entstehen automatisch bei Status „kein Interesse“.</div></div>' +
+      '<div class="card"><div class="table-wrap"><table class="table"><thead><tr><th>Unternehmen</th><th>Grund</th><th>Eingetragen am</th><th></th></tr></thead><tbody>' +
+      (DB.blocklist.map((b) => '<tr><td style="font-weight:600">' + esc(b.companyName) + '</td><td class="tiny">' + esc(b.reason) + '</td><td class="tiny">' + dfmt(b.date) + '</td><td><button class="btn-link" data-act="deleteBlock" data-id="' + b.id + '">Entfernen</button></td></tr>').join('') || '<tr><td colspan=4>' + emptyBox('Sperrliste ist leer.') + '</td></tr>') +
+      '</tbody></table></div></div>';
+    return { title:'Sperrliste', crumbs:'<b>Akquise</b> <span class="sep">/</span> Sperrliste', actions:'', body };
+  }
+
+  /* ── Einstellungen ───────────────────────────────────────── */
+  function viewSettings() {
+    const tab = UI.settingsTab;
+    const tabs = [['quotas','Quoten'],['packages','Pakete & Preise'],['segments','Branchen'],['linkedin','LinkedIn'],['bafa','BAFA'],['notify','Benachrichtigungen']].map(([k, l]) => '<button class="tab ' + (tab === k ? 'active' : '') + '" data-act="settingsTab" data-tab="' + k + '">' + l + '</button>').join('');
+    let inner = '';
+    const s = DB.settings;
+    if (tab === 'quotas') {
+      inner = '<form data-form="settingsQuotas"><div class="fields">' +
+        field('LinkedIn-Anfragen / Woche','linkedin',s.quotas.linkedin,'number') +
+        field('Calls / Woche','calls',s.quotas.calls,'number') +
+        field('Stunden pro Woche','hoursPerWeek',s.quotas.hoursPerWeek,'number') +
+        field('Sprint-Tage','days',s.quotas.days,'number') +
+        field('Firmen im Zielmarkt','firms',s.quotas.firms,'number') +
+        field('Sprint-Start','start',s.sprint.start,'date') +
+        field('Sprint-Ende','end',s.sprint.end,'date') +
+      '</div><div class="modal-actions"><button class="btn btn-primary" type="submit">Speichern</button></div></form>';
+    } else if (tab === 'packages') {
+      inner = '<form data-form="settingsPackages"><div class="table-wrap"><table class="table"><thead><tr><th>Paket</th><th>Preis (€)</th><th>Beschreibung</th></tr></thead><tbody>' +
+        s.packages.map((p, i) => '<tr><td style="font-weight:600">' + esc(p.label) + '<br><span class="tiny muted2">' + esc(p.key) + '</span></td><td><input class="input" name="price_' + i + '" type="number" value="' + p.price + '"></td><td><input class="input" name="desc_' + i + '" value="' + esc(p.description) + '" style="width:100%"></td></tr>').join('') +
+        '</tbody></table></div><div class="modal-actions"><button class="btn btn-primary" type="submit">Speichern</button></div></form>';
+    } else if (tab === 'segments') {
+      inner = '<form data-form="settingsSegments"><div class="field full"><label>Branchen (eine pro Zeile)</label><textarea class="input" name="segments" style="min-height:180px">' + esc(s.segments.join('\n')) + '</textarea></div><div class="modal-actions"><button class="btn btn-primary" type="submit">Speichern</button></div></form>';
+    } else if (tab === 'linkedin') {
+      inner = '<form data-form="settingsLinkedin"><div class="fields">' + field('Tageslimit','dailyLimit',s.linkedin.dailyLimit,'number') + field('Wochenziel','weeklyTarget',s.linkedin.weeklyTarget,'number') + '</div><div class="modal-actions"><button class="btn btn-primary" type="submit">Speichern</button></div></form>';
+    } else if (tab === 'bafa') {
+      inner = '<form data-form="settingsBafa"><div class="fields">' + field('Förderquote (%)','quote',s.bafa.quote,'number') + field('Obergrenze (€)','max',s.bafa.max,'number') + '</div><div class="modal-actions"><button class="btn btn-primary" type="submit">Speichern</button></div></form>';
+    } else {
+      inner = '<form data-form="settingsNotify"><div class="checklist"><label class="check"><input type="checkbox" name="followUp" ' + (s.notify.followUp ? 'checked' : '') + '><span class="check-body"><span class="check-text">Follow-up-Erinnerungen</span></span></label><label class="check"><input type="checkbox" name="offers" ' + (s.notify.offers ? 'checked' : '') + '><span class="check-body"><span class="check-text">Angebots-Ablaufwarnungen</span></span></label></div><div class="modal-actions"><button class="btn btn-primary" type="submit">Speichern</button></div></form>';
+    }
+    const body = '<div class="tabs">' + tabs + '</div>' + '<div class="card"><div class="card-body">' + inner + '</div></div>' +
+      '<div class="card"><div class="card-head"><div class="card-title">Danger Zone</div></div><div class="card-body"><div class="rowline" style="margin:0"><div class="tiny muted">Alle Demo-Daten auf den Ausgangszustand zurücksetzen.</div><button class="btn btn-red btn-sm" data-act="resetDemo">Demo zurücksetzen</button></div></div></div>';
+    return { title:'Einstellungen', crumbs:'<b>System</b> <span class="sep">/</span> Einstellungen', actions:'', body };
+  }
+
+  /* ── Aktivitäten ─────────────────────────────────────────── */
+  function viewActivities() {
+    const acts = DB.activities.slice().sort((a, b) => (a.date < b.date ? 1 : -1));
+    const body = '<div class="rowline"><div class="tiny muted">' + acts.length + ' Aktivitäten · Bereich: Nur Akquise</div><button class="btn btn-primary btn-sm" data-act="logActivityPick">+ Aktivität</button></div>' +
+      '<div class="card"><div class="card-body">' + (acts.map((a) => activityRow(a)).join('') || emptyBox('Keine Aktivitäten.')) + '</div></div>';
+    return { title:'Aktivitäten', crumbs:'<b>Kunden &amp; Vertrieb</b> <span class="sep">/</span> Aktivitäten', actions:'', body };
+  }
+
+  /* ── Aufgaben ────────────────────────────────────────────── */
+  function viewTasks() {
+    const body = '<div class="rowline"><div class="tiny muted">' + DB.tasks.filter((k) => k.status !== 'Done').length + ' offen · Bereich: Nur Akquise</div><button class="btn btn-primary btn-sm" data-act="newTask">+ Aufgabe</button></div>' +
+      '<div class="card"><div class="table-wrap"><table class="table"><thead><tr><th>Erledigt</th><th>Titel</th><th>Zielkunde</th><th>Verantwortlich</th><th>Fällig</th><th>Status</th></tr></thead><tbody>' +
+      (DB.tasks.map((k) => '<tr><td><input type="checkbox" data-toggle-task="' + k.id + '" ' + (k.status === 'Done' ? 'checked' : '') + '></td><td style="font-weight:600;' + (k.status === 'Done' ? 'text-decoration:line-through;color:var(--muted2)' : '') + '">' + esc(k.title) + '</td><td class="tiny"><a href="#/akquise/' + k.targetId + '">' + esc(targetLabel(k.targetId)) + '</a></td><td class="tiny">' + esc(user(k.assignedToId).name) + '</td><td class="tiny">' + dfmt(k.dueDate) + '</td><td>' + (k.status === 'Done' ? '<span class="badge b-green">erledigt</span>' : '<span class="badge b-blue">offen</span>') + '</td></tr>').join('') || '<tr><td colspan=6>' + emptyBox('Keine Aufgaben.') + '</td></tr>') +
+      '</tbody></table></div></div>';
+    return { title:'Aufgaben', crumbs:'<b>Mandate</b> <span class="sep">/</span> Aufgaben', actions:'', body };
+  }
+
+  /* ── Dokumente ───────────────────────────────────────────── */
+  function viewDocuments() {
+    const body = '<div class="rowline"><div class="tiny muted">' + DB.documents.length + ' Dokumente</div><button class="btn btn-primary btn-sm" data-act="newDoc">+ Dokument</button></div>' +
+      '<div class="card"><div class="table-wrap"><table class="table"><thead><tr><th>Name</th><th>Zielkunde</th><th>Hochgeladen</th><th></th></tr></thead><tbody>' +
+      (DB.documents.map((d) => '<tr><td style="font-weight:600">' + esc(d.name) + '</td><td class="tiny"><a href="#/akquise/' + d.targetId + '">' + esc(targetLabel(d.targetId)) + '</a></td><td class="tiny">' + dfmt(d.createdAt) + '</td><td><button class="btn-link" data-act="pdf">Download</button> <button class="btn-link" data-act="deleteDoc" data-id="' + d.id + '">Löschen</button></td></tr>').join('') || '<tr><td colspan=4>' + emptyBox('Keine Dokumente.') + '</td></tr>') +
+      '</tbody></table></div></div>';
+    return { title:'Dokumente', crumbs:'<b>Mandate</b> <span class="sep">/</span> Dokumente', actions:'', body };
+  }
+
+  /* ── Accounts / Verträge ─────────────────────────────────── */
+  function viewAccounts() {
+    const won = DB.targets.filter((t) => WON.includes(t.status) || t.account);
+    const body = '<div class="banner blue"><div>Accounts entstehen aus gewonnenen Zielkunden. Zielkunden bleiben bis zum Abschluss Interessenten.</div></div>' +
+      '<div class="card"><div class="table-wrap"><table class="table"><thead><tr><th>Account</th><th>Branche</th><th>Bundesland</th><th>Umsatz</th><th>Zielkunde</th></tr></thead><tbody>' +
+      (won.map((t) => '<tr><td style="font-weight:600">' + esc(t.account || t.companyName) + '</td><td class="tiny">' + esc(t.segment) + '</td><td class="tiny">' + esc(t.bundesland) + '</td><td class="tiny">' + eur(t.offerValue) + '</td><td class="tiny"><a href="#/akquise/' + t.id + '">' + esc(t.companyName) + '</a></td></tr>').join('') || '<tr><td colspan=5>' + emptyBox('Noch keine gewonnenen Kunden.') + '</td></tr>') +
+      '</tbody></table></div></div>';
+    return { title:'Accounts', crumbs:'<b>Kunden &amp; Vertrieb</b> <span class="sep">/</span> Accounts', actions:'', body };
+  }
+  function viewContracts() {
+    const accepted = DB.offers.filter((o) => o.status === 'angenommen');
+    const body = '<div class="banner blue"><div>Verträge entstehen aus angenommenen Angeboten. (Im Prototyp abgeleitet.)</div></div>' +
+      '<div class="card"><div class="table-wrap"><table class="table"><thead><tr><th>Vertrag</th><th>Kunde</th><th>Wert</th><th>Angebot</th></tr></thead><tbody>' +
+      (accepted.map((o) => '<tr><td style="font-weight:600">V-' + esc(o.number.slice(-4)) + '</td><td>' + esc(targetLabel(o.targetId)) + '</td><td class="tiny">' + eur(offerTotal(o)) + '</td><td class="tiny"><a href="#/offers/' + o.id + '">' + esc(o.number) + '</a></td></tr>').join('') || '<tr><td colspan=4>' + emptyBox('Noch keine Verträge.') + '</td></tr>') +
+      '</tbody></table></div></div>';
+    return { title:'Verträge', crumbs:'<b>Kunden &amp; Vertrieb</b> <span class="sep">/</span> Verträge', actions:'', body };
+  }
+
+  /* ── Playbook ────────────────────────────────────────────── */
+  function viewPlaybook() {
+    const body = '<div class="banner blue"><div><b>Der Weg eines Kunden</b> · 5 Phasen, 17 Schritte. Leitfäden helfen, Exit-Kriterien schalten den nächsten Schritt frei.</div></div>' +
+      '<div class="grid g2">' + STAGES.map((stage, i) => {
+        const list = stepsOfStage(stage.key);
+        return card((i + 1) + ' · ' + stage.label, list.map((s) => '<div style="padding:8px 0;border-bottom:1px solid var(--line2)"><div style="font-weight:700;font-size:12.5px">' + esc(s.title) + '</div><div class="tiny muted" style="margin:2px 0 5px">' + esc(s.desc) + '</div><div class="tags">' + (s.exit || []).map((e) => '<span class="tag2">' + esc(e.t) + '</span>').join('') + '</div></div>').join(''), '<span class="badge b-gray">' + list.length + ' Schritte</span>');
+      }).join('') + '</div>' +
+      card('Wochenrhythmus', '<div class="grid g4"><div class="kpi"><div class="kpi-label">LinkedIn / Woche</div><div class="kpi-value">' + DB.settings.quotas.linkedin + '</div></div><div class="kpi"><div class="kpi-label">Calls / Woche</div><div class="kpi-value">' + DB.settings.quotas.calls + '</div></div><div class="kpi"><div class="kpi-label">Stunden / Woche</div><div class="kpi-value">' + DB.settings.quotas.hoursPerWeek + '</div></div><div class="kpi"><div class="kpi-label">Sprint-Tage</div><div class="kpi-value">' + DB.settings.quotas.days + '</div></div></div>') +
+      card('Gesprächseinstiege', ['Gemeinsamer Kontakt oder Empfehlung','Aktueller Anlass (Pressemeldung, Studie, Event)','Konkreter Hinweis auf KI-Initiativen','Frage nach dem Status der KI-Readiness'].map((x) => '<div class="tl"><div class="tl-ic note">•</div><div class="tl-body"><div class="tl-sum">' + esc(x) + '</div></div></div>').join(''));
+    return { title:'Playbook', crumbs:'<b>Akquise-Planung</b> <span class="sep">/</span> Playbook', actions:'', body };
+  }
+
+  /* ═══════════════ Actions / Events ═══════════════ */
+  function formValues(form) { const fd = new FormData(form); const obj = {}; fd.forEach((v, k) => { obj[k] = v; }); return obj; }
+
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const act = btn.dataset.act;
+    if (act === 'closeModal') { closeModal(); return; }
+    if (act === 'resetDemo') { if (confirm('Demo-Daten zurücksetzen?')) { DB = DEFAULT_SEED(); save(); closeModal(); location.hash = '#/dashboard'; render(); toast('Demo zurückgesetzt'); } return; }
+    if (act === 'setView') { UI.view = btn.dataset.view; render(); return; }
+    if (act === 'detailTab') { UI.detailTab = btn.dataset.tab; render(); return; }
+    if (act === 'outreachTab') { UI.outreachTab = btn.dataset.tab; render(); return; }
+    if (act === 'settingsTab') { UI.settingsTab = btn.dataset.tab; render(); return; }
+    if (act === 'exportTargets') { exportCsv(); return; }
+    if (act === 'pdf') { toast('PDF würde hier erzeugt (Prototyp).'); return; }
+    if (act === 'newTarget') { openTargetModal(); return; }
+    if (act === 'newMember') { openMemberModal(); return; }
+    if (act === 'qualify') { openQualify(btn.dataset.id); return; }
+    if (act === 'logActivity') { openActivity(btn.dataset.id); return; }
+    if (act === 'logActivityPick') { openActivityPick(); return; }
+    if (act === 'assess') { generateAssessment(findTarget(btn.dataset.id)); return; }
+    if (act === 'newContact') { openContactModal(); return; }
+    if (act === 'editContact') { openContactModal(DB.contacts.find((c) => c.id === btn.dataset.id)); return; }
+    if (act === 'deleteContact') { DB.contacts = DB.contacts.filter((c) => c.id !== btn.dataset.id); save(); render(); toast('Kontakt gelöscht'); return; }
+    if (act === 'newTemplate') { openTemplateModal(); return; }
+    if (act === 'editTemplate') { openTemplateModal(DB.templates.find((t) => t.id === btn.dataset.id)); return; }
+    if (act === 'deleteTemplate') { DB.templates = DB.templates.filter((t) => t.id !== btn.dataset.id); save(); render(); toast('Vorlage gelöscht'); return; }
+    if (act === 'useTemplate') { const tp = DB.templates.find((t) => t.id === btn.dataset.id); if (tp) { tp.usageCount = (tp.usageCount || 0) + 1; save(); toast('Vorlage „' + esc(tp.name) + '“ eingesetzt'); render(); } return; }
+    if (act === 'assign') { openAssignee(btn.dataset.target, btn.dataset.role); return; }
+    if (act === 'release') { const t = findTarget(btn.dataset.target); if (t) { t.assignments = (t.assignments || []).filter((a) => !(a.userId === btn.dataset.user && a.role === btn.dataset.role)); save(); render(); toast('Zuweisung entfernt'); } return; }
+    if (act === 'offerSend') { const o = findOffer(btn.dataset.id); if (o) { o.status = 'versendet'; const t = findTarget(o.targetId); if (t) { t.status = 'Angebot versendet'; t.offerDate = todayISO(); logActivity(t.id, 'Email', 'Angebot ' + o.number + ' versendet'); } save(); render(); toast('Angebot versendet'); } return; }
+    if (act === 'offerAccept') { const o = findOffer(btn.dataset.id); if (o) { o.status = 'angenommen'; const t = findTarget(o.targetId); if (t) { t.status = 'gewonnen'; t.result = 'gewonnen'; t.offerValue = offerTotal(o); t.decisionDate = todayISO(); ensureAccount(t); logActivity(t.id, 'Note', 'Angebot ' + o.number + ' angenommen'); } save(); render(); toast('Angebot angenommen · Zielkunde gewonnen'); } return; }
+    if (act === 'offerReject') { const o = findOffer(btn.dataset.id); if (o) { o.status = 'abgelehnt'; save(); render(); toast('Angebot abgelehnt'); } return; }
+    if (act === 'offerExtend') { const o = findOffer(btn.dataset.id); if (o) { const d = new Date(o.validUntil || todayISO()); d.setDate(d.getDate() + 14); o.validUntil = d.toISOString().slice(0, 10); save(); render(); toast('Angebot verlängert bis ' + dfmt(o.validUntil)); } return; }
+    if (act === 'saveStep') { saveStep(btn.dataset.id, btn.dataset.step); return; }
+    if (act === 'ai') { openAi(btn.dataset.kind, btn.dataset.id, btn.dataset.step); return; }
+    if (act === 'aiTemplateGen') { const sel = el('ai-target'); if (sel && sel.value) openAi('email', sel.value); return; }
+    if (act === 'aiCopy') { toast('Text kopiert (Demo)'); return; }
+    if (act === 'aiToNote') {
+      const c = UI.aiCache || {}; const note = el('step-note');
+      if (note) { note.value = (note.value ? note.value + '\n\n' : '') + c.text; toast('In Schritt-Notiz eingefügt'); }
+      else { const t = findTarget(c.targetId); if (t) { logActivity(t.id, 'Note', c.text); save(); render(); } toast('Als Notiz gespeichert'); }
+      closeModal(); return;
+    }
+    if (act === 'aiAsActivity') {
+      const c = UI.aiCache || {}; const t = findTarget(c.targetId);
+      if (t) { logActivity(t.id, c.kind === 'email' ? 'Email' : 'Note', c.text); save(); render(); toast('Als Aktivität gespeichert'); }
+      closeModal(); return;
+    }
+    if (act === 'aiToNotes') {
+      const c = UI.aiCache || {}; const t = findTarget(c.targetId);
+      if (t) { t.notes = (t.notes ? t.notes + '\n\n' : '') + c.text; save(); render(); toast('In Notizen übernommen'); }
+      closeModal(); return;
+    }
+    if (act === 'aiSetNext') {
+      const c = UI.aiCache || {}; const t = findTarget(c.targetId);
+      if (t) { const n = nextUnlocked(t.status); t.nextStep = n ? stepByStatus(n).label : 'Prozess abgeschlossen'; t.nextStepDue = plusDays(todayISO(), 5); save(); render(); toast('Nächster Schritt gesetzt'); }
+      closeModal(); return;
+    }
+    if (act === 'aiSaveUsecases') {
+      const c = UI.aiCache || {}; const t = findTarget(c.targetId);
+      if (t) {
+        t.assessments = t.assessments || [];
+        const prev = t.assessments[t.assessments.length - 1] || {};
+        t.assessments.push({ version:t.assessments.length + 1, createdAt:todayISO(), score:prev.score || 3.2, categories:prev.categories || [{ name:'Daten', score:3 }], usecases:c.usecases });
+        save(); render(); toast('Use Cases als Assessment-Version gespeichert');
+      }
+      closeModal(); return;
+    }
+    if (act === 'confirmHandover') { confirmHandover(findTarget(btn.dataset.id)); return; }
+    if (act === 'importPreview') { const ta = el('csv-input'); UI.importRows = parseCsv(ta ? ta.value : ''); render(); toast(UI.importRows.length + ' Zeilen erkannt'); return; }
+    if (act === 'importCommit') { commitImport(); return; }
+    if (act === 'template') { toast('CSV-Vorlage: Unternehmen;Branche;Bundesland;Mitarbeiter;Ort;Kontakt;E-Mail'); return; }
+    if (act === 'deleteBlock') { DB.blocklist = DB.blocklist.filter((b) => b.id !== btn.dataset.id); save(); render(); toast('Eintrag entfernt'); return; }
+    if (act === 'newTask') { openTaskModal(); return; }
+    if (act === 'newDoc') { openDocModal(); return; }
+    if (act === 'deleteDoc') { DB.documents = DB.documents.filter((d) => d.id !== btn.dataset.id); save(); render(); toast('Dokument gelöscht'); return; }
+    if (act === 'deleteoffer') { return; }
+  });
+
+  document.addEventListener('submit', function (e) {
+    const form = e.target.closest('form[data-form]');
+    if (!form) return;
+    e.preventDefault();
+    const type = form.dataset.form;
+    const v = formValues(form);
+    if (type === 'targetNew') return submitTargetNew(v);
+    if (type === 'targetEdit') return submitTargetEdit(v);
+    if (type === 'activityNew') return submitActivity(v, form);
+    if (type === 'qualify') return submitQualify(v);
+    if (type === 'contactSave') return submitContact(v);
+    if (type === 'templateSave') return submitTemplate(v);
+    if (type === 'taskNew') return submitTask(v);
+    if (type === 'docNew') return submitDoc(v);
+    if (type === 'offerNew') return submitOffer(v);
+    if (type === 'settingsQuotas') return submitSettingsQuotas(v);
+    if (type === 'settingsPackages') return submitSettingsPackages(v);
+    if (type === 'settingsSegments') return submitSettingsSegments(v);
+    if (type === 'settingsLinkedin') return submitSettingsLinkedin(v);
+    if (type === 'settingsBafa') { DB.settings.bafa.quote = Number(v.quote); DB.settings.bafa.max = Number(v.max); save(); render(); toast('BAFA gespeichert'); return; }
+    if (type === 'settingsNotify') { DB.settings.notify.followUp = !!v.followUp; DB.settings.notify.offers = !!v.offers; save(); render(); toast('Benachrichtigungen gespeichert'); return; }
+    if (type === 'market') return submitMarket(v);
+    if (type === 'capacity') { UI.capacity = { targets:Number(v.targets), hours:Number(v.hours), weeks:Number(v.weeks) }; render(); toast('Berechnet'); return; }
+    if (type === 'bafaCalc') { const res = Math.min(DB.settings.bafa.max, Number(v.cost) * Number(v.quote) / 100); const node = el('bafa-result'); if (node) node.textContent = eur(res); toast('Fördersumme: ' + eur(res)); return; }
+    if (type === 'assignPick') return;
+  });
+
+  document.addEventListener('change', function (e) {
+    const target = e.target;
+    if (target.matches('[data-filter]')) {
+      UI.filters[target.dataset.filter] = target.value;
+      applyFilters();
+      return;
+    }
+    if (target.matches('[data-guide]')) {
+      const t = findTarget(route().segs[1]);
+      const slug = target.dataset.step, idx = target.dataset.idx;
+      if (!t) return;
+      t.stepChecks = t.stepChecks || {}; t.stepChecks[slug] = t.stepChecks[slug] || { guide:{}, exit:{} }; t.stepChecks[slug].guide = t.stepChecks[slug].guide || {}; t.stepChecks[slug].guide[idx] = target.checked;
+      save();
+      const step = stepBySlug(slug);
+      const c = el('guide-counter'); if (c) c.textContent = guideDone(t, step) + '/' + (step.guide || []).length + ' erledigt';
+      target.closest('.check').classList.toggle('is-done', target.checked);
+      return;
+    }
+    if (target.matches('[data-exit]')) {
+      const t = findTarget(route().segs[1]);
+      const slug = target.dataset.step, key = target.dataset.key;
+      if (!t) return;
+      t.stepChecks = t.stepChecks || {}; t.stepChecks[slug] = t.stepChecks[slug] || { guide:{}, exit:{} }; t.stepChecks[slug].exit = t.stepChecks[slug].exit || {}; t.stepChecks[slug].exit[key] = target.checked;
+      save();
+      const step = stepBySlug(slug);
+      const met = exitCount(t, step), total = (step.exit || []).length;
+      const all = met === total;
+      const c = el('exit-counter'); if (c) { c.textContent = met + '/' + total + ' erfüllt'; c.classList.toggle('ok', all); }
+      const saveBtn = el('step-save'); if (saveBtn) saveBtn.disabled = !(all && isSelectable(t.status, step.status));
+      const hint = el('step-hint'); if (hint) { hint.textContent = all ? 'Alle Exit-Kriterien erfüllt – Statuswechsel möglich' : 'Noch ' + (total - met) + ' Exit-Kriterium offen'; hint.style.color = all ? 'var(--green-700)' : 'var(--amber)'; }
+      target.closest('.check').classList.toggle('is-done', target.checked);
+      return;
+    }
+    if (target.matches('[data-handover]')) {
+      const t = findTarget(target.dataset.id);
+      if (!t) return;
+      t.handoverChecklist = t.handoverChecklist || {};
+      t.handoverChecklist[target.dataset.index] = target.checked;
+      save(); render();
+      return;
+    }
+    if (target.matches('[data-toggle-task]')) {
+      const k = DB.tasks.find((x) => x.id === target.dataset.toggleTask);
+      if (k) { k.status = target.checked ? 'Done' : 'Open'; save(); render(); }
+      return;
+    }
+    if (target.matches('[data-bafa]')) {
+      const t = findTarget(target.dataset.bafa);
+      if (t) { t.bafaStatus = target.value; save(); toast('Förderstatus gespeichert'); }
+      return;
+    }
+  });
+
+  document.addEventListener('input', function (e) {
+    const t = e.target;
+    if (t.matches('[data-filter="q"]')) { UI.filters.q = t.value; applyFilters(); }
+  });
+
+  function applyFilters() {
+    const f = UI.filters;
+    const q = (f.q || '').toLowerCase().trim();
+    let visible = 0;
+    qa('[data-card]').forEach((node) => {
+      const ok = (!q || (node.dataset.search || '').includes(q)) && (!f.status || node.dataset.status === f.status) && (!f.priority || node.dataset.priority === f.priority) && (!f.segment || node.dataset.segment === f.segment);
+      node.toggleAttribute('hidden', !ok);
+      if (ok) visible++;
+    });
+    const c = el('f-count'); if (c) c.textContent = visible + ' Treffer';
+  }
+
+  function exportCsv() {
+    const rows = [['Unternehmen','Branche','Bundesland','Ort','Mitarbeiter','Priorität','Status','Angebotswert','Kontakt','E-Mail']];
+    DB.targets.forEach((t) => rows.push([t.companyName, t.segment, t.bundesland, t.location, t.employees, t.priority, t.status, t.offerValue || 0, t.contactName, t.contactEmail]));
+    const csv = '\ufeff' + rows.map((r) => r.map((c) => '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"').join(';')).join('\r\n');
+    const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'zielkunden.csv'; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast('CSV exportiert');
+  }
+
+  /* ── Modals ──────────────────────────────────────────────── */
+  function openTargetModal() {
+    const segOpts = DB.settings.segments.map((s) => ({ value:s, label:s }));
+    const bundes = ['Nordrhein-Westfalen','Bayern','Hessen','Baden-Württemberg','Niedersachsen','Berlin','Hamburg','Sachsen','Rheinland-Pfalz','Schleswig-Holstein'];
+    openModal('Neuer Zielkunde', '<form data-form="targetNew"><div class="fields">' +
+      field('Unternehmen','companyName','','text',{req:true,full:true}) +
+      field('Branche','segment',segOpts[0].value,'select',{options:segOpts}) +
+      field('Bundesland','bundesland',bundes[0],'select',{options:bundes.map((b) => ({ value:b, label:b }))}) +
+      field('Ort','location','','text') +
+      field('Mitarbeiter','employees','','number') +
+      field('Priorität','priority','P2','select',{options:['P1','P2','P3']}) +
+      field('Ansprechpartner','contactName','','text') +
+      field('E-Mail','contactEmail','','email') +
+      field('Telefon','contactPhone','','text') +
+      field('Quelle','contactSource','LinkedIn','select',{options:['LinkedIn','Website','Empfehlung','Event','Import','Selbsttest']}) +
+      field('Paket','package','standard','select',{options:DB.settings.packages.map((p) => ({ value:p.key, label:p.label }))}) +
+    '</div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-act="closeModal">Abbrechen</button><button class="btn btn-primary" type="submit">Anlegen</button></div></form>');
+  }
+  function submitTargetNew(v) {
+    if (!v.companyName) { toast('Unternehmen fehlt', true); return; }
+    const t = Object.assign(DEFAULT_SEED().targets[7] /* template shape */, {});
+    // build fresh target shape from seed helper
+    const nt = { id: uid('t'), companyName:v.companyName, segment:v.segment, bundesland:v.bundesland, location:v.location, street:'', postalCode:'', employees:Number(v.employees)||0, priority:v.priority, status:'offen', contactName:v.contactName, contactTitle:'', contactEmail:v.contactEmail, contactPhone:v.contactPhone, contactLinkedIn:'', contactSource:v.contactSource, callAttempts:0, callTrigger:'', emailAllowed:null, emailConsentAt:'', emailConsentSource:'', emailConsentRevokedAt:'', privacyNoticeAt:'', privacyNoticeSource:'', callConsentAt:'', callConsentSource:'', offerValue:0, offerDate:'', nextStep:'', nextStepDue:'', notes:'', selfTestScore:null, selfTestDate:'', selfTestLink:'', bafaStatus:'', bafaApprovedAmount:0, lossReason:'', result:'', handoverDate:'', firstMeetingDate:'', decisionDate:'', package:v.package, stepChecks:{}, assignments:[], account:'', assessments:[], handoverChecklist:{}, createdAt:todayISO() };
+    DB.targets.unshift(nt); save(); closeModal(); location.hash = '#/akquise/' + nt.id; render(); toast('Zielkunde angelegt');
+  }
+  function submitTargetEdit(v) {
+    const t = findTarget(v.id); if (!t) return;
+    ['companyName','segment','bundesland','location','street','postalCode','priority','package','contactName','contactTitle','contactEmail','contactPhone','contactLinkedIn','callTrigger','nextStep','nextStepDue','lossReason','notes'].forEach((k) => { t[k] = v[k]; });
+    t.employees = Number(v.employees) || 0;
+    t.offerValue = Number(v.offerValue) || 0;
+    save(); location.hash = '#/akquise/' + t.id; render(); toast('Gespeichert');
+  }
+  function openActivity(targetId, presetType) {
+    const types = ['Call','Meeting','Email','LinkedIn','Note','Task'];
+    openModal('Aktivität protokollieren', '<form data-form="activityNew"><input type="hidden" name="targetId" value="' + targetId + '"><div class="fields">' +
+      field('Typ','type',presetType || 'Call','select',{options:types}) +
+      field('Datum','date',todayISO(),'date') +
+      field('Dauer (min)','duration','15','number') +
+      field('Zusammenfassung','summary','','textarea',{full:true}) +
+      field('Nächster Schritt','nextSteps','','text',{full:true}) +
+      '</div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-act="closeModal">Abbrechen</button><button class="btn btn-primary" type="submit">Speichern</button></div></form>');
+  }
+  function submitActivity(v) {
+    DB.activities.unshift({ id: uid('a'), targetId:v.targetId, type:v.type, date:v.date || todayISO(), duration:Number(v.duration)||0, summary:v.summary, nextSteps:v.nextSteps, createdBy:currentUser().name });
+    const t = findTarget(v.targetId);
+    if (t) { if (v.type === 'Call') t.callAttempts = Math.min(3, (t.callAttempts || 0) + 1); if (v.nextSteps) { t.nextStep = v.nextSteps; } }
+    save(); closeModal(); render(); toast('Aktivität gespeichert');
+  }
+  function openActivityPick() {
+    openModal('Aktivität protokollieren', '<form data-form="activityNew"><div class="fields">' +
+      field('Zielkunde','targetId','','select',{options:DB.targets.map((t) => ({ value:t.id, label:t.companyName })),req:true}) +
+      field('Typ','type','Call','select',{options:['Call','Meeting','Email','LinkedIn','Note','Task']}) +
+      field('Datum','date',todayISO(),'date') +
+      field('Dauer (min)','duration','15','number') +
+      field('Zusammenfassung','summary','','textarea',{full:true}) +
+      field('Nächster Schritt','nextSteps','','text',{full:true}) +
+      '</div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-act="closeModal">Abbrechen</button><button class="btn btn-primary" type="submit">Speichern</button></div></form>');
+  }
+  function openQualify(id) {
+    openModal('Qualifizieren &amp; übergeben', '<form data-form="qualify"><input type="hidden" name="targetId" value="' + id + '"><div class="fields">' +
+      field('Übergabedatum','handoverDate',todayISO(),'date',{req:true}) +
+      field('Termin Erstgespräch','firstMeetingDate','','date') +
+      field('Übergabe-Notiz','note','','textarea',{full:true}) +
+      '</div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-act="closeModal">Abbrechen</button><button class="btn btn-primary" type="submit">Übergeben</button></div></form>');
+  }
+  function submitQualify(v) {
+    const t = findTarget(v.targetId); if (!t) return;
+    t.status = 'Übergabe an Engagement Manager';
+    t.handoverDate = v.handoverDate;
+    if (v.firstMeetingDate) t.firstMeetingDate = v.firstMeetingDate;
+    DB.activities.unshift({ id: uid('a'), targetId:t.id, type:'Meeting', date:todayISO(), duration:60, summary:'Qualifiziert und an Engagement Manager übergeben.' + (v.note ? ' ' + v.note : ''), nextSteps:'Übergabe bestätigen', createdBy:currentUser().name });
+    save(); closeModal(); render(); toast('Übergabe vorbereitet');
+  }
+  function generateAssessment(t) {
+    if (!t) return;
+    t.assessments = t.assessments || [];
+    const score = Math.round((2.6 + Math.random() * 2) * 10) / 10;
+    const cats = [{ name:'Daten', score:Math.round((2 + Math.random() * 3) * 10) / 10 }, { name:'Kultur', score:Math.round((2 + Math.random() * 3) * 10) / 10 }, { name:'Technologie', score:Math.round((2 + Math.random() * 3) * 10) / 10 }];
+    const uc = [
+      { title:'Automatisierte Dokumentenprüfung', desc:'KI-gestützte Vorprüfung von Vertragsunterlagen.', value:'~ 120 h/Jahr' },
+      { title:'Assistent für Kundenanfragen', desc:'Antwortvorschläge aus Wissensbasis für den Service.', value:'~ 80 h/Jahr' }
+    ];
+    t.assessments.push({ version:t.assessments.length + 1, createdAt:todayISO(), score, categories:cats, usecases:uc });
+    t.selfTestScore = Math.round(score * 20); t.selfTestDate = todayISO();
+    save(); render(); toast('Assessment generiert');
+  }
+  function confirmHandover(t) {
+    if (!t) return;
+    const chk = t.handoverChecklist || {};
+    const done = HANDOVER.filter((h, i) => chk[i]).length;
+    if (done !== HANDOVER.length) { toast('Bitte alle 6 Punkte abhaken', true); return; }
+    t.status = 'gewonnen'; t.result = 'gewonnen'; t.decisionDate = todayISO(); ensureAccount(t);
+    logActivity(t.id, 'Note', 'Übergabe bestätigt, Kunde gewonnen.');
+    save(); location.hash = '#/akquise/' + t.id; render(); toast('Übergabe bestätigt · Kunde gewonnen');
+  }
+  function openContactModal(c) {
+    const isEdit = !!c;
+    openModal(isEdit ? 'Kontakt bearbeiten' : 'Neuer Kontakt', '<form data-form="contactSave"><input type="hidden" name="id" value="' + (isEdit ? c.id : '') + '"><div class="fields">' +
+      field('Zielkunde','targetId',isEdit ? c.targetId : '', 'select',{options:DB.targets.map((t) => ({ value:t.id, label:t.companyName })),req:true}) +
+      field('Name','name',isEdit ? c.name : '', 'text',{req:true}) +
+      field('Rolle','role',isEdit ? c.role : '', 'text') +
+      field('E-Mail','email',isEdit ? c.email : '', 'email') +
+      field('Telefon','phone',isEdit ? c.phone : '', 'text') +
+      field('LinkedIn','linkedin',isEdit ? c.linkedin : '', 'text') +
+      '</div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-act="closeModal">Abbrechen</button><button class="btn btn-primary" type="submit">Speichern</button></div></form>');
+  }
+  function submitContact(v) {
+    if (v.id) { const c = DB.contacts.find((x) => x.id === v.id); if (c) Object.assign(c, { targetId:v.targetId, name:v.name, role:v.role, email:v.email, phone:v.phone, linkedin:v.linkedin }); }
+    else DB.contacts.unshift({ id: uid('c'), targetId:v.targetId, name:v.name, role:v.role, email:v.email, phone:v.phone, linkedin:v.linkedin, isPrimary:false });
+    save(); closeModal(); render(); toast('Kontakt gespeichert');
+  }
+  function openTemplateModal(tp) {
+    const isEdit = !!tp;
+    openModal(isEdit ? 'Vorlage bearbeiten' : 'Neue Vorlage', '<form data-form="templateSave"><input type="hidden" name="id" value="' + (isEdit ? tp.id : '') + '"><div class="fields">' +
+      field('Name','name',isEdit ? tp.name : '', 'text',{req:true}) +
+      field('Kanal','channel',isEdit ? tp.channel : 'E-Mail','select',{options:['E-Mail','LinkedIn','Telefon']}) +
+      field('Betreff','subject',isEdit ? tp.subject : '', 'text',{full:true}) +
+      field('Text','body',isEdit ? tp.body : '', 'textarea',{full:true, hint:'Platzhalter: {unternehmen}, {ansprechpartner}, {branche}, {datum}, {absender}'}) +
+      field('Notiz','notes',isEdit ? tp.notes : '', 'text',{full:true}) +
+      '</div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-act="closeModal">Abbrechen</button><button class="btn btn-primary" type="submit">Speichern</button></div></form>');
+  }
+  function submitTemplate(v) {
+    if (v.id) { const t = DB.templates.find((x) => x.id === v.id); if (t) Object.assign(t, { name:v.name, channel:v.channel, subject:v.subject, body:v.body, notes:v.notes }); }
+    else DB.templates.unshift({ id: uid('tp'), name:v.name, channel:v.channel, subject:v.subject, body:v.body, notes:v.notes, usageCount:0, active:true });
+    save(); closeModal(); render(); toast('Vorlage gespeichert');
+  }
+  function openAssignee(targetId, role) {
+    const t = findTarget(targetId); if (!t) return;
+    const taken = (t.assignments || []).filter((a) => a.role === role).map((a) => a.userId);
+    const options = DB.users.filter((u) => !taken.includes(u.id));
+    openModal('Mitarbeiter zuweisen · ' + ROLE_LABELS[role], '<div class="checklist">' + (options.map((u) => '<button class="check" style="text-align:left" data-act="doAssign" data-target="' + targetId + '" data-role="' + role + '" data-user="' + u.id + '"><span class="av">' + esc(initials(u.name)) + '</span><span class="check-body"><span class="check-text">' + esc(u.name) + '</span><span class="check-hint">' + esc(u.portalRole) + '</span></span></button>').join('') || emptyBox('Alle verfügbaren Personen sind bereits zugewiesen.')) + '</div>');
+  }
+  document.addEventListener('click', function (e) {
+    const b = e.target.closest('[data-act="doAssign"]');
+    if (!b) return;
+    const t = findTarget(b.dataset.target); if (!t) return;
+    t.assignments = t.assignments || [];
+    t.assignments.push({ userId:b.dataset.user, role:b.dataset.role });
+    save(); closeModal(); render(); toast('Zugewiesen');
+  });
+  function openMemberModal() {
+    openModal('Mitglied anlegen', '<form data-form="memberNew"><div class="fields">' +
+      field('Name','name','','text',{req:true}) + field('E-Mail','email','','email') +
+      field('Rolle','portalRole','KI-Experte','select',{options:['Lead Berater','KI-Experte','Vertrieb']}) +
+      '</div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-act="closeModal">Abbrechen</button><button class="btn btn-primary" type="submit">Anlegen</button></div></form>');
+  }
+  document.addEventListener('submit', function (e) {
+    const f = e.target.closest('form[data-form="memberNew"]');
+    if (!f) return;
+    e.preventDefault();
+    const v = formValues(f);
+    DB.users.push({ id: uid('u'), name:v.name, email:v.email, role:v.portalRole, portalRole:v.portalRole });
+    save(); closeModal(); render(); toast('Mitglied angelegt');
+  });
+  function openTaskModal() {
+    openModal('Neue Aufgabe', '<form data-form="taskNew"><div class="fields">' +
+      field('Titel','title','','text',{req:true,full:true}) +
+      field('Zielkunde','targetId','','select',{options:DB.targets.map((t) => ({ value:t.id, label:t.companyName }))}) +
+      field('Verantwortlich','assignedToId','','select',{options:DB.users.map((u) => ({ value:u.id, label:u.name }))}) +
+      field('Fällig','dueDate',todayISO(),'date') +
+      field('Priorität','priority','Mittel','select',{options:['Hoch','Mittel','Niedrig']}) +
+      '</div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-act="closeModal">Abbrechen</button><button class="btn btn-primary" type="submit">Anlegen</button></div></form>');
+  }
+  function submitTask(v) {
+    DB.tasks.unshift({ id: uid('k'), targetId:v.targetId, title:v.title, dueDate:v.dueDate, assignedToId:v.assignedToId, status:'Open', priority:v.priority });
+    save(); closeModal(); render(); toast('Aufgabe angelegt');
+  }
+  function openDocModal() {
+    openModal('Dokument hinzufügen', '<form data-form="docNew"><div class="fields">' +
+      field('Name','name','','text',{req:true,full:true,placeholder:'z.B. Assessment-2026-11.pdf'}) +
+      field('Zielkunde','targetId','','select',{options:DB.targets.map((t) => ({ value:t.id, label:t.companyName }))}) +
+      '</div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-act="closeModal">Abbrechen</button><button class="btn btn-primary" type="submit">Hinzufügen</button></div></form>');
+  }
+  function submitDoc(v) {
+    DB.documents.unshift({ id: uid('d'), targetId:v.targetId, name:v.name, createdAt:todayISO() });
+    save(); closeModal(); render(); toast('Dokument hinzugefügt');
+  }
+  function submitOffer(v) {
+    const pkg = DB.settings.packages.find((p) => p.key === v.package) || DB.settings.packages[1];
+    const year = String(v.year || new Date().getFullYear());
+    const seq = String(DB.offers.length + 1).padStart(4, '0');
+    const o = { id: uid('o'), number:'SP-' + year + '-' + seq, targetId:v.targetId, status:'entwurf', validUntil:v.validUntil, createdAt:todayISO(), items:[{ label:pkg.label + '-Paket', qty:1, price:pkg.price }] };
+    DB.offers.unshift(o);
+    const t = findTarget(v.targetId);
+    if (t) { t.offerValue = offerTotal(o); logActivity(t.id, 'Note', 'Angebot ' + o.number + ' angelegt'); }
+    save(); location.hash = '#/offers/' + o.id; render(); toast('Angebot ' + o.number + ' angelegt');
+  }
+  function saveStep(id, slug) {
+    const t = findTarget(id); const step = stepBySlug(slug); if (!t || !step) return;
+    if (!isSelectable(t.status, step.status)) { toast('Übergang nicht erlaubt', true); return; }
+    if (!allExits(t, step)) { toast('Nicht alle Exit-Kriterien erfüllt', true); return; }
+    // save required fields
+    const form = document.querySelector('form[data-form]');
+    qa('[name^="rf_"]').forEach((inp) => { const key = inp.name.slice(3); t[key] = inp.type === 'number' ? Number(inp.value) : inp.value; });
+    const note = el('step-note'); const summary = note ? note.value : '';
+    t.stepChecks = t.stepChecks || {}; t.stepChecks[slug] = t.stepChecks[slug] || { guide:{}, exit:{} }; t.stepChecks[slug].note = summary;
+    t.status = step.status;
+    if (WON.includes(step.status)) { t.result = 'gewonnen'; ensureAccount(t); }
+    if (LOST.includes(step.status)) { t.result = 'verloren'; if (step.status === 'kein Interesse') addBlocklist(t); }
+    DB.activities.unshift({ id: uid('a'), targetId:t.id, type:step.activity, date:todayISO(), duration:step.activity === 'Call' ? 15 : step.activity === 'Meeting' ? 60 : 0, summary:summary || ('Statuswechsel → ' + step.label), nextSteps:'', createdBy:currentUser().name });
+    if (step.activity === 'Call') t.callAttempts = Math.min(3, (t.callAttempts || 0) + 1);
+    save();
+    const next = nextUnlocked(step.status);
+    const ns = next ? stepByStatus(next) : null;
+    if (ns) location.hash = '#/akquise/' + t.id + '/prozess/' + ns.slug;
+    else location.hash = '#/akquise/' + t.id + '/prozess';
+    render(); toast('Status: ' + esc(step.label));
+  }
+  function commitImport() {
+    const rows = UI.importRows || [];
+    let added = 0, skipped = 0;
+    rows.forEach((r) => {
+      const dup = DB.targets.some((t) => t.companyName.toLowerCase() === r.companyName.toLowerCase());
+      const blocked = DB.blocklist.some((b) => b.companyName.toLowerCase() === r.companyName.toLowerCase());
+      if (dup || blocked || !r.companyName) { skipped++; return; }
+      DB.targets.unshift({ id: uid('t'), companyName:r.companyName, segment:r.segment || DB.settings.segments[0], bundesland:r.bundesland || '', location:r.location || '', street:'', postalCode:'', employees:r.employees || 0, priority:'P2', status:'offen', contactName:r.contactName || '', contactTitle:'', contactEmail:r.contactEmail || '', contactPhone:'', contactLinkedIn:'', contactSource:'Import', callAttempts:0, callTrigger:'', emailAllowed:null, emailConsentAt:'', emailConsentSource:'', emailConsentRevokedAt:'', privacyNoticeAt:'', privacyNoticeSource:'', callConsentAt:'', callConsentSource:'', offerValue:0, offerDate:'', nextStep:'', nextStepDue:'', notes:'', selfTestScore:null, selfTestDate:'', selfTestLink:'', bafaStatus:'', bafaApprovedAmount:0, lossReason:'', result:'', handoverDate:'', firstMeetingDate:'', decisionDate:'', package:'standard', stepChecks:{}, assignments:[], account:'', assessments:[], handoverChecklist:{}, createdAt:todayISO() });
+      added++;
+    });
+    UI.importRows = null; save(); location.hash = '#/akquise'; render(); toast(added + ' importiert, ' + skipped + ' übersprungen');
+  }
+  function submitSettingsQuotas(v) {
+    Object.assign(DB.settings.quotas, { linkedin:Number(v.linkedin), calls:Number(v.calls), hoursPerWeek:Number(v.hoursPerWeek), days:Number(v.days), firms:Number(v.firms) });
+    DB.settings.sprint = { start:v.start, end:v.end };
+    save(); render(); toast('Quoten gespeichert');
+  }
+  function submitSettingsPackages(v) {
+    DB.settings.packages.forEach((p, i) => { p.price = Number(v['price_' + i]) || p.price; p.description = v['desc_' + i] || p.description; });
+    save(); render(); toast('Pakete gespeichert');
+  }
+  function submitSettingsSegments(v) {
+    DB.settings.segments = String(v.segments || '').split(/\n/).map((s) => s.trim()).filter(Boolean);
+    save(); render(); toast('Branchen gespeichert');
+  }
+  function submitSettingsLinkedin(v) {
+    DB.settings.linkedin = { dailyLimit:Number(v.dailyLimit), weeklyTarget:Number(v.weeklyTarget) };
+    save(); render(); toast('LinkedIn gespeichert');
+  }
+  function submitMarket(v) {
+    DB.regions.forEach((r, i) => { r.priority = Number(v['prio_' + i]); r.note = v['note_' + i]; r.active = !!v['active_' + i]; });
+    DB.wz.forEach((w, i) => { w.priority = v['wzp_' + i]; w.note = v['wzn_' + i]; });
+    save(); render(); toast('Marktauswahl gespeichert');
+  }
+
+  /* Drag & Drop (Kanban) */
+  let dragId = null;
+  document.addEventListener('dragstart', (e) => {
+    const cardEl = e.target.closest('.kan-card');
+    if (!cardEl) return;
+    dragId = cardEl.dataset.id;
+    cardEl.classList.add('dragging');
+    try { e.dataTransfer.setData('text/plain', dragId); } catch (err) {}
+  });
+  document.addEventListener('dragend', (e) => { const c = e.target.closest('.kan-card'); if (c) c.classList.remove('dragging'); dragId = null; qa('.kan-col').forEach((col) => col.classList.remove('over')); });
+  document.addEventListener('dragover', (e) => { const col = e.target.closest('[data-phase]'); if (col) { e.preventDefault(); col.classList.add('over'); } });
+  document.addEventListener('dragleave', (e) => { const col = e.target.closest('[data-phase]'); if (col && !col.contains(e.relatedTarget)) col.classList.remove('over'); });
+  document.addEventListener('drop', (e) => {
+    const col = e.target.closest('[data-phase]');
+    if (!col) return;
+    e.preventDefault(); col.classList.remove('over');
+    const t = findTarget(dragId); if (!t) return;
+    if ((stepByStatus(t.status) || {}).stage === col.dataset.phase) return;
+    const ok = advanceToPhase(t, col.dataset.phase);
+    if (!ok) toast('Übergang nicht erlaubt', true);
+    render();
+  });
+
+  /* Init */
+  buildSidebar();
+  if (!location.hash) location.hash = '#/dashboard';
+  window.addEventListener('hashchange', render);
+  render();
+})();
+</script>
+</body>
+</html>

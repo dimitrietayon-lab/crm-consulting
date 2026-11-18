@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-hot-toast'
-import SprintSettingsPage, { SPRINT_SETTINGS_TABS } from '../sprint-targets/settings/page'
+import SprintSettingsPage, { SPRINT_SETTINGS_TABS } from '../akquise/settings/page'
 import {
   Plus,
   Trash2,
@@ -1139,10 +1139,14 @@ const GENERAL_TABS = [
 export default function SettingsMergedPage() {
   const { perms, can } = usePermissions()
   const isAdmin = getUser()?.role === 'admin'
+  // Fallback auf alte sprint_*-Rechte, bis die Portal-Keys migriert sind
   const hasGranularSprint = Object.keys(perms || {}).some(
-    (key) => key.startsWith('sprint_') && key !== 'sprint_targets' && perms[key]?.canView
+    (key) =>
+      (key.startsWith('acquisition_') || key.startsWith('sprint_')) &&
+      key !== 'acquisition_targets' && key !== 'sprint_targets' &&
+      perms[key]?.canView
   )
-  const canAkquise = isAdmin || hasGranularSprint || can('sprint_targets')
+  const canAkquise = isAdmin || hasGranularSprint || can('acquisition_targets') || can('sprint_targets')
 
   // Admin-only: Benutzer, Kategorien, Verbindungen, KI-Verbindung + Akquise "System"
   const generalTabs = isAdmin ? GENERAL_TABS : []
@@ -1170,7 +1174,7 @@ export default function SettingsMergedPage() {
   const isAkquiseTab = SPRINT_SETTINGS_TABS.some((t) => t.id === activeTab)
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto group-data-[collapsed=true]/sidebar:max-w-none">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Einstellungen</h1>

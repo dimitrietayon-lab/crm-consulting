@@ -695,9 +695,6 @@ export default function ContactDetailPage() {
                 {contact.gdprRestrictedProcessing && (
                   <p className="text-xs text-red-700">Verarbeitung eingeschränkt</p>
                 )}
-                <Link href="/compliance?tab=gdpr" className="text-xs text-red-600 underline hover:text-red-800">
-                  Compliance-Seite →
-                </Link>
               </div>
             </div>
           )}

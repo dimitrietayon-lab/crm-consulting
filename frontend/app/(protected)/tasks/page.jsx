@@ -168,10 +168,10 @@ function TaskCard({ task, onDelete, onEdit, isDragOverlay = false }) {
             <span className="truncate">{task.project.name}</span>
           </div>
         )}
-        {task.sprintTarget?.companyName && (
+        {task.acquisitionTarget?.companyName && (
           <div className="flex items-center gap-1 text-xs text-emerald-600 truncate">
             <Crosshair className="w-3 h-3 shrink-0" />
-            <span className="truncate">{task.sprintTarget.companyName}</span>
+            <span className="truncate">{task.acquisitionTarget.companyName}</span>
           </div>
         )}
       </div>
@@ -303,7 +303,7 @@ function CreateTaskModal({ isOpen, onClose, onCreated, accounts, users, projects
       if (form.assignedToId) fd.append('assignedToId', form.assignedToId)
       if (form.accountId) fd.append('accountId', form.accountId)
       if (form.projectId) fd.append('projectId', form.projectId)
-      if (form.sprintTargetId) fd.append('sprintTargetId', form.sprintTargetId)
+      if (form.sprintTargetId) fd.append('acquisitionTargetId', form.sprintTargetId)
       fd.append('status', form.status)
       if (form.recurring) fd.append('recurring', form.recurring)
       for (const f of files) fd.append('files', f)
@@ -628,7 +628,7 @@ export default function TasksPage() {
           api.get('/accounts'),
           api.get('/users'),
           api.get('/projects'),
-          api.get('/sprint-targets').catch(() => []),
+          api.get('/acquisition').catch(() => []),
         ])
         setAccounts(Array.isArray(accs) ? accs : accs.accounts || [])
         setUsers(Array.isArray(usrs) ? usrs : usrs.users || [])
@@ -705,7 +705,7 @@ export default function TasksPage() {
   const filteredTasks = tasks.filter(
     (t) =>
       (priorityFilter === 'all' || t.priority === priorityFilter) &&
-      (targetFilter === 'all' || t.sprintTargetId === targetFilter)
+      (targetFilter === 'all' || t.acquisitionTargetId === targetFilter)
   )
 
   const tasksByStatus = COLUMNS.reduce((acc, col) => {

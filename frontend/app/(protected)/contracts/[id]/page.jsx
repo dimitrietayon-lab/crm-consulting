@@ -109,7 +109,7 @@ export default function ContractDetailPage() {
   const totalAmount = lineItems.reduce((sum, item) => sum + (item.total || 0), 0)
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto group-data-[collapsed=true]/sidebar:max-w-none">
       {/* Header */}
       <div className="flex items-start gap-4 mb-6">
         <button

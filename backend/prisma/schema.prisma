@@ -54,9 +54,9 @@ model User {
   taskCollaborations TaskCollaborator[]
   salary            EmployeeSalary?
   payrollEntries    PayrollEntry[]
-  sprintAssignments   SprintAssignment[]
+  acquisitionAssignments   AcquisitionAssignment[]
   activitiesDone      Activity[]       @relation("ActivityDoneBy")
-  sprintHandovers     SprintHandover[] @relation("SprintHandoverEM")
+  acquisitionHandovers     AcquisitionHandover[] @relation("AcquisitionHandoverEM")
 }
 
 model Account {
@@ -98,7 +98,7 @@ model Account {
   monitoringKeywords MonitoringKeyword[]
   newsItems          NewsItem[]
   invoices           Invoice[]
-  sprintTargets      SprintTarget[]
+  acquisitionTargets      AcquisitionTarget[]
 }
 
 model Contact {
@@ -308,7 +308,8 @@ model ServiceCatalog {
   createdAt   DateTime @default(now())
   lineItems       ProposalLineItem[]
   aiOpportunities AiOpportunity[]
-  packageServices SprintPackageService[]
+  packageServices AcquisitionPackageService[]
+  campaigns       AcquisitionCampaign[]
 }
 
 model Contract {
@@ -338,8 +339,8 @@ model Activity {
   deal           Deal?         @relation(fields: [dealId], references: [id])
   projectId      String?
   project        Project?      @relation(fields: [projectId], references: [id])
-  sprintTargetId String?
-  sprintTarget   SprintTarget? @relation(fields: [sprintTargetId], references: [id])
+  acquisitionTargetId String?
+  acquisitionTarget   AcquisitionTarget? @relation(fields: [acquisitionTargetId], references: [id])
   createdById    String?
   createdBy      User?         @relation(fields: [createdById], references: [id])
   doneById       String?
@@ -386,8 +387,8 @@ model Task {
   project      Project? @relation(fields: [projectId], references: [id])
   activityId   String?
   activity     Activity? @relation(fields: [activityId], references: [id])
-  sprintTargetId String?
-  sprintTarget   SprintTarget? @relation(fields: [sprintTargetId], references: [id], onDelete: SetNull)
+  acquisitionTargetId String?
+  acquisitionTarget   AcquisitionTarget? @relation(fields: [acquisitionTargetId], references: [id], onDelete: SetNull)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   // relation to documents
@@ -395,7 +396,7 @@ model Task {
   checklistItems TaskChecklistItem[]
   collaborators  TaskCollaborator[]
 
-  @@index([sprintTargetId])
+  @@index([acquisitionTargetId])
 }
 
 model Document {
@@ -421,11 +422,11 @@ model Document {
   // link to task (optional)
   taskId       String?
   task         Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  sprintTargetId String?
-  sprintTarget   SprintTarget? @relation(fields: [sprintTargetId], references: [id], onDelete: SetNull)
+  acquisitionTargetId String?
+  acquisitionTarget   AcquisitionTarget? @relation(fields: [acquisitionTargetId], references: [id], onDelete: SetNull)
   createdAt    DateTime @default(now())
 
-  @@index([sprintTargetId])
+  @@index([acquisitionTargetId])
 }
 
 model TaskChecklistItem {
@@ -1127,9 +1128,9 @@ model LlmConfig {
   updatedAt      DateTime @updatedAt
 }
 
-// ─── Sprint-Vertrieb ─────────────────────────────────────────────────────────
+// ─── Acquisition-Vertrieb ─────────────────────────────────────────────────────────
 
-model SprintTarget {
+model AcquisitionTarget {
   id                  String    @id @default(cuid())
   companyName         String
   location            String?
@@ -1183,64 +1184,59 @@ model SprintTarget {
   result              String?
   lossReason          String?
   notes               String?
+  stepChecks          Json?
   accountId           String?
   account             Account?  @relation(fields: [accountId], references: [id])
+  campaignId          String?
+  campaign            AcquisitionCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  pipelineId          String?
+  pipeline            AcquisitionPipeline? @relation(fields: [pipelineId], references: [id], onDelete: SetNull)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
-  assessments         SprintAssessment[]
+  assessments         AcquisitionAssessment[]
   activities          Activity[]
-  assignments         SprintAssignment[]
-  roleRequirements    SprintTargetRole[]
-  offers              SprintOffer[]
-  bafaDocuments       SprintBafaDocument[]
-  handover            SprintHandover?
-  contacts            SprintTargetContact[]
+  assignments         AcquisitionAssignment[]
+  roleRequirements    AcquisitionTargetRole[]
+  offers              AcquisitionOffer[]
+  bafaDocuments       AcquisitionBafaDocument[]
+  handover            AcquisitionHandover?
+  contacts            AcquisitionTargetContact[]
   tasks               Task[]
   documents           Document[]
+
+  @@index([campaignId])
+  @@index([pipelineId])
 }
 
-// Welche Rollen ein Paket benötigt und mit welchem Umfang (Anzahl Mitarbeiter)
-model SprintPackageRole {
-  id        String   @id @default(cuid())
-  package   String
-  role      String
-  label     String?
-  headcount Int      @default(1)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([package, role])
-}
-
-// Kundenspezifische Rollen (Default aus dem Paket, pro Kunde anpassbar)
-model SprintTargetRole {
+// Kundenspezifische Rollen (manuell je Kunde gepflegt)
+model AcquisitionTargetRole {
   id             String       @id @default(cuid())
-  sprintTargetId String
-  sprintTarget   SprintTarget @relation(fields: [sprintTargetId], references: [id], onDelete: Cascade)
+  acquisitionTargetId String
+  acquisitionTarget   AcquisitionTarget @relation(fields: [acquisitionTargetId], references: [id], onDelete: Cascade)
   role           String
   headcount      Int          @default(1)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  @@unique([sprintTargetId, role])
-  @@index([sprintTargetId])
+  @@unique([acquisitionTargetId, role])
+  @@index([acquisitionTargetId])
 }
 
-model SprintAssignment {
+model AcquisitionAssignment {
   id             String       @id @default(cuid())
-  sprintTargetId String
-  sprintTarget   SprintTarget @relation(fields: [sprintTargetId], references: [id], onDelete: Cascade)
+  acquisitionTargetId String
+  acquisitionTarget   AcquisitionTarget @relation(fields: [acquisitionTargetId], references: [id], onDelete: Cascade)
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   role           String
   createdAt      DateTime     @default(now())
 
-  @@unique([sprintTargetId, userId, role])
+  @@unique([acquisitionTargetId, userId, role])
   @@index([userId])
-  @@index([sprintTargetId])
+  @@index([acquisitionTargetId])
 }
 
-model SprintBlocklist {
+model AcquisitionBlocklist {
   id             String   @id @default(cuid())
   companyName    String
   normalizedName String
@@ -1254,10 +1250,10 @@ model SprintBlocklist {
   @@index([normalizedName])
 }
 
-model SprintAssessment {
+model AcquisitionAssessment {
   id               String       @id @default(cuid())
-  sprintTargetId   String
-  sprintTarget     SprintTarget @relation(fields: [sprintTargetId], references: [id], onDelete: Cascade)
+  acquisitionTargetId   String
+  acquisitionTarget     AcquisitionTarget @relation(fields: [acquisitionTargetId], references: [id], onDelete: Cascade)
   version          Int          @default(1)
   totalScore       Float?
   dataAvailability Float?
@@ -1277,7 +1273,7 @@ model SprintAssessment {
 model UseCaseCandidate {
   id             String           @id @default(cuid())
   assessmentId   String
-  assessment     SprintAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  assessment     AcquisitionAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
   title          String
   description    String?          @db.Text
   priority       String           @default("medium")
@@ -1290,11 +1286,11 @@ model UseCaseCandidate {
 
 // ─── Angebote ────────────────────────────────────────────────────────────────
 
-model SprintOffer {
+model AcquisitionOffer {
   id             String            @id @default(cuid())
   offerNumber    String            @unique
-  sprintTargetId String
-  sprintTarget   SprintTarget      @relation(fields: [sprintTargetId], references: [id], onDelete: Cascade)
+  acquisitionTargetId String
+  acquisitionTarget   AcquisitionTarget      @relation(fields: [acquisitionTargetId], references: [id], onDelete: Cascade)
   package        String?
   status         String            @default("draft")
   value          Float             @default(0)
@@ -1305,15 +1301,15 @@ model SprintOffer {
   notes          String?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
-  items          SprintOfferItem[]
+  items          AcquisitionOfferItem[]
 
-  @@index([sprintTargetId])
+  @@index([acquisitionTargetId])
 }
 
-model SprintOfferItem {
+model AcquisitionOfferItem {
   id          String      @id @default(cuid())
   offerId     String
-  offer       SprintOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  offer       AcquisitionOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
   position    Int
   description String
   quantity    Float       @default(1)
@@ -1323,17 +1319,17 @@ model SprintOfferItem {
   @@index([offerId])
 }
 
-model SprintOfferSequence {
+model AcquisitionOfferSequence {
   year       Int @id
   lastNumber Int @default(0)
 }
 
 // ─── BAFA ────────────────────────────────────────────────────────────────────
 
-model SprintBafaDocument {
+model AcquisitionBafaDocument {
   id             String       @id @default(cuid())
-  sprintTargetId String
-  sprintTarget   SprintTarget @relation(fields: [sprintTargetId], references: [id], onDelete: Cascade)
+  acquisitionTargetId String
+  acquisitionTarget   AcquisitionTarget @relation(fields: [acquisitionTargetId], references: [id], onDelete: Cascade)
   name           String
   status         String       @default("offen")
   fileUrl        String?
@@ -1341,22 +1337,22 @@ model SprintBafaDocument {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  @@index([sprintTargetId])
+  @@index([acquisitionTargetId])
 }
 
 // ─── Übergabe ────────────────────────────────────────────────────────────────
 
-model SprintHandover {
+model AcquisitionHandover {
   id                String       @id @default(cuid())
-  sprintTargetId    String       @unique
-  sprintTarget      SprintTarget @relation(fields: [sprintTargetId], references: [id], onDelete: Cascade)
+  acquisitionTargetId    String       @unique
+  acquisitionTarget      AcquisitionTarget @relation(fields: [acquisitionTargetId], references: [id], onDelete: Cascade)
   checklist         Json?
   kickoffDate       DateTime?
   firstWorkshopDate DateTime?
   format            String?
   participants      String?
   emUserId          String?
-  emUser            User?        @relation("SprintHandoverEM", fields: [emUserId], references: [id])
+  emUser            User?        @relation("AcquisitionHandoverEM", fields: [emUserId], references: [id])
   notes             String?
   confirmedAt       DateTime?
   confirmedBy       String?
@@ -1366,7 +1362,7 @@ model SprintHandover {
 
 // ─── Outreach-Vorlagen ───────────────────────────────────────────────────────
 
-model SprintOutreachTemplate {
+model AcquisitionOutreachTemplate {
   id         String   @id @default(cuid())
   name       String
   channel    String   @default("E-Mail") // E-Mail | LinkedIn | Telefon
@@ -1381,12 +1377,12 @@ model SprintOutreachTemplate {
   @@index([channel])
 }
 
-// ─── Sprint-Kontakte ─────────────────────────────────────────────────────────
+// ─── Acquisition-Kontakte ─────────────────────────────────────────────────────────
 
-model SprintTargetContact {
+model AcquisitionTargetContact {
   id             String       @id @default(cuid())
-  sprintTargetId String
-  sprintTarget   SprintTarget @relation(fields: [sprintTargetId], references: [id], onDelete: Cascade)
+  acquisitionTargetId String
+  acquisitionTarget   AcquisitionTarget @relation(fields: [acquisitionTargetId], references: [id], onDelete: Cascade)
   name           String
   role           String?
   email          String?
@@ -1399,12 +1395,12 @@ model SprintTargetContact {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  @@index([sprintTargetId])
+  @@index([acquisitionTargetId])
 }
 
 // ─── Markt & Planung ─────────────────────────────────────────────────────────
 
-model SprintRegion {
+model AcquisitionRegion {
   id         String   @id @default(cuid())
   bundesland String   @unique
   priority   Int      @default(3)
@@ -1414,7 +1410,7 @@ model SprintRegion {
   updatedAt  DateTime @updatedAt
 }
 
-model SprintWzMapping {
+model AcquisitionWzMapping {
   id        String   @id @default(cuid())
   wzCode    String   @unique
   segment   String
@@ -1424,7 +1420,7 @@ model SprintWzMapping {
   updatedAt DateTime @updatedAt
 }
 
-model SprintPackageInfo {
+model AcquisitionPackageInfo {
   id          String   @id @default(cuid())
   key         String   @unique
   label       String
@@ -1433,14 +1429,14 @@ model SprintPackageInfo {
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  services    SprintPackageService[]
+  services    AcquisitionPackageService[]
 }
 
 // Leistungen, die in einem Paket enthalten sind – mit Umfang (Menge)
-model SprintPackageService {
+model AcquisitionPackageService {
   id          String            @id @default(cuid())
   package     String
-  packageInfo SprintPackageInfo @relation(fields: [package], references: [key], onDelete: Cascade)
+  packageInfo AcquisitionPackageInfo @relation(fields: [package], references: [key], onDelete: Cascade)
   serviceId   String
   service     ServiceCatalog    @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   quantity    Int               @default(1)
@@ -1451,7 +1447,7 @@ model SprintPackageService {
   @@index([package])
 }
 
-model SprintSegment {
+model AcquisitionSegment {
   id          String   @id @default(cuid())
   name        String   @unique
   description String?
@@ -1463,7 +1459,7 @@ model SprintSegment {
 
 // ─── Einstellungen (Singleton) ───────────────────────────────────────────────
 
-model SprintSetting {
+model AcquisitionSetting {
   id                String    @id @default("singleton")
   linkedinQuota     Int       @default(75)
   callsQuota        Int       @default(100)
@@ -1472,9 +1468,9 @@ model SprintSetting {
   targetFirms       Int       @default(878)
   teamCapacity      Int       @default(10)
   revenueTarget     Float     @default(500000)
-  sprintName        String    @default("KI-Readiness Sprint")
-  sprintStart       DateTime?
-  sprintEnd         DateTime?
+  name              String    @default("Akquise")
+  startDate         DateTime?
+  endDate           DateTime?
   packages          Json?
   segments          Json?
   notifications     Json?
@@ -1482,4 +1478,148 @@ model SprintSetting {
   linkedin          Json?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+}
+
+// ─── Definierbare Akquise-Pipeline ───────────────────────────────────────────
+
+model AcquisitionPipeline {
+  id          String                          @id @default(cuid())
+  key         String                          @unique
+  name        String
+  description String?
+  active      Boolean                         @default(true)
+  isDefault   Boolean                         @default(false)
+  createdAt   DateTime                        @default(now())
+  updatedAt   DateTime                        @updatedAt
+  stages      AcquisitionPipelineStage[]
+  steps       AcquisitionPipelineStep[]
+  transitions AcquisitionPipelineTransition[]
+  campaigns   AcquisitionCampaign[]
+  customTemplates AcquisitionStepTemplate[] @relation("PipelineCustomTemplates")
+  targets     AcquisitionTarget[]
+}
+
+model AcquisitionPipelineStage {
+  id         String                    @id @default(cuid())
+  pipelineId String
+  pipeline   AcquisitionPipeline       @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  key        String
+  label      String
+  order      Int                       @default(0)
+  color      String?
+  createdAt  DateTime                  @default(now())
+  updatedAt  DateTime                  @updatedAt
+  steps      AcquisitionPipelineStep[]
+
+  @@unique([pipelineId, key])
+  @@index([pipelineId])
+}
+
+model AcquisitionPipelineStep {
+  id             String                   @id @default(cuid())
+  pipelineId     String
+  pipeline       AcquisitionPipeline      @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  stageId        String
+  stage          AcquisitionPipelineStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  templateId     String?
+  template       AcquisitionStepTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  status         String
+  slug           String
+  label          String
+  shortLabel     String?
+  order          Int                      @default(0)
+  activityType   String?
+  title          String?
+  description    String?
+  requiredFields Json?
+  guide          Json?
+  exitCriteria   Json?
+  isClosing      Boolean                  @default(false)
+  outcome        String?
+  isWildcard     Boolean                  @default(false)
+  isInTalk       Boolean                  @default(false)
+  isOffer        Boolean                  @default(false)
+  isOfferSent    Boolean                  @default(false)
+  isWon          Boolean                  @default(false)
+  isLost         Boolean                  @default(false)
+  isEarly        Boolean                  @default(false)
+  active         Boolean                  @default(true)
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+
+  @@unique([pipelineId, status])
+  @@unique([pipelineId, slug])
+  @@index([pipelineId])
+  @@index([stageId])
+  @@index([templateId])
+}
+
+model AcquisitionPipelineTransition {
+  id         String              @id @default(cuid())
+  pipelineId String
+  pipeline   AcquisitionPipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  fromStatus String
+  toStatus   String
+  createdAt  DateTime            @default(now())
+
+  @@unique([pipelineId, fromStatus, toStatus])
+  @@index([pipelineId])
+}
+
+// ─── Schritt-Bibliothek (wiederverwendbare Standard-/Custom-Schritte) ─────────
+
+model AcquisitionStepTemplate {
+  id              String    @id @default(cuid())
+  key             String    @unique
+  label           String
+  shortLabel      String?
+  activityType    String    @default("Note")
+  title           String?
+  description     String?
+  guide           Json?
+  exitCriteria    Json?
+  requiredFields  Json?
+  isEarly         Boolean   @default(false)
+  isInTalk        Boolean   @default(false)
+  isOffer         Boolean   @default(false)
+  isOfferSent     Boolean   @default(false)
+  isWon           Boolean   @default(false)
+  isLost          Boolean   @default(false)
+  isWildcard      Boolean   @default(false)
+  isClosing       Boolean   @default(false)
+  outcome         String?
+  isStandard      Boolean   @default(true)
+  ownerPipelineId String?
+  ownerPipeline   AcquisitionPipeline? @relation("PipelineCustomTemplates", fields: [ownerPipelineId], references: [id], onDelete: SetNull)
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  steps           AcquisitionPipelineStep[]
+
+  @@index([ownerPipelineId])
+  @@index([isStandard])
+}
+
+// ─── Kampagnen (Workflow + Dienstleistung + Paket) ───────────────────────────
+
+model AcquisitionCampaign {
+  id          String          @id @default(cuid())
+  key         String          @unique
+  name        String
+  description String?
+  pipelineId  String
+  pipeline    AcquisitionPipeline @relation(fields: [pipelineId], references: [id], onDelete: Restrict)
+  serviceId   String?
+  service     ServiceCatalog? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  package     String?
+  startDate   DateTime?
+  endDate     DateTime?
+  active      Boolean         @default(true)
+  isDefault   Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  targets     AcquisitionTarget[]
+
+  @@index([pipelineId])
+  @@index([serviceId])
 }

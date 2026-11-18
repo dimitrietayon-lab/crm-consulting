@@ -200,7 +200,7 @@ export default function ProposalDetailPage() {
   const versions = proposal.versions || []
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto group-data-[collapsed=true]/sidebar:max-w-none">
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-start gap-4">

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import MergedTabs from '@/components/ui/MergedTabs'
-import SprintMePage from '../sprint-targets/me/page'
+import SprintMePage from '../akquise/me/page'
 import {
   Users, Briefcase, UserCheck, Loader2,
   Plus, X, Building2, Shield, ChevronDown, Trash2,
@@ -333,7 +333,7 @@ function MeinBereichPage() {
   ]
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-8">
+    <div className="p-6 max-w-6xl mx-auto space-y-8 group-data-[collapsed=true]/sidebar:max-w-none">
       {assignModal && (
         <AssignProjectModal
           subordinate={assignModal}

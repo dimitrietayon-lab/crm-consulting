@@ -573,7 +573,7 @@ export default function FinanzplanungPage() {
   const [year, setYear] = useState(new Date().getFullYear())
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto group-data-[collapsed=true]/sidebar:max-w-none">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <TrendingUp className="w-6 h-6 text-blue-600" />

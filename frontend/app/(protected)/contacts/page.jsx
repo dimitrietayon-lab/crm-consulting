@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import MergedTabs from '@/components/ui/MergedTabs'
-import SprintContactsPage from '../sprint-targets/contacts/page'
+import SprintContactsPage from '../akquise/contacts/page'
 import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
 import {

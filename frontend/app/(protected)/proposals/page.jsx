@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import MergedTabs from '@/components/ui/MergedTabs'
-import SprintOffersPage from '../sprint-targets/offers/page'
+import SprintOffersPage from '../akquise/offers/page'
 import { toast } from 'react-hot-toast'
 import {
   Plus,
@@ -141,7 +141,7 @@ function ProposalsPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto group-data-[collapsed=true]/sidebar:max-w-none">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>

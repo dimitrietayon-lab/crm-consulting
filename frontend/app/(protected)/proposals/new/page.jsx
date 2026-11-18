@@ -240,7 +240,7 @@ export default function NewProposalPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Top bar */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-screen-2xl mx-auto px-6 py-3 flex items-center justify-between">
+        <div className="max-w-screen-2xl mx-auto px-6 py-3 flex items-center justify-between group-data-[collapsed=true]/sidebar:max-w-none">
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.push('/proposals')}
@@ -279,7 +279,7 @@ export default function NewProposalPage() {
       </div>
 
       {/* Main content */}
-      <div className="max-w-screen-2xl mx-auto px-6 py-6">
+      <div className="max-w-screen-2xl mx-auto px-6 py-6 group-data-[collapsed=true]/sidebar:max-w-none">
         <div className="flex gap-6">
           {/* Left Panel - 2/3 */}
           <div className="flex-1 min-w-0 space-y-6">

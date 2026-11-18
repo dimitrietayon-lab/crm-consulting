@@ -97,9 +97,9 @@ function ActivityCard({ activity, onDelete }) {
                     {activity.account.name}
                   </span>
                 )}
-                {activity.sprintTarget?.companyName && (
+                {activity.acquisitionTarget?.companyName && (
                   <span className="text-xs text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                    {activity.sprintTarget.companyName}
+                    {activity.acquisitionTarget.companyName}
                   </span>
                 )}
                 {activity.deal?.title && (
@@ -228,7 +228,7 @@ function CreateActivityModal({ isOpen, onClose, onCreated, accounts, contacts, u
         date: form.date,
         duration: form.duration ? parseInt(form.duration) : null,
         accountId: form.accountId || null,
-        sprintTargetId: form.sprintTargetId || null,
+        acquisitionTargetId: form.sprintTargetId || null,
         summary: form.summary,
         nextSteps: form.nextSteps || null,
         participantIds: form.participantIds,
@@ -531,7 +531,7 @@ export default function ActivitiesPage() {
           api.get('/accounts'),
           api.get('/contacts'),
           api.get('/users'),
-          api.get('/sprint-targets').catch(() => []),
+          api.get('/acquisition').catch(() => []),
         ])
         setAccounts(Array.isArray(accs) ? accs : accs.accounts || [])
         setContacts(Array.isArray(conts) ? conts : conts.contacts || [])
@@ -582,7 +582,7 @@ export default function ActivitiesPage() {
   )
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto group-data-[collapsed=true]/sidebar:max-w-none">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>

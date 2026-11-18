@@ -28,7 +28,7 @@ const upload = multer({
 // GET /api/documents
 router.get('/', async (req, res) => {
   try {
-    const { category, accountId, projectId, dealId, taskId, sprintTargetId, onlySprint, isInternal, q } = req.query;
+    const { category, accountId, projectId, dealId, taskId, acquisitionTargetId, onlySprint, isInternal, q } = req.query;
 
     const where = {};
     if (category) where.category = category;
@@ -36,8 +36,9 @@ router.get('/', async (req, res) => {
     if (projectId) where.projectId = projectId;
     if (dealId) where.dealId = dealId;
     if (taskId) where.taskId = taskId;
-    if (sprintTargetId) where.sprintTargetId = sprintTargetId;
-    if (onlySprint === 'true') where.sprintTargetId = { not: null };
+    const targetFilter = acquisitionTargetId || req.query.sprintTargetId;
+    if (targetFilter) where.acquisitionTargetId = targetFilter;
+    if (onlySprint === 'true') where.acquisitionTargetId = { not: null };
     if (isInternal !== undefined) where.isInternal = isInternal === 'true';
     if (q) where.name = { contains: q, mode: 'insensitive' };
 
@@ -47,7 +48,7 @@ router.get('/', async (req, res) => {
         account: { select: { id: true, companyName: true } },
         project: { select: { id: true, name: true } },
         task: { select: { id: true, title: true } },
-        sprintTarget: { select: { id: true, companyName: true } },
+        acquisitionTarget: { select: { id: true, companyName: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -65,7 +66,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const { name, category, accountId, projectId, dealId, contactId, sprintTargetId, isInternal, expiryDate, uploadedById } = req.body;
+    const { name, category, accountId, projectId, dealId, contactId, acquisitionTargetId, isInternal, expiryDate, uploadedById } = req.body;
 
     const document = await prisma.document.create({
       data: {
@@ -81,11 +82,11 @@ router.post('/upload', upload.single('file'), async (req, res) => {
         projectId: projectId || null,
         dealId: dealId || null,
         contactId: contactId || null,
-        sprintTargetId: sprintTargetId || null,
+        acquisitionTargetId: acquisitionTargetId || null,
       },
       include: {
         account: { select: { id: true, companyName: true } },
-        sprintTarget: { select: { id: true, companyName: true } },
+        acquisitionTarget: { select: { id: true, companyName: true } },
       },
     });
 
@@ -203,7 +204,7 @@ router.post('/:id/new-version', upload.single('file'), async (req, res) => {
         projectId: current.projectId,
         dealId: current.dealId,
         contactId: current.contactId,
-        sprintTargetId: current.sprintTargetId,
+        acquisitionTargetId: current.acquisitionTargetId,
       },
       include: {
         account: { select: { id: true, companyName: true } },

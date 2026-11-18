@@ -9,7 +9,7 @@ router.get('/', async (req, res) => {
   try {
     const {
       type, accountId, dealId, projectId, createdById, ownerId, dateFrom, dateTo,
-      from, to, upcoming, limit, sprintTargetId, onlySprint, q, segment, channel,
+      from, to, upcoming, limit, acquisitionTargetId, onlySprint, q, segment, channel,
     } = req.query;
 
     const where = {};
@@ -20,8 +20,9 @@ router.get('/', async (req, res) => {
     if (projectId) where.projectId = projectId;
     if (createdById) where.createdById = createdById;
     else if (ownerId) where.createdById = ownerId;
-    if (sprintTargetId) where.sprintTargetId = sprintTargetId;
-    if (onlySprint === 'true') where.sprintTargetId = { not: null };
+    const targetFilter = acquisitionTargetId || req.query.sprintTargetId;
+    if (targetFilter) where.acquisitionTargetId = targetFilter;
+    if (onlySprint === 'true') where.acquisitionTargetId = { not: null };
     if (q) {
       where.OR = [
         { summary: { contains: q, mode: 'insensitive' } },
@@ -38,7 +39,7 @@ router.get('/', async (req, res) => {
     }
 
     // Segment-Filter läuft über den verknüpften Sprint-Zielkunden
-    if (segment) where.sprintTarget = { segment: { contains: segment, mode: 'insensitive' } };
+    if (segment) where.acquisitionTarget = { segment: { contains: segment, mode: 'insensitive' } };
 
     const rangeFrom = dateFrom || from;
     const rangeTo = dateTo || to;
@@ -58,7 +59,7 @@ router.get('/', async (req, res) => {
         account: { select: { id: true, companyName: true } },
         deal: { select: { id: true, title: true } },
         project: { select: { id: true, name: true } },
-        sprintTarget: { select: { id: true, companyName: true, status: true, segment: true } },
+        acquisitionTarget: { select: { id: true, companyName: true, status: true, segment: true } },
         participants: {
           include: {
             contact: { select: { id: true, name: true } },
@@ -104,7 +105,7 @@ router.post('/', async (req, res) => {
         account: { select: { id: true, companyName: true } },
         deal: { select: { id: true, title: true } },
         project: { select: { id: true, name: true } },
-        sprintTarget: { select: { id: true, companyName: true, status: true, segment: true } },
+        acquisitionTarget: { select: { id: true, companyName: true, status: true, segment: true } },
         participants: {
           include: {
             contact: { select: { id: true, name: true } },
@@ -181,7 +182,7 @@ router.put('/:id', async (req, res) => {
         account: { select: { id: true, companyName: true } },
         deal: { select: { id: true, title: true } },
         project: { select: { id: true, name: true } },
-        sprintTarget: { select: { id: true, companyName: true, status: true, segment: true } },
+        acquisitionTarget: { select: { id: true, companyName: true, status: true, segment: true } },
         participants: {
           include: {
             contact: { select: { id: true, name: true } },

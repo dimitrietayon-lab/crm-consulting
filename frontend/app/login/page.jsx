@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Briefcase, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import PonturoLogo from '@/components/layout/PonturoLogo'
 import toast from 'react-hot-toast'
 import { getToken } from '@/lib/auth'
 import { api } from '@/lib/api'
@@ -65,9 +66,7 @@ export default function LoginPage() {
       <div className="relative w-full max-w-md">
         {/* Logo card */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl mb-4 shadow-lg shadow-blue-600/30">
-            <Briefcase className="w-7 h-7 text-white" />
-          </div>
+          <PonturoLogo className="w-16 h-16 mb-4" />
           <h1 className="text-2xl font-bold text-white">CRM Consulting</h1>
           <p className="mt-1 text-slate-400 text-sm">Für Banken &amp; Versicherungen</p>
         </div>

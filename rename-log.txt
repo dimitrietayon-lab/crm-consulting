@@ -1,0 +1,23 @@
+MOVED  backend/src/routes/sprint-targets.js  ->  backend/src/routes/acquisition-targets.js
+MOVED  backend/src/routes/sprint-assessments.js  ->  backend/src/routes/acquisition-assessments.js
+MOVED  backend/src/routes/sprint-offers.js  ->  backend/src/routes/acquisition-offers.js
+MOVED  backend/src/routes/sprint-handover.js  ->  backend/src/routes/acquisition-handover.js
+MOVED  backend/src/routes/sprint-settings.js  ->  backend/src/routes/acquisition-settings.js
+MOVED  backend/src/routes/sprint-outreach.js  ->  backend/src/routes/acquisition-outreach.js
+MOVED  backend/src/routes/sprint-contacts.js  ->  backend/src/routes/acquisition-contacts.js
+MOVED  backend/src/routes/sprint-market.js  ->  backend/src/routes/acquisition-market.js
+MOVED  backend/src/lib/sprintCompliance.js  ->  backend/src/lib/acquisitionCompliance.js
+MOVED  backend/src/lib/sprintAccount.js  ->  backend/src/lib/acquisitionAccount.js
+MOVED  backend/src/lib/pdf/sprint-assessment.js  ->  backend/src/lib/pdf/acquisition-assessment.js
+MOVED  backend/src/lib/pdf/sprint-offer.js  ->  backend/src/lib/pdf/acquisition-offer.js
+MOVED  backend/src/lib/pdf/sprint-report.js  ->  backend/src/lib/pdf/acquisition-report.js
+MOVED  frontend/app/(protected)/sprint-targets  ->  frontend/app/(protected)/akquise
+MOVED  frontend/components/sprint  ->  frontend/components/acquisition
+MOVED  frontend/lib/sprintOptions.js  ->  frontend/lib/acquisitionOptions.js
+MOVED  frontend/lib/sprintSettings.js  ->  frontend/lib/acquisitionSettings.js
+MOVED  frontend/lib/sprintTeam.js  ->  frontend/lib/acquisitionTeam.js
+DELETED frontend/components/acquisition/SprintNav.jsx
+DELETED frontend/components/acquisition/StatusPicker.jsx
+
+SUMMARY failed=0
+OK — Dateien liegen jetzt unter acquisition-* / akquise / components/acquisition.

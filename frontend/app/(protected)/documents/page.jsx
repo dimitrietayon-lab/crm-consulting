@@ -305,10 +305,10 @@ function DocumentCard({ doc, onDelete, onDownload, onNewVersion, onShowHistory }
             {doc.project.name}
           </p>
         )}
-        {doc.sprintTarget?.companyName && (
+        {doc.acquisitionTarget?.companyName && (
           <p className="text-xs text-emerald-600 flex items-center gap-1">
             <Building2 className="w-3 h-3" />
-            {doc.sprintTarget.companyName}
+            {doc.acquisitionTarget.companyName}
           </p>
         )}
         {doc.task?.title && (
@@ -399,7 +399,7 @@ function DocumentRow({ doc, onDelete, onDownload, onNewVersion, onShowHistory })
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
             {doc.task.title}
           </span>
-        ) : (doc.account?.companyName || doc.project?.name || (doc.sprintTarget?.companyName && `Akquise: ${doc.sprintTarget.companyName}`) || '—')}
+        ) : (doc.account?.companyName || doc.project?.name || (doc.acquisitionTarget?.companyName && `Akquise: ${doc.acquisitionTarget.companyName}`) || '—')}
       </td>
       <td className="px-4 py-3">
         {doc.isInternal !== false ? (
@@ -501,11 +501,11 @@ function FolderView({ documents, onDelete, onDownload, onNewVersion, onShowHisto
   // Build tree: accountKey → { account, projects: { projKey → { project, docs } }, noProject }
   const tree = {}
   for (const doc of documents) {
-    const sprintId = doc.sprintTarget?.id || doc.sprintTargetId
+    const sprintId = doc.acquisitionTarget?.id || doc.acquisitionTargetId
     const accountKey = doc.accountId || (sprintId ? `sprint:${sprintId}` : '__none__')
     if (!tree[accountKey]) {
       const account = doc.account
-        || (doc.sprintTarget ? { companyName: doc.sprintTarget.companyName } : null)
+        || (doc.acquisitionTarget ? { companyName: doc.acquisitionTarget.companyName } : null)
       tree[accountKey] = { account, projects: {}, noProject: [] }
     }
     if (doc.projectId) {
@@ -665,7 +665,7 @@ function UploadModal({ isOpen, onClose, onUploaded, accounts, projects, sprintTa
       formData.append('isInternal', String(form.isInternal))
       if (form.accountId) formData.append('accountId', form.accountId)
       if (form.projectId) formData.append('projectId', form.projectId)
-      if (form.sprintTargetId) formData.append('sprintTargetId', form.sprintTargetId)
+      if (form.sprintTargetId) formData.append('acquisitionTargetId', form.sprintTargetId)
       if (form.expiryDate) formData.append('expiryDate', form.expiryDate)
 
       const result = await api.upload('/documents/upload', formData)
@@ -871,7 +871,7 @@ export default function DocumentsPage() {
         const [accs, projs, targets] = await Promise.all([
           api.get('/accounts'),
           api.get('/projects'),
-          api.get('/sprint-targets').catch(() => []),
+          api.get('/acquisition').catch(() => []),
         ])
         setAccounts(Array.isArray(accs) ? accs : accs.accounts || [])
         setProjects(Array.isArray(projs) ? projs : projs.projects || [])
@@ -926,7 +926,7 @@ export default function DocumentsPage() {
   })
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto group-data-[collapsed=true]/sidebar:max-w-none">
       {/* Expiry Alert Banner */}
       {(expiredDocs.length > 0 || expiringSoonDocs.length > 0) && (
         <div className="mb-5 rounded-lg overflow-hidden border border-red-200">

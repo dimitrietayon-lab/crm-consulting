@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Akquise · Leitfaden &amp; Exit-Kriterien — Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#2563eb; --blue-700:#1d4ed8; --blue-50:#eff6ff; --blue-100:#dbeafe;
+    --ink:#111827; --muted:#6b7280; --muted2:#9ca3af;
+    --line:#e5e7eb; --line2:#f3f4f6; --bg:#f8fafc; --card:#ffffff;
+    --green:#16a34a; --green-bg:#dcfce7; --green-700:#15803d;
+    --red:#dc2626; --red-bg:#fef2f2;
+    --amber:#b45309; --amber-bg:#fef3c7;
+    --slate:#0f172a; --slate-800:#1e293b; --slate-700:#334155; --slate-300:#cbd5e1;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(15,23,42,.06), 0 1px 3px rgba(15,23,42,.04);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--ink); font-size:14px; line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit}
+
+  /* ── Shell ─────────────────────────────────────────────── */
+  .shell{display:flex;min-height:100vh}
+  .sidebar{
+    width:248px;flex:none;background:var(--slate);color:var(--slate-300);
+    padding:18px 12px;position:sticky;top:0;height:100vh;overflow-y:auto;
+  }
+  .brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px}
+  .brand-mark{
+    width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#3b82f6,#2563eb);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex:none;
+  }
+  .brand-name{font-size:14px;font-weight:800;color:#fff;letter-spacing:-.01em}
+  .brand-sub{font-size:10.5px;color:#94a3b8;margin-top:1px}
+  .nav-group{margin-bottom:16px}
+  .nav-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#64748b;padding:0 8px;margin-bottom:6px}
+  .nav-item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;font-size:13px;color:var(--slate-300);margin-bottom:1px}
+  .nav-item.active{background:var(--slate-700);color:#fff;font-weight:600}
+  .nav-item .di{width:7px;height:7px;border-radius:2px;background:#475569;flex:none}
+  .nav-item.active .di{background:#60a5fa}
+  .nav-item .count{margin-left:auto;font-size:10px;font-weight:700;background:#1e293b;color:#94a3b8;padding:1px 6px;border-radius:20px}
+
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{
+    height:60px;background:#fff;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:0 24px;position:sticky;top:0;z-index:6;
+  }
+  .crumbs{font-size:12px;color:var(--muted2);display:flex;align-items:center;gap:6px}
+  .crumbs b{color:#374151;font-weight:600}
+  .crumbs .sep{color:#d1d5db}
+  .topbar-actions{display:flex;align-items:center;gap:8px}
+
+  .content{width:100%;max-width:1240px;margin:0 auto;padding:20px 24px 44px}
+
+  /* ── Buttons ───────────────────────────────────────────── */
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;border-radius:9px;font-size:13px;
+    font-weight:600;padding:8px 14px;border:1px solid transparent;cursor:pointer;
+    transition:background .12s,border-color .12s,opacity .12s;
+  }
+  .btn-sm{padding:6px 10px;font-size:12px;border-radius:8px}
+  .btn-primary{background:var(--blue);color:#fff;box-shadow:0 1px 2px rgba(37,99,235,.35)}
+  .btn-primary:hover{background:var(--blue-700)}
+  .btn-primary:disabled{background:#c7d2e3;color:#fff;box-shadow:none;cursor:not-allowed}
+  .btn-ghost{background:#fff;color:#374151;border-color:var(--line)}
+  .btn-ghost:hover{background:#f9fafb}
+  .btn-link{background:transparent;color:var(--muted);padding:6px 4px;font-size:12px}
+  .btn-link:hover{color:#111827}
+
+  /* ── Page head ─────────────────────────────────────────── */
+  .backlink{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--muted);margin-bottom:10px}
+  .backlink:hover{color:#111827}
+  .page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:16px}
+  .statusline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;border:1px solid var(--line);background:#fff;color:#374151}
+  .pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.75}
+  .pill.current{background:#f1f5f9;border-color:#e2e8f0;color:#334155}
+  .pill.target{background:var(--blue);border-color:var(--blue);color:#fff}
+  .pill.target .dot{background:#fff;opacity:.85}
+  .arrow{color:#9ca3af;font-weight:800}
+  .page-title{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+  .page-desc{font-size:13.5px;color:#4b5563;margin-top:5px;max-width:640px;line-height:1.5}
+  .phasebox{text-align:right;flex:none;padding-top:4px}
+  .phasebox .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2)}
+  .phasebox .val{font-size:14px;font-weight:700;color:#374151;margin-top:2px}
+  .phasebox .pct{font-size:11.5px;color:var(--muted2);font-variant-numeric:tabular-nums}
+
+  /* ── Grid ──────────────────────────────────────────────── */
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:16px;align-items:start}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .card + .card{margin-top:16px}
+  .card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line2)}
+  .card-title{font-size:13.5px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+  .card-body{padding:16px 18px 18px}
+  .muted{color:var(--muted)}
+  .muted2{color:var(--muted2)}
+
+  /* ── Step card ─────────────────────────────────────────── */
+  .step-banner{display:flex;align-items:center;gap:8px;padding:11px 14px;border-radius:10px;background:var(--blue-50);border:1px solid var(--blue-100);margin-bottom:16px}
+  .step-banner .t{font-size:12px;font-weight:700;color:var(--blue-700);text-transform:uppercase;letter-spacing:.05em}
+  .step-banner .meta{margin-left:auto;font-size:11.5px;color:#475569}
+  .goal-desc{font-size:13px;color:#4b5563;line-height:1.55;margin-bottom:2px}
+
+  .section{margin-top:20px}
+  .section-head{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .section-head h3{font-size:13px;font-weight:700;letter-spacing:-.01em}
+  .section-head .sub{font-size:11.5px;color:var(--muted2)}
+  .counter{margin-left:auto;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;background:#f1f5f9;color:#475569;font-variant-numeric:tabular-nums}
+  .counter.ok{background:var(--green-bg);color:var(--green-700)}
+  .note{font-size:11.5px;color:var(--muted2);margin:-2px 0 9px;line-height:1.45}
+
+  .checklist{display:flex;flex-direction:column;gap:7px}
+  .check{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;transition:border-color .12s,background .12s}
+  .check:hover{border-color:#c7d2fe;background:#fafbff}
+  .check input{
+    appearance:none;-webkit-appearance:none;width:18px;height:18px;flex:none;margin-top:1px;
+    border:1.5px solid #cbd5e1;border-radius:5px;background:#fff;cursor:pointer;position:relative;transition:background .12s,border-color .12s;
+  }
+  .check input:hover{border-color:#93c5fd}
+  .check input:checked{background:var(--blue);border-color:var(--blue)}
+  .check input:checked::after{content:"";position:absolute;left:4.5px;top:1.5px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  .check-body{min-width:0;display:flex;flex-direction:column;gap:2px}
+  .check-text{font-size:13px;font-weight:500;color:#1f2937;line-height:1.4}
+  .check-hint{font-size:11px;color:var(--muted2);line-height:1.4}
+  .check.is-done .check-text{color:var(--muted2);text-decoration:line-through}
+  .tag{flex:none;margin-left:auto;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:1px 7px;border-radius:20px;margin-top:1px}
+  .tag.auto{background:#e0f2fe;color:#0369a1}
+  .tag.manual{background:var(--amber-bg);color:var(--amber)}
+
+  .exit-check input:checked{background:var(--green);border-color:var(--green)}
+  .exit-box{border-left:3px solid var(--blue-100);padding-left:9px;margin-top:4px}
+  .exit-box.all{border-left-color:#86efac}
+
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field.full{grid-column:1/-1}
+  .field label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted2)}
+  .field label .req{color:var(--red)}
+  .field input,.field select,.field textarea{
+    width:100%;border:1px solid #d1d5db;border-radius:8px;padding:8px 10px;font-size:13px;
+    font-family:inherit;color:#111827;background:#fff;outline:none;transition:border-color .12s,box-shadow .12s;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+  .field textarea{min-height:78px;resize:vertical;line-height:1.45}
+  .field .hintline{font-size:10.5px;color:var(--muted2)}
+
+  .actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid var(--line2)}
+  .hint{font-size:11.5px;color:var(--amber);display:flex;align-items:center;gap:5px}
+  .hint.ready{color:var(--green-700)}
+  .hint .hdot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+
+  /* ── Right rail ────────────────────────────────────────── */
+  .rail-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);margin-bottom:9px}
+  .stage{border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin-bottom:7px;background:#fff}
+  .stage.done{border-color:#bbf7d0;background:#f7fefb}
+  .stage.current{border-color:#bfdbfe;background:var(--blue-50)}
+  .stage.locked{background:#fbfbfc;opacity:.72}
+  .stage-top{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+  .stage-num{width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;background:#eef2f7;color:#94a3b8;flex:none}
+  .stage.done .stage-num{background:var(--green-bg);color:var(--green-700)}
+  .stage.current .stage-num{background:var(--blue);color:#fff}
+  .stage-name{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#94a3b8}
+  .stage.done .stage-name{color:var(--green-700)}
+  .stage.current .stage-name{color:var(--blue-700)}
+  .steps{display:flex;flex-direction:column;gap:2px}
+  .step-row{display:flex;align-items:center;gap:7px;font-size:12px;padding:3px 4px;border-radius:6px;color:var(--muted)}
+  .step-row .sdot{width:6px;height:6px;border-radius:50%;background:#dbe2ea;flex:none}
+  .step-row.done{color:#475569}
+  .step-row.done .sdot{background:var(--green)}
+  .step-row.current{background:#fff;color:var(--blue-700);font-weight:700;box-shadow:inset 0 0 0 1px #dbeafe}
+  .step-row.current .sdot{background:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+  .step-row.locked{color:#b6c2cf}
+  .mini{margin-left:auto;font-size:9.5px;font-weight:700;color:#64748b;background:#f1f5f9;border-radius:20px;padding:1px 6px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .mini.ok{background:var(--green-bg);color:var(--green-700)}
+  .mini.lock{background:transparent;color:#cbd5e1}
+
+  .appear{list-style:none;display:flex;flex-direction:column;gap:9px}
+  .appear li{display:flex;gap:9px;font-size:12px;color:#475569;line-height:1.45}
+  .appear .num{width:18px;height:18px;border-radius:6px;background:var(--blue-50);color:var(--blue-700);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;margin-top:1px}
+  .appear b{color:#111827;font-weight:700}
+
+  /* ── Spec strip ────────────────────────────────────────── */
+  .spec{margin-top:16px}
+  .spec-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
+  .tile{border:1px solid var(--line);border-radius:10px;padding:12px 13px;background:#fff}
+  .tile .tt{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--blue-700);margin-bottom:5px}
+  .tile p{font-size:12px;color:#4b5563;line-height:1.5}
+  .code{background:var(--slate);color:#e2e8f0;border-radius:10px;padding:15px 16px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.65;overflow:auto;white-space:pre}
+  .code .c{color:#64748b}
+  .code .k{color:#93c5fd}
+  .code .s{color:#86efac}
+  .code .n{color:#fca5a5}
+  .code .add{color:#4ade80}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--muted2);margin-top:10px}
+  .legend .sw{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;vertical-align:middle}
+
+  .mocklet{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#7c3aed;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:20px;padding:2px 9px}
+
+  .toast{
+    position:fixed;right:24px;bottom:24px;background:var(--slate);color:#fff;padding:12px 16px;border-radius:10px;
+    font-size:13px;box-shadow:0 10px 25px rgba(15,23,42,.25);opacity:0;transform:translateY(8px);
+    transition:opacity .18s,transform .18s;pointer-events:none;max-width:420px;z-index:50;
+  }
+  .toast.show{opacity:1;transform:none}
+  .toast b{color:#93c5fd}
+
+  @media (max-width:1120px){
+    .grid{grid-template-columns:1fr}
+    .spec-grid{grid-template-columns:1fr}
+    .sidebar{display:none}
+  }
+  @media (max-width:640px){
+    .page-head{flex-direction:column}
+    .fields{grid-template-columns:1fr}
+    .content{padding:16px}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- Sidebar (statisch, zeigt Kontext) -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">C</div>
+      <div>
+        <div class="brand-name">CRM</div>
+        <div class="brand-sub">Consulting Business Suite</div>
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Portal</div>
+      <div class="nav-item"><span class="di"></span>Dashboard</div>
+      <div class="nav-item"><span class="di"></span>Mein Bereich</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Akquise</div>
+      <div class="nav-item active"><span class="di"></span>Zielkunden<span class="count">9</span></div>
+      <div class="nav-item"><span class="di"></span>Outreach</div>
+      <div class="nav-item"><span class="di"></span>Förderungen</div>
+      <div class="nav-item"><span class="di"></span>Listen-Import</div>
+      <div class="nav-item"><span class="di"></span>Sperrliste</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Akquise-Planung</div>
+      <div class="nav-item"><span class="di"></span>Team</div>
+      <div class="nav-item"><span class="di"></span>Marktauswahl</div>
+      <div class="nav-item"><span class="di"></span>Planung</div>
+      <div class="nav-item"><span class="di"></span>Reporting</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="crumbs">
+        <span>Zielkunden</span><span class="sep">/</span>
+        <b>AXA Konzern AG</b><span class="sep">/</span>
+        <span>Prozess</span>
+      </div>
+      <div class="topbar-actions">
+        <span class="mocklet">Mockup · Vorschlag</span>
+        <button class="btn btn-ghost btn-sm">Kundendetails</button>
+        <button class="btn btn-ghost btn-sm">Aktivität loggen</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <a class="backlink" href="#">‹ Zurück zum Prozess</a>
+
+      <!-- Page head -->
+      <div class="page-head">
+        <div>
+          <div class="statusline">
+            <span class="pill current"><span class="dot"></span>Qualifizierungsgespräch</span>
+            <span class="arrow">→</span>
+            <span class="pill target"><span class="dot"></span>Qualifizierungsgespräch durchgeführt</span>
+          </div>
+          <h1 class="page-title">Qualifizierungsgespräch durchführen</h1>
+          <p class="page-desc">
+            Bedarf, Budget, Zeitrahmen und Entscheiderstruktur klären und das Gespräch vollständig dokumentieren.
+          </p>
+        </div>
+        <div class="phasebox">
+          <div class="lbl">Phase</div>
+          <div class="val">Qualifizierung</div>
+          <div class="pct">Stufe 2 von 5 · 33 %</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- ── LEFT: Step page ─────────────────────────────── -->
+        <section class="card">
+          <div class="card-head">
+            <div class="card-title">Aktueller Schritt</div>
+            <span class="pill" style="font-size:11px">Aktivität: Meeting</span>
+          </div>
+          <div class="card-body">
+            <div class="step-banner">
+              <span class="t">Ziel</span>
+              <span class="meta">Leitfaden führt · Exit-Kriterien schalten frei</span>
+            </div>
+            <p class="goal-desc">
+              Das Gespräch ist geführt, wenn Bedarf und Budget belastbar sind und der nächste Schritt
+              (Übergabe an den Engagement Manager) vorbereitet ist.
+            </p>
+
+            <!-- Leitfaden -->
+            <div class="section">
+              <div class="section-head">
+                <h3>Leitfaden</h3>
+                <span class="sub">hilft, blockiert nicht</span>
+                <span class="counter" id="guide-counter">3/4 erledigt</span>
+              </div>
+              <p class="note">Empfohlene Reihenfolge für dieses Gespräch. Abhaken ist freiwillig und wird am Zielkunden gespeichert.</p>
+              <div class="checklist" id="guide-list">
+                <label class="check is-done">
+                  <input type="checkbox" checked data-guide>
+                  <span class="check-body"><span class="check-text">Agenda und Teilnehmer vorab abstimmen</span></span>
+                </label>
+                <label class="check is-done">
+                  <input type="checkbox" checked data-guide>
+                  <span class="check-body"><span class="check-text">Bedarf, Budget und Zeitrahmen klären</span></span>
+                </label>
+                <label class="check is-done">
+                  <input type="checkbox" checked data-guide>
+                  <span class="check-body"><span class="check-text">Entscheiderstruktur erfassen</span></span>
+                </label>
+                <label class="check">
+                  <input type="checkbox" data-guide>
+                  <span class="check-body"><span class="check-text">Offene Punkte und nächsten Schritt festhalten</span></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Exit-Kriterien -->
+            <div class="section">
+              <div class="section-head">
+                <h3>Exit-Kriterien</h3>
+                <span class="sub">„Weiter, wenn …“</span>
+                <span class="counter" id="exit-counter">2/3 erfüllt</span>
+              </div>
+              <p class="note">Der Button „Speichern &amp; weiter“ wird erst aktiv, wenn alle Kriterien erfüllt sind. Einzelne Kriterien können automatisch aus Feldern und Aktivitäten geprüft werden.</p>
+              <div class="exit-box" id="exit-box">
+                <div class="checklist">
+                  <label class="check exit-check">
+                    <input type="checkbox" checked data-exit>
+                    <span class="check-body">
+                      <span class="check-text">Gesprächsdatum erfasst</span>
+                      <span class="check-hint">Auto: Feld „Datum Qualifizierungsgespräch“ ist gesetzt.</span>
+                    </span>
+                    <span class="tag auto">auto</span>
+                  </label>
+                  <label class="check exit-check">
+                    <input type="checkbox" checked data-exit>
+                    <span class="check-body">
+                      <span class="check-text">Bedarf und Budget dokumentiert</span>
+                      <span class="check-hint">Manuell bestätigen, nachdem die Gesprächsnotiz vollständig ist.</span>
+                    </span>
+                    <span class="tag manual">manuell</span>
+                  </label>
+                  <label class="check exit-check">
+                    <input type="checkbox" data-exit>
+                    <span class="check-body">
+                      <span class="check-text">Nächster Schritt oder Übergabe an EM vorbereitet</span>
+                      <span class="check-hint">Offen: noch kein verbindlicher nächster Schritt hinterlegt.</span>
+                    </span>
+                    <span class="tag manual">manuell</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pflichtfelder -->
+            <div class="section">
+              <div class="section-head">
+                <h3>Pflichtfelder</h3>
+                <span class="sub">werden mit dem Statuswechsel gespeichert</span>
+              </div>
+              <div class="fields">
+                <div class="field">
+                  <label>Datum Qualifizierungsgespräch <span class="req">*</span></label>
+                  <input type="date" value="2026-11-12">
+                </div>
+                <div class="field">
+                  <label>Teilnehmer</label>
+                  <input type="text" value="R. Lehmann (IT-Strategie), A. Müller (innolab)">
+                </div>
+                <div class="field full">
+                  <label>Gesprächsnotiz</label>
+                  <textarea>Bedarf: KI-Readiness-Assessment + 2 Use Cases. Budget: 60–75k € für Q1/2027. Zeitrahmen: Start Januar. Entscheider: Bereichsvorstand muss zustimmen.</textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-primary" id="primary" disabled>Speichern &amp; weiter</button>
+              <button class="btn btn-ghost" id="reset">Demo zurücksetzen</button>
+              <span class="hint" id="hint"><span class="hdot"></span><span id="hint-text">Noch 1 Exit-Kriterium offen</span></span>
+            </div>
+            <p class="note" style="margin-top:10px">Es wird genau eine Aktivität protokolliert und der Status auf „Qualifizierungsgespräch durchgeführt“ gesetzt.</p>
+          </div>
+        </section>
+
+        <!-- ── RIGHT: rail + info ──────────────────────────── -->
+        <div>
+          <section class="card">
+            <div class="card-head"><div class="card-title">Prozess</div></div>
+            <div class="card-body">
+              <div class="rail-title">Lead-Gewinnung</div>
+              <div class="stage done">
+                <div class="stage-top"><span class="stage-num">✓</span><span class="stage-name">Lead-Gewinnung</span></div>
+                <div class="steps">
+                  <div class="step-row done"><span class="sdot"></span>Unternehmen recherchiert<span class="mini ok">Exit ✓</span></div>
+                  <div class="step-row done"><span class="sdot"></span>Erstkontakt hergestellt<span class="mini ok">Exit ✓</span></div>
+                </div>
+              </div>
+
+              <div class="stage current">
+                <div class="stage-top"><span class="stage-num">2</span><span class="stage-name">Qualifizierung</span></div>
+                <div class="steps">
+                  <div class="step-row done"><span class="sdot"></span>Qualifizierungsgespräch planen<span class="mini ok">Exit ✓</span></div>
+                  <div class="step-row current"><span class="sdot"></span>Qualifizierungsgespräch durchführen<span class="mini">3/4 · 2/3</span></div>
+                  <div class="step-row locked"><span class="sdot"></span>Übergabe an EM<span class="mini lock">gesperrt</span></div>
+                </div>
+              </div>
+
+              <div class="stage locked">
+                <div class="stage-top"><span class="stage-num">3</span><span class="stage-name">Erstgespräch</span></div>
+                <div class="steps">
+                  <div class="step-row locked"><span class="sdot"></span>Erstgespräch terminieren<span class="mini lock">—</span></div>
+                  <div class="step-row locked"><span class="sdot"></span>Erstgespräch durchführen<span class="mini lock">—</span></div>
+                  <div class="step-row locked"><span class="sdot"></span>Fragebogen geschickt<span class="mini lock">—</span></div>
+                </div>
+              </div>
+
+              <div class="stage locked">
+                <div class="stage-top"><span class="stage-num">4</span><span class="stage-name">Angebot</span></div>
+                <div class="steps">
+                  <div class="step-row locked"><span class="sdot"></span>Angebot vorbereiten<span class="mini lock">—</span></div>
+                  <div class="step-row locked"><span class="sdot"></span>Angebot versendet<span class="mini lock">—</span></div>
+                  <div class="step-row locked"><span class="sdot"></span>Nachverhandlung<span class="mini lock">—</span></div>
+                </div>
+              </div>
+
+              <div class="stage locked">
+                <div class="stage-top"><span class="stage-num">5</span><span class="stage-name">Abschluss</span></div>
+                <div class="steps">
+                  <div class="step-row locked"><span class="sdot"></span>gewonnen · Folgeprojekt<span class="mini lock">—</span></div>
+                  <div class="step-row locked"><span class="sdot"></span>Verlust · kein Interesse<span class="mini lock">wildcard</span></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-head"><div class="card-title">Wo es erscheint</div></div>
+            <div class="card-body">
+              <ul class="appear">
+                <li><span class="num">1</span><span><b>Schritt-Seite:</b> Leitfaden über den Exit-Kriterien; „Speichern &amp; weiter“ erst frei, wenn alle Exit-Kriterien erfüllt sind.</span></li>
+                <li><span class="num">2</span><span><b>Stufen-Leiste:</b> je Schritt Mini-Badges „Leitfaden 3/4 · Exit 2/3“ – man sieht ohne Klick, was fehlt.</span></li>
+                <li><span class="num">3</span><span><b>Nächster-Schritt-Karte:</b> zeigt die offenen Exit-Kriterien als To-do, bevor der Statuswechsel angeboten wird.</span></li>
+                <li><span class="num">4</span><span><b>Kanban/Liste:</b> Tooltip mit „2/3 Exit-Kriterien“; DnD bleibt serverseitig auf erlaubte Übergänge geprüft.</span></li>
+              </ul>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- ── Spec ─────────────────────────────────────────── -->
+      <section class="card spec">
+        <div class="card-head">
+          <div class="card-title">So wird es umgesetzt</div>
+          <span class="pill" style="font-size:11px">Pipeline · datengetrieben</span>
+        </div>
+        <div class="card-body">
+          <div class="spec-grid">
+            <div class="tile">
+              <div class="tt">1 · Pipeline-Felder</div>
+              <p>Je Schritt ergänzen <b>guide[]</b> (Leitfaden) und <b>exitCriteria[]</b> („Weiter, wenn …“, mit <b>auto</b>/<b>manuell</b>). Quelle: <b>acquisitionPipelineSeed.js</b> + <b>backend/prisma/pipeline-data.js</b>.</p>
+            </div>
+            <div class="tile">
+              <div class="tt">2 · Persistenz</div>
+              <p>Erledigte Häkchen am Zielkunden speichern: <b>stepChecks</b> (JSON, je Schritt-Slug). Leitfaden blockiert nie; nur Exit-Kriterien steuern den Button.</p>
+            </div>
+            <div class="tile">
+              <div class="tt">3 · Anzeige</div>
+              <p>Schritt-Seite, Stufen-Leiste und Nächster-Schritt-Karte lesen die Fortschritte aus derselben Logik. Server prüft beim PUT weiterhin den erlaubten Übergang.</p>
+            </div>
+          </div>
+
+          <div class="code"><span class="c">// acquisitionPipelineSeed.js · je Step</span>
+<span class="k">{
+  status:</span> <span class="s">'Qualifizierungsgespräch durchgeführt'</span>,
+<span class="k">  title:</span>  <span class="s">'Qualifizierungsgespräch durchführen'</span>,
+<span class="k">  requiredFields:</span> [{ payload: <span class="s">'firstMeetingDate'</span>, label: <span class="s">'Datum Qualifizierungsgespräch'</span>, type: <span class="s">'date'</span> }],
+<span class="add">+ guide: [</span>
+<span class="add">+   'Agenda und Teilnehmer abstimmen',</span>
+<span class="add">+   'Bedarf, Budget und Zeitrahmen klären',</span>
+<span class="add">+   'Entscheiderstruktur erfassen',</span>
+<span class="add">+   'Offene Punkte und nächsten Schritt festhalten',</span>
+<span class="add">+ ],</span>
+<span class="add">+ exitCriteria: [</span>
+<span class="add">+   { key: 'meetingDate', text: 'Gesprächsdatum erfasst',</span>
+<span class="add">+     check: 'auto', field: 'firstMeetingDate' },</span>
+<span class="add">+   { key: 'scope', text: 'Bedarf und Budget dokumentiert',</span>
+<span class="add">+     check: 'manual' },</span>
+<span class="add">+   { key: 'nextStep', text: 'Nächster Schritt oder Übergabe vorbereitet',</span>
+<span class="add">+     check: 'manual' },</span>
+<span class="add">+ ]</span>
+<span class="k">}</span>
+
+<span class="c">// Persistenz am Zielkunden (Feld stepChecks, JSON)</span>
+<span class="k">stepChecks:</span> {
+  <span class="s">'qualifizierungsgespraech-durchgefuehrt'</span>: {
+    <span class="k">guide:</span> { <span class="n">0</span>: true, <span class="n">1</span>: true, <span class="n">2</span>: true },
+    <span class="k">exit:</span>  { <span class="k">meetingDate:</span> true, <span class="k">scope:</span> true }
+  }
+}</div>
+          <div class="legend">
+            <span><span class="sw" style="background:#4ade80"></span>neu in der Pipeline</span>
+            <span><span class="sw" style="background:#93c5fd"></span>Schlüssel</span>
+            <span><span class="sw" style="background:#86efac"></span>Werte</span>
+            <span><span class="sw" style="background:#64748b"></span>Kommentar</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var guideList = document.getElementById('guide-list');
+  var exitList = document.querySelectorAll('[data-exit]');
+  var guideBox = document.getElementById('guide-list');
+  var exitBox = document.getElementById('exit-box');
+  var guideCounter = document.getElementById('guide-counter');
+  var exitCounter = document.getElementById('exit-counter');
+  var primary = document.getElementById('primary');
+  var hint = document.getElementById('hint');
+  var hintText = document.getElementById('hint-text');
+  var toast = document.getElementById('toast');
+  var toastTimer = null;
+
+  function sync() {
+    // Leitfaden
+    var guides = guideBox.querySelectorAll('input[type="checkbox"]');
+    var gDone = 0;
+    guides.forEach(function (cb) {
+      var row = cb.closest('.check');
+      if (cb.checked) { gDone++; row.classList.add('is-done'); }
+      else { row.classList.remove('is-done'); }
+    });
+    guideCounter.textContent = gDone + '/' + guides.length + ' erledigt';
+    guideCounter.classList.toggle('ok', gDone === guides.length);
+
+    // Exit-Kriterien
+    var eTotal = exitList.length;
+    var eDone = 0;
+    exitList.forEach(function (cb) { if (cb.checked) eDone++; });
+    exitCounter.textContent = eDone + '/' + eTotal + ' erfüllt';
+    exitCounter.classList.toggle('ok', eDone === eTotal);
+    exitBox.classList.toggle('all', eDone === eTotal);
+
+    // Gate
+    var ready = eDone === eTotal;
+    primary.disabled = !ready;
+    hint.classList.toggle('ready', ready);
+    if (ready) {
+      hintText.textContent = 'Alle Exit-Kriterien erfüllt – Statuswechsel möglich';
+    } else {
+      var missing = eTotal - eDone;
+      hintText.textContent = 'Noch ' + missing + ' Exit-Kriteri' + (missing === 1 ? 'um' : 'en') + ' offen';
+    }
+  }
+
+  guideList.addEventListener('change', function (e) {
+    if (!e.target.matches('[data-guide]')) return;
+    sync();
+  });
+  exitList.forEach(function (cb) { cb.addEventListener('change', sync); });
+
+  primary.addEventListener('click', function () {
+    if (primary.disabled) return;
+    showToast('Statuswechsel <b>Qualifizierungsgespräch</b> → <b>Qualifizierungsgespräch durchgeführt</b> · 1 Aktivität protokolliert');
+    primary.disabled = true;
+    primary.textContent = 'Gespeichert';
+    setTimeout(function () {
+      primary.textContent = 'Speichern & weiter';
+      sync();
+    }, 1600);
+  });
+
+  document.getElementById('reset').addEventListener('click', function () {
+    var gs = guideBox.querySelectorAll('input[type="checkbox"]');
+    gs.forEach(function (cb, i) { cb.checked = i < 3; });
+    exitList.forEach(function (cb, i) { cb.checked = i < 2; });
+    primary.textContent = 'Speichern & weiter';
+    sync();
+    showToast('Demo zurückgesetzt');
+  });
+
+  function showToast(html) {
+    toast.innerHTML = html;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 3200);
+  }
+
+  sync();
+})();
+</script>
+</body>
+</html>

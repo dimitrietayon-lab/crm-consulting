@@ -44,7 +44,7 @@ export default function WorkflowsPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Top header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl mx-auto group-data-[collapsed=true]/sidebar:max-w-none flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-violet-100 rounded-xl">
               <Zap className="w-5 h-5 text-violet-600" />
@@ -63,7 +63,7 @@ export default function WorkflowsPage() {
 
       {/* Tabs */}
       <div className="bg-white border-b border-gray-200 px-6">
-        <div className="max-w-7xl mx-auto flex gap-0">
+        <div className="max-w-7xl mx-auto group-data-[collapsed=true]/sidebar:max-w-none flex gap-0">
           {[
             { key:'workflows', label:'Workflows', icon:Layers },
             { key:'monitoring', label:'Monitoring', icon:Activity },
@@ -79,7 +79,7 @@ export default function WorkflowsPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-6">
+      <div className="max-w-7xl mx-auto group-data-[collapsed=true]/sidebar:max-w-none px-6 py-6">
         {tab === 'workflows' && <WorkflowsTab onEdit={(wf) => router.push(`/workflows/${wf.id}/edit`)} />}
         {tab === 'monitoring' && <MonitoringTab />}
         {tab === 'vorlagen' && <VorlagenTab />}

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import MergedTabs from '@/components/ui/MergedTabs'
-import SprintDashboardPage from './sprint-targets/dashboard/page'
+import SprintDashboardPage from './akquise/dashboard/page'
+import { usePermissions } from '@/lib/permissions'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell, ReferenceLine,
@@ -108,15 +108,24 @@ const PROJECT_STATUS_COLOR = {
   Cancelled: 'bg-red-100 text-red-700',
 }
 
-// ─── Root: pick dashboard by role ─────────────────────────────────────────────
+// ─── Root: kombiniertes Board (CRM-Dashboard + eingebettete Akquise) ──────────
 export default function DashboardMergedPage() {
+  const { perms, can } = usePermissions()
+  const isAdmin = getUser()?.role === 'admin'
+  const hasGranularAcquisition = Object.keys(perms || {}).some(
+    (key) =>
+      (key.startsWith('acquisition_') || key.startsWith('sprint_')) &&
+      key !== 'acquisition_targets' && key !== 'sprint_targets' &&
+      perms[key]?.canView
+  )
+  const canAkquise =
+    isAdmin || hasGranularAcquisition || can('acquisition_targets') || can('sprint_targets')
+
   return (
-    <MergedTabs
-      crmLabel="Dashboard"
-      akquiseLabel="Akquise"
-      Primary={DashboardPage}
-      Secondary={SprintDashboardPage}
-    />
+    <div className="space-y-8">
+      <DashboardPage />
+      {canAkquise && <SprintDashboardPage embedded />}
+    </div>
   )
 }
 

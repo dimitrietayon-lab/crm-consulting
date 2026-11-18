@@ -537,7 +537,7 @@ export default function MaterialCostsPage() {
   )
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto group-data-[collapsed=true]/sidebar:max-w-none">
       <div className="flex items-center gap-3 mb-6">
         <ShoppingCart className="w-6 h-6 text-blue-600" />
         <h1 className="text-2xl font-bold text-gray-900">Materialkosten</h1>

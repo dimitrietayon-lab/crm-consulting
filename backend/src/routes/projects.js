@@ -35,6 +35,11 @@ router.get('/', async (req, res) => {
         account: { select: { companyName: true } },
         leadConsultant: { select: { id: true, name: true } },
         competenceCenter: { select: { id: true, name: true } },
+        members: {
+          include: {
+            user: { select: { id: true, name: true, email: true, role: true } },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

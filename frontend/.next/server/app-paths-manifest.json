@@ -1,8 +1,7 @@
 {
-  "/login/page": "app/login/page.js",
-  "/(protected)/sprint-targets/bafa/page": "app/(protected)/sprint-targets/bafa/page.js",
-  "/(protected)/settings/page": "app/(protected)/settings/page.js",
-  "/(protected)/admin/page": "app/(protected)/admin/page.js",
-  "/(protected)/pakete-leistungen/page": "app/(protected)/pakete-leistungen/page.js",
-  "/(protected)/crm-profil/page": "app/(protected)/crm-profil/page.js"
+  "/(protected)/akquise/bafa/page": "app/(protected)/akquise/bafa/page.js",
+  "/(protected)/akquise/page": "app/(protected)/akquise/page.js",
+  "/(protected)/contracts/[id]/page": "app/(protected)/contracts/[id]/page.js",
+  "/(protected)/akquise/import/page": "app/(protected)/akquise/import/page.js",
+  "/(protected)/page": "app/(protected)/page.js"
 }

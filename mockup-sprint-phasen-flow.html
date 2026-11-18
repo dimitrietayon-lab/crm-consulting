@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXA Konzern AG — Akquise-Prozess · CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Chrome, buttons and badges come from mockup-sprint.css. */
+  * { margin: 0; padding: 0; }
+  body { display: flex; height: 100vh; overflow: hidden; background: #F5F5F5; }
+  .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  .btn.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* Topbar */
+  .pf-heading { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .pf-heading .breadcrumb { font-size: 11px; }
+  .pf-title-row { display: flex; align-items: center; gap: 8px; }
+  .pf-stage-pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 700; background: #fef3c7; color: #b45309; }
+  .pf-stage-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* Shell */
+  .pf-scroll { flex: 1; overflow-y: auto; }
+  .pf-wrap { max-width: 1240px; margin: 0 auto; padding: 20px 24px 32px; }
+
+  /* Compact hero */
+  .pf-hero { display: flex; align-items: center; justify-content: space-between; gap: 20px; background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 14px 20px; margin-bottom: 14px; }
+  .pf-hero-main { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .pf-avatar { width: 46px; height: 46px; border-radius: 11px; background: linear-gradient(135deg, #F26722, #D4540A); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; flex-shrink: 0; }
+  .pf-hero-name { font-size: 18px; font-weight: 800; color: #111111; letter-spacing: -.01em; }
+  .pf-hero-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .pf-hero-badges { display: flex; align-items: center; gap: 7px; margin-top: 7px; flex-wrap: wrap; }
+  .pf-badge-prio { background: #fef3c7; color: #b45309; }
+  .pf-badge-premium { background: #f5f3ff; color: #6d28d9; }
+  .pf-badge-src { background: #eff6ff; color: #1d4ed8; }
+  .pf-hero-metrics { display: flex; align-items: center; gap: 18px; flex-shrink: 0; }
+  .pf-metric { text-align: right; }
+  .pf-metric-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; margin-bottom: 2px; }
+  .pf-metric-value { font-size: 17px; font-weight: 800; color: #111111; letter-spacing: -.02em; white-space: nowrap; }
+  .pf-metric-value.green { color: #16a34a; }
+  .pf-metric-div { width: 1px; height: 28px; background: #f1f5f9; }
+
+  /* ── Flow card ─────────────────────────────────────────── */
+  .pf-flow { background: #fff; border: 1px solid #e8e8e8; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.05); margin-bottom: 16px; overflow: hidden; }
+  .pf-flow-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 20px; border-bottom: 1px solid #f1f5f9; }
+  .pf-flow-title { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; color: #111111; letter-spacing: -.01em; }
+  .pf-flow-count { font-size: 11px; font-weight: 600; color: #64748b; background: #f1f5f9; border-radius: 20px; padding: 3px 10px; }
+  .pf-flow-body { padding: 18px 20px 20px; }
+
+  /* Phase rail */
+  .pf-rail { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+  .pf-phase { border: 1px solid #eef2f7; border-radius: 10px; padding: 10px 11px; background: #fcfdff; position: relative; }
+  .pf-phase.current { border-color: #FED7AA; background: #FFF8F3; box-shadow: 0 0 0 3px rgba(242,103,34,.06); }
+  .pf-phase.done { border-color: #d1fae5; background: #f7fefb; }
+  .pf-phase.locked { background: #fafbfc; }
+  .pf-phase-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 8px; }
+  .pf-phase-name { font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; }
+  .pf-phase.done .pf-phase-name { color: #059669; }
+  .pf-phase.current .pf-phase-name { color: #D4540A; }
+  .pf-phase-num { width: 17px; height: 17px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; background: #eef2f7; color: #94a3b8; flex-shrink: 0; }
+  .pf-phase.done .pf-phase-num { background: #d1fae5; color: #059669; }
+  .pf-phase.current .pf-phase-num { background: #F26722; color: #fff; }
+  .pf-chips { display: flex; flex-direction: column; gap: 3px; }
+  .pf-chip { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; padding: 4px 6px; border-radius: 6px; border: none; background: transparent; font-family: inherit; font-size: 11.5px; font-weight: 500; color: #94a3b8; cursor: default; }
+  .pf-chip .pf-dot { width: 7px; height: 7px; border-radius: 50%; background: #dbe2ea; flex-shrink: 0; }
+  .pf-chip .pf-lock { margin-left: auto; width: 11px; height: 11px; color: #cbd5e1; flex-shrink: 0; }
+  .pf-chip.done { color: #475569; }
+  .pf-chip.done .pf-dot { background: #10b981; }
+  .pf-chip.current { background: #FFF4ED; color: #C2410C; font-weight: 700; }
+  .pf-chip.current .pf-dot { background: #F26722; box-shadow: 0 0 0 3px rgba(242,103,34,.18); }
+  .pf-chip.open { color: #B45309; cursor: pointer; }
+  .pf-chip.open .pf-dot { background: #F59E0B; }
+  .pf-chip.open:hover { background: #FFF4ED; }
+  .pf-chip.locked { color: #b6c2cf; }
+  .pf-chip.loss { color: #94a3b8; }
+  .pf-chip.loss.clickable { color: #B91C1C; cursor: pointer; }
+  .pf-chip.loss.clickable .pf-dot { background: #EF4444; }
+  .pf-chip.loss.clickable:hover { background: #FEF2F2; }
+
+  /* Next-step card */
+  .pf-next { background: #111111; border-radius: 11px; padding: 18px 20px 20px; box-shadow: 0 6px 18px rgba(0,0,0,.14); position: relative; overflow: hidden; }
+  .pf-next::after { content: ''; position: absolute; top: -60px; right: -50px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(242,103,34,.22) 0%, transparent 70%); pointer-events: none; }
+  .pf-next-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; position: relative; }
+  .pf-next-label { font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; color: #F99755; }
+  .pf-next-step { font-size: 10.5px; font-weight: 600; color: #64748b; }
+  .pf-statusline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; position: relative; }
+  .pf-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .pf-pill.from { background: rgba(255,255,255,.1); color: #e2e8f0; }
+  .pf-pill.to { background: #F26722; color: #fff; }
+  .pf-pill.to.terminal-win { background: #16a34a; }
+  .pf-pill.to.terminal-loss { background: #dc2626; }
+  .pf-arrow { color: #F99755; font-weight: 800; }
+  .pf-next-title { font-size: 16px; font-weight: 800; color: #fff; line-height: 1.35; letter-spacing: -.01em; position: relative; }
+  .pf-next-desc { font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 5px 0 14px; position: relative; max-width: 640px; }
+
+  .pf-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; margin-bottom: 14px; position: relative; }
+  .pf-field { display: flex; flex-direction: column; gap: 3px; }
+  .pf-field.full { grid-column: 1 / -1; }
+  .pf-field label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; }
+  .pf-field input, .pf-field select { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); color: #fff; font-size: 12.5px; padding: 7px 10px; border-radius: 7px; }
+  .pf-field input::placeholder { color: #64748b; }
+  .pf-field input:focus, .pf-field select:focus { border-color: #F26722; box-shadow: 0 0 0 3px rgba(242,103,34,.18); outline: none; }
+  .pf-field select option { color: #111; }
+
+  .pf-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; position: relative; }
+  .pf-actions .btn-primary { box-shadow: 0 2px 8px rgba(242,103,34,.4); }
+  .pf-actions .pf-ghost { background: transparent; color: #cbd5e1; border: 1px solid rgba(255,255,255,.18); }
+  .pf-actions .pf-ghost:hover { background: rgba(255,255,255,.08); color: #fff; }
+  .pf-hint { font-size: 10.5px; color: #64748b; margin-top: 12px; position: relative; display: flex; align-items: center; gap: 5px; }
+
+  .pf-alts { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.08); position: relative; }
+  .pf-alts-label { font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: #64748b; margin-bottom: 7px; }
+  .pf-alts-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pf-alt { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; font-family: inherit; cursor: pointer; background: rgba(255,255,255,.07); color: #cbd5e1; border: 1px solid rgba(255,255,255,.12); transition: background .12s, border-color .12s; }
+  .pf-alt:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.24); color: #fff; }
+  .pf-alt.loss { color: #fca5a5; border-color: rgba(239,68,68,.3); }
+  .pf-alt.loss:hover { background: rgba(239,68,68,.18); color: #fff; }
+
+  /* Terminal state */
+  .pf-done { display: flex; align-items: flex-start; gap: 14px; position: relative; }
+  .pf-done-icon { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pf-done-icon.win { background: rgba(22,163,74,.18); color: #4ade80; }
+  .pf-done-icon.loss { background: rgba(220,38,38,.18); color: #f87171; }
+  .pf-done-icon svg { width: 22px; height: 22px; }
+  .pf-done-title { font-size: 15px; font-weight: 800; color: #fff; }
+  .pf-done-sub { font-size: 12px; color: #94a3b8; margin-top: 4px; line-height: 1.5; }
+
+  /* ── Grid + side cards ─────────────────────────────────── */
+  .pf-grid { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; align-items: start; }
+
+  .pf-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); overflow: hidden; margin-bottom: 16px; }
+  .pf-card-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid #f1f5f9; }
+  .pf-card-title { font-size: 13px; font-weight: 700; color: #111111; letter-spacing: -.01em; }
+  .pf-card-body { padding: 16px 18px; }
+
+  .pf-fields-ro { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; }
+  .pf-flabel { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; margin-bottom: 3px; }
+  .pf-fvalue { font-size: 13px; font-weight: 500; color: #111111; }
+  .pf-fvalue.muted { color: #64748b; font-weight: 400; }
+  .pf-fvalue.link { color: #F26722; cursor: pointer; }
+
+  .pf-rules { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .pf-rule { display: flex; gap: 9px; font-size: 12px; color: #475569; line-height: 1.45; }
+  .pf-rule svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; color: #F26722; }
+  .pf-rule.loss svg { color: #dc2626; }
+  .pf-rule b { color: #111111; font-weight: 700; }
+
+  .pf-history { display: flex; flex-direction: column; }
+  .pf-hist { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+  .pf-hist:last-child { border-bottom: none; }
+  .pf-hist-dot { width: 8px; height: 8px; border-radius: 50%; background: #F26722; margin-top: 5px; flex-shrink: 0; }
+  .pf-hist-dot.phase { background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
+  .pf-hist-body { flex: 1; min-width: 0; }
+  .pf-hist-move { font-size: 12px; font-weight: 700; color: #111111; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+  .pf-hist-from { color: #94a3b8; font-weight: 600; }
+  .pf-hist-to { color: #C2410C; }
+  .pf-hist-note { font-size: 11px; color: #64748b; margin-top: 2px; line-height: 1.4; }
+  .pf-hist-time { font-size: 10px; color: #94a3b8; white-space: nowrap; margin-top: 1px; }
+  .pf-hist-badge { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; background: #dcfce7; color: #15803d; border-radius: 20px; padding: 1px 7px; }
+
+  .pf-muted-note { font-size: 11px; color: #94a3b8; line-height: 1.5; }
+
+  @media (max-width: 1080px) {
+    .pf-grid { grid-template-columns: 1fr; }
+    .pf-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pf-hero { flex-direction: column; align-items: flex-start; }
+    .pf-hero-metrics { width: 100%; justify-content: space-between; }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">CRM</div>
+    <div class="brand-sub">Consulting Business Suite</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="sprint-nav" data-active="detail"></div>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="pf-heading">
+      <div class="breadcrumb">
+        <a href="mockup-sprint-zielkunden-liste.html">Zielkunden</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">AXA Konzern AG</span>
+      </div>
+      <div class="pf-title-row">
+        <span class="page-title">AXA Konzern AG</span>
+        <span class="pf-stage-pill" id="pf-stage-pill">Kontaktiert</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;">
+      <a class="btn btn-ghost btn-sm" href="mockup-sprint-detail.html">Kundendetails</a>
+      <a class="btn btn-ghost btn-sm" href="mockup-sprint-aktivitaet-loggen.html">Aktivität loggen</a>
+    </div>
+  </header>
+
+  <div class="pf-scroll">
+    <div class="pf-wrap">
+
+      <!-- Compact hero -->
+      <section class="pf-hero">
+        <div class="pf-hero-main">
+          <div class="pf-avatar">AX</div>
+          <div>
+            <div class="pf-hero-name">AXA Konzern AG</div>
+            <div class="pf-hero-sub">Versicherungen &amp; Finanzvermittler · Nordrhein-Westfalen · 5.600 Mitarbeiter · Köln</div>
+            <div class="pf-hero-badges">
+              <span class="badge pf-badge-prio">P2 · Mittel</span>
+              <span class="badge pf-badge-premium">Premium-Paket</span>
+              <span class="badge pf-badge-src">Herkunft: LinkedIn</span>
+              <span style="font-size:11px;font-weight:600;color:#374151;">Anna Müller</span>
+            </div>
+          </div>
+        </div>
+        <div class="pf-hero-metrics">
+          <div class="pf-metric">
+            <div class="pf-metric-label">Angebotswert</div>
+            <div class="pf-metric-value green">€ 70.000</div>
+          </div>
+          <div class="pf-metric-div"></div>
+          <div class="pf-metric">
+            <div class="pf-metric-label">Tage im Sprint</div>
+            <div class="pf-metric-value" id="pf-days">23</div>
+          </div>
+          <div class="pf-metric-div"></div>
+          <div class="pf-metric">
+            <div class="pf-metric-label">Prozess</div>
+            <div class="pf-metric-value" id="pf-progress">Schritt 4 / 13</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Interactive flow ─────────────────────────────── -->
+      <section class="pf-flow">
+        <div class="pf-flow-head">
+          <div class="pf-flow-title">Akquise-Prozess</div>
+          <span class="pf-flow-count" id="pf-phase-count">Phase 1 von 5</span>
+        </div>
+        <div class="pf-flow-body">
+          <div class="pf-rail" id="pf-rail"></div>
+          <div id="pf-next-wrap"></div>
+        </div>
+      </section>
+
+      <div class="pf-grid">
+        <!-- LEFT: read-only data -->
+        <div>
+          <section class="pf-card">
+            <div class="pf-card-head"><div class="pf-card-title">Stammdaten</div></div>
+            <div class="pf-card-body">
+              <div class="pf-fields-ro">
+                <div class="pf-field"><div class="pf-flabel">Branche</div><div class="pf-fvalue">Versicherungen &amp; Finanzvermittler</div></div>
+                <div class="pf-field"><div class="pf-flabel">Bundesland</div><div class="pf-fvalue">Nordrhein-Westfalen</div></div>
+                <div class="pf-field"><div class="pf-flabel">Mitarbeiter</div><div class="pf-fvalue">5.600</div></div>
+                <div class="pf-field"><div class="pf-flabel">Ort</div><div class="pf-fvalue muted">Köln</div></div>
+                <div class="pf-field"><div class="pf-flabel">Quelle</div><div class="pf-fvalue">LinkedIn</div></div>
+                <div class="pf-field"><div class="pf-flabel">Sprint-Beitritt</div><div class="pf-fvalue muted">01.10.2026</div></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="pf-card">
+            <div class="pf-card-head"><div class="pf-card-title">Sprint-Tracking</div></div>
+            <div class="pf-card-body">
+              <div class="pf-fields-ro">
+                <div class="pf-field"><div class="pf-flabel">Ansprechpartner</div><div class="pf-fvalue"><select style="width:100%"><option>R. Lehmann · Leiter IT-Strategie</option><option>M. Weber · CDO</option></select></div></div>
+                <div class="pf-field"><div class="pf-flabel">E-Mail</div><div class="pf-fvalue link">r.lehmann@axa.de</div></div>
+                <div class="pf-field"><div class="pf-flabel">Telefon</div><div class="pf-fvalue muted">+49 221 9006-0</div></div>
+                <div class="pf-field"><div class="pf-flabel">Anruf-Trigger (UWG)</div><div class="pf-fvalue muted">Pressemeldung / Medienbericht</div></div>
+                <div class="pf-field"><div class="pf-flabel">Anrufversuche</div><div class="pf-fvalue">2 / 3</div></div>
+                <div class="pf-field"><div class="pf-flabel">E-Mail erlaubt (UWG)</div><div class="pf-fvalue"><span class="badge" style="background:#dcfce7;color:#15803d">Ja</span></div></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- RIGHT: rules + history -->
+        <div>
+          <section class="pf-card">
+            <div class="pf-card-head"><div class="pf-card-title">So funktioniert der Prozess</div></div>
+            <div class="pf-card-body">
+              <ul class="pf-rules">
+                <li class="pf-rule">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 5l7 7-7 7M4 12h16"/></svg>
+                  <span>Die nächste Phase wird erst frei, wenn der <b>letzte Status</b> der aktuellen Phase erreicht ist.</span>
+                </li>
+                <li class="pf-rule">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1018 0 9 9 0 00-18 0zM9 12l2 2 4-4"/></svg>
+                  <span>Innerhalb einer Phase und <b>rückwärts</b> ist jederzeit möglich.</span>
+                </li>
+                <li class="pf-rule loss">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                  <span><b>„Verlust“ und „kein Interesse“</b> sind in jedem Schritt wählbar.</span>
+                </li>
+                <li class="pf-rule">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                  <span>Statuswechsel passieren <b>nur hier</b> – das Bearbeiten-Formular enthält keinen Status mehr.</span>
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <section class="pf-card">
+            <div class="pf-card-head">
+              <div class="pf-card-title">Verlauf</div>
+              <button class="btn btn-ghost btn-sm" id="pf-reset" type="button">Demo zurücksetzen</button>
+            </div>
+            <div class="pf-card-body" style="padding-top:6px;padding-bottom:8px;">
+              <div class="pf-history" id="pf-history"></div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="mockup-sprint-nav.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ── Prozessmodell (spiegelt sprintOptions.js) ───────────── */
+  var PHASES = [
+    { key: 'lead',           label: 'Lead-Gewinnung', statuses: ['offen', 'recherchiert', 'vernetzt', 'kontaktiert'] },
+    { key: 'qualifizierung', label: 'Qualifizierung', statuses: ['Qualifizierungsgespräch', 'Übergabe an Engagement Manager'] },
+    { key: 'erstgespraech',  label: 'Erstgespräch',   statuses: ['Erstgespräch terminiert', 'Erstgespräch durchgeführt', 'Fragebogen geschickt'] },
+    { key: 'angebot',        label: 'Angebot',        statuses: ['Angebot in Vorbereitung', 'Angebot versendet', 'Nachverhandlung'] },
+    { key: 'abschluss',      label: 'Abschluss',      statuses: ['gewonnen', 'Folgeprojekt', 'Verlust', 'kein Interesse'] }
+  ];
+  var WILDCARD = ['Verlust', 'kein Interesse'];
+  var LOSS = ['Verlust', 'kein Interesse'];
+  var WON = ['gewonnen', 'Folgeprojekt'];
+  // Empfohlene Reihenfolge (Abschluss-Verzweigung separat)
+  var FLOW = [
+    'offen', 'recherchiert', 'vernetzt', 'kontaktiert',
+    'Qualifizierungsgespräch', 'Übergabe an Engagement Manager',
+    'Erstgespräch terminiert', 'Erstgespräch durchgeführt', 'Fragebogen geschickt',
+    'Angebot in Vorbereitung', 'Angebot versendet', 'Nachverhandlung',
+    'gewonnen'
+  ];
+
+  var STEP_INFO = {
+    'recherchiert':                   { title: 'Unternehmen recherchieren', desc: 'Branche, Größe, KI-Initiativen und passende Entscheider recherchieren und im Profil erfassen.' },
+    'vernetzt':                       { title: 'Entscheider vernetzen', desc: 'Ansprechpartner identifizieren und über LinkedIn oder das Netzwerk verbinden.' },
+    'kontaktiert':                    { title: 'Erstkontakt herstellen', desc: 'Telefonisch oder per E-Mail kontaktieren – Anlass und Rechtsgrundlage nach § 7 UWG prüfen.' },
+    'Qualifizierungsgespräch':        { title: 'Qualifizierungsgespräch führen', desc: 'Bedarf, Budget, Zeitrahmen und Entscheiderstruktur klären und Gesprächsnotiz festhalten.' },
+    'Übergabe an Engagement Manager': { title: 'An Engagement Manager übergeben', desc: 'Kontext, Erkenntnisse und nächste Schritte vollständig an den EM übergeben.' },
+    'Erstgespräch terminiert':        { title: 'Erstgespräch durchführen', desc: 'Termin wahrnehmen, Ist-Situation aufnehmen und den Readiness-Fragebogen ankündigen.' },
+    'Erstgespräch durchgeführt':      { title: 'Fragebogen an Kunden senden', desc: 'Readiness-Fragebogen senden und den Rücklauf nachhalten.' },
+    'Fragebogen geschickt':           { title: 'Angebot vorbereiten', desc: 'Antworten auswerten, Use Cases ableiten und Angebot bzw. Proposal erstellen.' },
+    'Angebot in Vorbereitung':        { title: 'Angebot versenden', desc: 'Paket, Leistungen und Preis finalisieren und das Angebot an den Kunden senden.' },
+    'Angebot versendet':              { title: 'Angebot nachfassen', desc: 'Rückmeldung einholen, offene Fragen klären und in die Nachverhandlung gehen.' },
+    'Nachverhandlung':                { title: 'Abschluss herbeiführen', desc: 'Konditionen klären und die Entscheidung herbeiführen – gewonnen oder Folgeprojekt.' },
+    'gewonnen':                       { title: 'Auftrag anlegen', desc: 'Kunde gewonnen: Account verknüpfen, Vertrag/Projekt anlegen und an die Delivery übergeben.' },
+    'Folgeprojekt':                   { title: 'Folgeprojekt starten', desc: 'Folgeprojekt anlegen und Termin für den Kick-off mit dem Kunden vereinbaren.' }
+  };
+
+  var FIELDS = {
+    'Qualifizierungsgespräch': [
+      { key: 'date', label: 'Termin', type: 'date', value: '2026-11-18' },
+      { key: 'em', label: 'Gespräch mit', type: 'select', options: ['R. Lehmann', 'M. Weber'] }
+    ],
+    'Übergabe an Engagement Manager': [
+      { key: 'em', label: 'Engagement Manager', type: 'select', options: ['Anna Müller', 'Tom Berger', 'Sara Klein'] },
+      { key: 'date', label: 'Übergabedatum', type: 'date', value: '2026-11-18' }
+    ],
+    'Erstgespräch terminiert': [
+      { key: 'date', label: 'Termin Erstgespräch', type: 'date', value: '2026-11-24' }
+    ],
+    'Erstgespräch durchgeführt': [
+      { key: 'date', label: 'Datum Erstgespräch', type: 'date', value: '2026-11-24' },
+      { key: 'note', label: 'Ergebnis / nächster Schritt', type: 'text', placeholder: 'z. B. Fragebogen angefordert' }
+    ],
+    'Fragebogen geschickt': [
+      { key: 'date', label: 'Versendet am', type: 'date', value: '2026-11-25' }
+    ],
+    'Angebot in Vorbereitung': [
+      { key: 'value', label: 'Erwarteter Angebotswert (€)', type: 'number', placeholder: '70000' }
+    ],
+    'Angebot versendet': [
+      { key: 'date', label: 'Versendet am', type: 'date', value: '2026-11-27' },
+      { key: 'value', label: 'Angebotswert (€)', type: 'number', placeholder: '70000' }
+    ],
+    'Nachverhandlung': [
+      { key: 'note', label: 'Stand der Nachverhandlung', type: 'text', placeholder: 'z. B. Rabatt auf 65.000 € vereinbart' }
+    ],
+    'gewonnen': [
+      { key: 'date', label: 'Entscheidungsdatum', type: 'date', value: '2026-11-28' },
+      { key: 'value', label: 'Auftragswert (€)', type: 'number', placeholder: '70000' }
+    ],
+    'Folgeprojekt': [
+      { key: 'date', label: 'Start Folgeprojekt', type: 'date', value: '2026-12-08' }
+    ],
+    'Verlust': [
+      { key: 'reason', label: 'Verlustgrund', type: 'select', options: ['Preis / Budget', 'Timing / kein Bedarf jetzt', 'Wettbewerber', 'Intern entschieden', 'Kein Entscheider erreicht', 'Sonstiger Grund'] }
+    ],
+    'kein Interesse': [
+      { key: 'note', label: 'Grund (optional)', type: 'text', placeholder: 'z. B. Widerspruch gegen Kontaktaufnahme' }
+    ]
+  };
+
+  /* ── Helpers ─────────────────────────────────────────────── */
+  function phaseIndexOf(status) {
+    for (var i = 0; i < PHASES.length; i++) {
+      if (PHASES[i].statuses.indexOf(status) !== -1) return i;
+    }
+    return -1;
+  }
+
+  function isAllowed(cur, next) {
+    if (!next || next === cur) return false;
+    if (WILDCARD.indexOf(next) !== -1) return true;
+    var ci = phaseIndexOf(cur), ni = phaseIndexOf(next);
+    if (ni < 0) return false;
+    if (ci < 0) return ni === 0;
+    if (ni <= ci) return true;                       // gleiche oder frühere Phase
+    var cp = PHASES[ci];
+    var atEnd = cur === cp.statuses[cp.statuses.length - 1];
+    return ni === ci + 1 && atEnd;                   // nur die unmittelbar nächste Phase
+  }
+
+  function isTerminal(status) {
+    return LOSS.indexOf(status) !== -1 || WON.indexOf(status) !== -1;
+  }
+
+  function recommendedNext(cur) {
+    if (isTerminal(cur)) return null;
+    if (cur === 'Nachverhandlung') return 'gewonnen';
+    var i = FLOW.indexOf(cur);
+    return i >= 0 && i < FLOW.length - 1 ? FLOW[i + 1] : null;
+  }
+
+  function alternativesFor(cur) {
+    var out = [];
+    PHASES.forEach(function (p) {
+      p.statuses.forEach(function (s) {
+        if (s !== cur && isAllowed(cur, s) && s !== recommendedNext(cur)) out.push(s);
+      });
+    });
+    return out;
+  }
+
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+  function fmtDate(d) {
+    var p = ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + d.getFullYear();
+    return p;
+  }
+
+  function toast(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font:13px Inter,sans-serif;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.3);opacity:0;transition:opacity .18s;pointer-events:none';
+    document.body.appendChild(el);
+    requestAnimationFrame(function () { el.style.opacity = '1'; });
+    setTimeout(function () {
+      el.style.opacity = '0';
+      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 220);
+    }, 1900);
+  }
+
+  function statusColor(status) {
+    if (WON.indexOf(status) !== -1) return { bg: '#dcfce7', fg: '#15803d' };
+    if (LOSS.indexOf(status) !== -1) return { bg: '#fee2e2', fg: '#b91c1c' };
+    if (PHASES[3].statuses.indexOf(status) !== -1) return { bg: '#f5f3ff', fg: '#6d28d9' };
+    if (PHASES[2].statuses.indexOf(status) !== -1) return { bg: '#ccfbf1', fg: '#0f766e' };
+    if (PHASES[1].statuses.indexOf(status) !== -1) return { bg: '#fef9c3', fg: '#a16207' };
+    return { bg: '#FFF4ED', fg: '#C2410C' };
+  }
+
+  /* ── State ───────────────────────────────────────────────── */
+  var state = {
+    current: 'kontaktiert',
+    history: [
+      { time: '08.10.2026', from: 'vernetzt', to: 'kontaktiert', note: 'Erstkontakt telefonisch erreicht.', phase: false },
+      { time: '03.10.2026', from: 'recherchiert', to: 'vernetzt', note: 'Entscheider auf LinkedIn gefunden.', phase: false },
+      { time: '01.10.2026', from: 'offen', to: 'recherchiert', note: '', phase: false }
+    ]
+  };
+
+  /* ── Render: phase rail ──────────────────────────────────── */
+  function renderRail() {
+    var cur = state.current;
+    var ci = phaseIndexOf(cur);
+    var curIndexInPhase = PHASES[ci] ? PHASES[ci].statuses.indexOf(cur) : -1;
+    var html = '';
+
+    PHASES.forEach(function (phase, pi) {
+      var phaseState = pi < ci ? 'done' : (pi === ci ? 'current' : 'locked');
+      // Nächste Phase ist "offen", wenn aktuelle Phase komplett ist
+      if (pi === ci + 1) {
+        var atEnd = cur === PHASES[ci].statuses[PHASES[ci].statuses.length - 1];
+        if (atEnd) phaseState = 'open';
+      }
+      var chips = '';
+      phase.statuses.forEach(function (s, si) {
+        var cls = 'pf-chip';
+        var lockSvg = '';
+        if (s === cur) {
+          cls += ' current';
+        } else if (pi < ci || (pi === ci && si < curIndexInPhase)) {
+          cls += ' done';
+        } else if (isAllowed(cur, s)) {
+          cls += (WILDCARD.indexOf(s) !== -1 ? ' loss clickable' : ' open');
+        } else if (WILDCARD.indexOf(s) !== -1) {
+          cls += ' loss clickable';
+        } else {
+          cls += ' locked';
+          lockSvg = '<svg class="pf-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>';
+        }
+        var clickable = cls.indexOf('open') !== -1 || cls.indexOf('clickable') !== -1;
+        chips += '<' + (clickable ? 'button type="button"' : 'div') + ' class="' + cls + '" data-target="' + esc(s) + '"' + (clickable ? ' data-clickable="1"' : '') + '>' +
+                   '<span class="pf-dot"></span><span class="pf-chip-label">' + esc(s) + '</span>' + lockSvg +
+                 '</' + (clickable ? 'button' : 'div') + '>';
+      });
+      html += '<div class="pf-phase ' + phaseState + '">' +
+                '<div class="pf-phase-top"><span class="pf-phase-name">' + esc(phase.label) + '</span><span class="pf-phase-num">' + (phaseState === 'done' ? '\u2713' : (pi + 1)) + '</span></div>' +
+                '<div class="pf-chips">' + chips + '</div>' +
+              '</div>';
+    });
+
+    document.getElementById('pf-rail').innerHTML = html;
+
+    // Clickable chips → open that transition
+    document.querySelectorAll('#pf-rail .pf-chip[data-clickable="1"]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openTarget(btn.getAttribute('data-target'));
+      });
+    });
+
+    document.getElementById('pf-phase-count').textContent = 'Phase ' + (ci + 1) + ' von ' + PHASES.length;
+    var flowIdx = FLOW.indexOf(cur);
+    document.getElementById('pf-progress').textContent = isTerminal(cur)
+      ? 'abgeschlossen'
+      : 'Schritt ' + Math.max(1, flowIdx + 1) + ' / ' + FLOW.length;
+
+    var meta = statusColor(cur);
+    var pill = document.getElementById('pf-stage-pill');
+    pill.textContent = cur;
+    pill.style.background = meta.bg;
+    pill.style.color = meta.fg;
+  }
+
+  /* ── Render: next-step card ──────────────────────────────── */
+  var pendingTarget = null;
+
+  function fieldsHtml(target) {
+    var fields = FIELDS[target] || [{ key: 'note', label: 'Notiz (optional)', type: 'text', placeholder: 'Kurze Begründung für den Wechsel' }];
+    var html = '';
+    fields.forEach(function (f) {
+      var inner;
+      if (f.type === 'select') {
+        inner = '<select data-field="' + f.key + '">' + f.options.map(function (o) {
+          return '<option' + (o === f.value ? ' selected' : '') + '>' + esc(o) + '</option>';
+        }).join('') + '</select>';
+      } else {
+        inner = '<input type="' + f.type + '" data-field="' + f.key + '" placeholder="' + esc(f.placeholder || '') + '"' + (f.value ? ' value="' + esc(f.value) + '"' : '') + '>';
+      }
+      html += '<div class="pf-field' + (fields.length === 1 ? ' full' : '') + '"><label>' + esc(f.label) + '</label>' + inner + '</div>';
+    });
+    return html;
+  }
+
+  function renderNext() {
+    var wrap = document.getElementById('pf-next-wrap');
+    var cur = state.current;
+
+    if (isTerminal(cur)) {
+      var win = WON.indexOf(cur) !== -1;
+      wrap.innerHTML =
+        '<div class="pf-next">' +
+          '<div class="pf-done">' +
+            '<div class="pf-done-icon ' + (win ? 'win' : 'loss') + '">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
+                (win ? '<path d="M5 13l4 4L19 7"/>' : '<path d="M18 6L6 18M6 6l12 12"/>') +
+              '</svg>' +
+            '</div>' +
+            '<div style="flex:1">' +
+              '<div class="pf-done-title">' + (win ? 'Akquise abgeschlossen – Kunde gewonnen' : 'Akquise beendet – kein Abschluss') + '</div>' +
+              '<div class="pf-done-sub">' + (win
+                ? 'Status „' + esc(cur) + '“. Account verknüpfen, Vertrag bzw. Projekt anlegen und an die Delivery übergeben.'
+                : 'Status „' + esc(cur) + '“. Der Zielkunde ist gesperrt – keine weitere Kontaktaufnahme (DSGVO Art. 21).') + '</div>' +
+              '<div class="pf-actions" style="margin-top:14px">' +
+                '<button class="btn btn-primary btn-sm" type="button" data-action="complete">' + (win ? 'Auftrag anlegen' : 'Sperre dokumentieren') + '</button>' +
+                '<button class="btn pf-ghost btn-sm" type="button" data-action="reopen">Zurück in den Prozess</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      bindTerminalActions();
+      return;
+    }
+
+    var target = pendingTarget || recommendedNext(cur);
+    var info = STEP_INFO[target] || { title: 'Status setzen', desc: '' };
+    var isLoss = LOSS.indexOf(target) !== -1;
+    var isWin = WON.indexOf(target) !== -1;
+    var arrowClass = isWin ? ' terminal-win' : (isLoss ? ' terminal-loss' : '');
+    var stepNo = Math.max(1, FLOW.indexOf(target) + 1);
+
+    var alts = alternativesFor(cur);
+    var altHtml = '';
+    if (alts.length) {
+      altHtml = '<div class="pf-alts"><div class="pf-alts-label">Weitere mögliche Schritte</div><div class="pf-alts-row">' +
+        alts.map(function (s) {
+          var cls = 'pf-alt' + (LOSS.indexOf(s) !== -1 ? ' loss' : '');
+          return '<button type="button" class="' + cls + '" data-alt="' + esc(s) + '">' + esc(s) + '</button>';
+        }).join('') + '</div></div>';
+    }
+
+    wrap.innerHTML =
+      '<div class="pf-next">' +
+        '<div class="pf-next-top"><span class="pf-next-label">Nächster Schritt</span><span class="pf-next-step">Schritt ' + stepNo + ' von ' + FLOW.length + '</span></div>' +
+        '<div class="pf-statusline">' +
+          '<span class="pf-pill from">' + esc(cur) + '</span>' +
+          '<span class="pf-arrow">\u2192</span>' +
+          '<span class="pf-pill to' + arrowClass + '">' + esc(target) + '</span>' +
+        '</div>' +
+        '<div class="pf-next-title">' + esc(info.title) + '</div>' +
+        '<div class="pf-next-desc">' + esc(info.desc) + '</div>' +
+        '<div class="pf-fields">' + fieldsHtml(target) + '</div>' +
+        '<div class="pf-actions">' +
+          '<button class="btn btn-primary btn-sm" type="button" data-action="confirm">Speichern &amp; weiter zu „' + esc(target) + '“</button>' +
+          '<button class="btn pf-ghost btn-sm" type="button" data-action="skip">Anderen Schritt wählen</button>' +
+        '</div>' +
+        '<div class="pf-hint">' +
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>' +
+          'Wird direkt gespeichert – kein Umweg über den Bearbeiten-Modus.' +
+        '</div>' +
+        altHtml +
+      '</div>';
+
+    wrap.querySelector('[data-action="confirm"]').addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      commitTransition(target);
+    });
+    wrap.querySelector('[data-action="skip"]').addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      pendingTarget = null;
+      showChooser();
+    });
+    wrap.querySelectorAll('[data-alt]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        openTarget(b.getAttribute('data-alt'));
+      });
+    });
+  }
+
+  function showChooser() {
+    var cur = state.current;
+    var options = [];
+    PHASES.forEach(function (p) { p.statuses.forEach(function (s) {
+      if (s !== cur && isAllowed(cur, s)) options.push(s);
+    }); });
+    var row = options.map(function (s) {
+      return '<button type="button" class="pf-alt' + (LOSS.indexOf(s) !== -1 ? ' loss' : '') + '" data-alt="' + esc(s) + '">' + esc(s) + '</button>';
+    }).join('');
+    document.getElementById('pf-next-wrap').innerHTML =
+      '<div class="pf-next">' +
+        '<div class="pf-next-top"><span class="pf-next-label">Schritt wählen</span><span class="pf-next-step">' + esc(cur) + '</span></div>' +
+        '<div class="pf-next-title">Welchen Schritt möchtest du als Nächstes festhalten?</div>' +
+        '<div class="pf-next-desc">Alle hier gezeigten Wechsel sind im aktuellen Status erlaubt. Gesperrte Phasen bleiben ausgeblendet.</div>' +
+        '<div class="pf-alts-row">' + row + '</div>' +
+        '<div class="pf-actions" style="margin-top:16px">' +
+          '<button class="btn pf-ghost btn-sm" type="button" data-action="back">Zurück zum Vorschlag</button>' +
+        '</div>' +
+      '</div>';
+    var wrap = document.getElementById('pf-next-wrap');
+    wrap.querySelectorAll('[data-alt]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); openTarget(b.getAttribute('data-alt')); });
+    });
+    wrap.querySelector('[data-action="back"]').addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); pendingTarget = null; renderNext(); });
+  }
+
+  function openTarget(target) {
+    if (!isAllowed(state.current, target) && target !== state.current) {
+      toast('„' + target + '“ ist noch gesperrt – schließe zuerst die aktuelle Phase ab');
+      return;
+    }
+    pendingTarget = target;
+    renderNext();
+  }
+
+  function commitTransition(target) {
+    var from = state.current;
+    if (!isAllowed(from, target)) {
+      toast('Dieser Wechsel ist im aktuellen Status nicht erlaubt');
+      return;
+    }
+    var noteInput = document.querySelector('#pf-next-wrap [data-field="note"]');
+    var note = noteInput && noteInput.value ? noteInput.value.trim() : '';
+    var phaseChange = phaseIndexOf(from) !== phaseIndexOf(target);
+    state.history.unshift({ time: fmtDate(new Date()), from: from, to: target, note: note, phase: phaseChange });
+    state.current = target;
+    pendingTarget = null;
+    renderAll();
+    toast('Status gesetzt: ' + target);
+  }
+
+  function bindTerminalActions() {
+    var wrap = document.getElementById('pf-next-wrap');
+    var c = wrap.querySelector('[data-action="complete"]');
+    var r = wrap.querySelector('[data-action="reopen"]');
+    if (c) c.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); toast('Demo: „' + (WON.indexOf(state.current) !== -1 ? 'Auftrag angelegt' : 'Sperre dokumentiert') + '“'); });
+    if (r) r.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      state.history.unshift({ time: fmtDate(new Date()), from: state.current, to: 'Nachverhandlung', note: 'Prozess wieder eröffnet.', phase: true });
+      state.current = 'Nachverhandlung';
+      renderAll();
+      toast('Prozess wieder eröffnet');
+    });
+  }
+
+  /* ── Render: history ─────────────────────────────────────── */
+  function renderHistory() {
+    var html = state.history.map(function (h) {
+      return '<div class="pf-hist">' +
+               '<span class="pf-hist-dot' + (h.phase ? ' phase' : '') + '"></span>' +
+               '<div class="pf-hist-body">' +
+                 '<div class="pf-hist-move"><span class="pf-hist-from">' + esc(h.from) + '</span>' +
+                   '<span class="pf-arrow" style="color:#94a3b8">\u2192</span>' +
+                   '<span class="pf-hist-to">' + esc(h.to) + '</span>' +
+                   (h.phase ? '<span class="pf-hist-badge">Phasenwechsel</span>' : '') + '</div>' +
+                 (h.note ? '<div class="pf-hist-note">' + esc(h.note) + '</div>' : '') +
+                 '<div class="pf-hist-time">' + esc(h.time) + '</div>' +
+               '</div>' +
+             '</div>';
+    }).join('');
+    document.getElementById('pf-history').innerHTML = html;
+  }
+
+  function renderAll() { renderRail(); renderNext(); renderHistory(); }
+
+  /* ── Init ────────────────────────────────────────────────── */
+  function init() {
+    var START = new Date(2026, 9, 1);
+    var days = Math.max(1, Math.floor((new Date() - START) / 86400000) + 1);
+    var daysEl = document.getElementById('pf-days');
+    if (daysEl) daysEl.textContent = days;
+
+    var reset = document.getElementById('pf-reset');
+    if (reset) reset.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      state.current = 'kontaktiert';
+      state.history = [
+        { time: '08.10.2026', from: 'vernetzt', to: 'kontaktiert', note: 'Erstkontakt telefonisch erreicht.', phase: false },
+        { time: '03.10.2026', from: 'recherchiert', to: 'vernetzt', note: 'Entscheider auf LinkedIn gefunden.', phase: false },
+        { time: '01.10.2026', from: 'offen', to: 'recherchiert', note: '', phase: false }
+      ];
+      pendingTarget = null;
+      renderAll();
+      toast('Demo zurückgesetzt');
+    });
+
+    renderAll();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>

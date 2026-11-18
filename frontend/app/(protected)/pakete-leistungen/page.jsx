@@ -6,8 +6,7 @@ import { Package, BookOpen, Plus, Trash2, Save, ShieldAlert } from 'lucide-react
 import toast from 'react-hot-toast'
 import { api } from '@/lib/api'
 import { getUser } from '@/lib/auth'
-import { TEAM_ROLES } from '@/lib/sprintTeam'
-import { refreshSprintSettings } from '@/lib/sprintSettings'
+import { refreshSprintSettings } from '@/lib/acquisitionSettings'
 import { ServiceCatalogTab } from '../settings/page'
 
 const CLS_INPUT = 'w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500'
@@ -15,7 +14,7 @@ const CLS_LABEL = 'block text-xs font-medium text-gray-500 mb-1'
 
 const TABS = [
   { id: 'leistungen', label: 'Leistungen', icon: BookOpen },
-  { id: 'pakete', label: 'Pakete & Rollen', icon: Package },
+  { id: 'pakete', label: 'Pakete', icon: Package },
 ]
 
 const UNIT_LABELS = { day: 'Tag(e)', hour: 'Stunde(n)', fixed: 'Pauschal' }
@@ -42,7 +41,6 @@ export default function PackagesServicesPage() {
   const [activeTab, setActiveTab] = useState('leistungen')
   const [packages, setPackages] = useState([])
   const [services, setServices] = useState([])
-  const [pkgRoles, setPkgRoles] = useState([])
   const [selectedId, setSelectedId] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -56,9 +54,8 @@ export default function PackagesServicesPage() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const [market, roleRows, serviceRows] = await Promise.all([
-        api.get('/sprint-market'),
-        api.get('/sprint-targets/package-roles'),
+      const [market, serviceRows] = await Promise.all([
+        api.get('/acquisition-market'),
         api.get('/proposals/services').catch(() => []),
       ])
 
@@ -77,17 +74,8 @@ export default function PackagesServicesPage() {
       setSelectedId((cur) => (pkgList.some((p) => p._id === cur) ? cur : pkgList[0]?._id || ''))
 
       setServices(Array.isArray(serviceRows) ? serviceRows : serviceRows?.services || [])
-
-      setPkgRoles(
-        (Array.isArray(roleRows) ? roleRows : []).map((r) => ({
-          ...r,
-          packageId: r.package,
-          label: r.label || TEAM_ROLES.find((t) => t.key === r.role)?.label || '',
-          _id: r.role,
-        }))
-      )
     } catch {
-      toast.error('Pakete & Rollen konnten nicht geladen werden')
+      toast.error('Pakete konnten nicht geladen werden')
     } finally {
       setLoading(false)
     }
@@ -98,10 +86,6 @@ export default function PackagesServicesPage() {
   }, [authorized, load])
 
   // ─── Pakete ───
-  function rolesForPackage(packageId) {
-    return pkgRoles.filter((r) => r.packageId === packageId)
-  }
-
   function addPackage() {
     const p = { _id: nextId('pkg'), key: '', label: '', price: '', services: [] }
     setPackages((prev) => [...prev, p])
@@ -115,7 +99,6 @@ export default function PackagesServicesPage() {
   function removePackage(pkgId) {
     const next = packages.filter((p) => p._id !== pkgId)
     setPackages(next)
-    setPkgRoles((prev) => prev.filter((r) => r.packageId !== pkgId))
     if (selectedId === pkgId) setSelectedId(next[0]?._id || '')
   }
 
@@ -146,24 +129,6 @@ export default function PackagesServicesPage() {
         p._id === pkgId ? { ...p, services: p.services.filter((s) => s._id !== rowId) } : p
       )
     )
-  }
-
-  // ─── Rollen eines Pakets ───
-  function updateRole(pkgId, id, patch) {
-    setPkgRoles((prev) =>
-      prev.map((r) => (r.packageId === pkgId && r._id === id ? { ...r, ...patch } : r))
-    )
-  }
-
-  function removeRole(pkgId, id) {
-    setPkgRoles((prev) => prev.filter((r) => !(r.packageId === pkgId && r._id === id)))
-  }
-
-  function addRole(pkgId) {
-    setPkgRoles((prev) => [
-      ...prev,
-      { packageId: pkgId, role: '', label: '', headcount: 1, _id: nextId('role') },
-    ])
   }
 
   async function saveAll(e) {
@@ -199,30 +164,18 @@ export default function PackagesServicesPage() {
       const currentKey = prepared.find((p) => p._id === selected?._id)?.key
 
       // Pakete inkl. Leistungen (zentrale Quelle)
-      await api.put('/sprint-market/packages', {
+      await api.put('/acquisition-market/packages', {
         packages: prepared.map((p) => ({
           key: p.key, label: p.label, price: p.price, services: p.services,
         })),
       })
       // Preise zusätzlich in den Einstellungen spiegeln (Angebots-Wizard)
-      await api.put('/sprint-settings', {
+      await api.put('/acquisition-settings', {
         packages: prepared.map((p) => ({ key: p.key, label: p.label, price: p.price })),
       })
 
-      // Rollen je Paket – beliebig viele, frei definierbar
-      for (const p of prepared) {
-        const roles = rolesForPackage(p._id)
-          .map((r) => ({
-            role: r.role || slugify(r.label),
-            label: (r.label || '').trim(),
-            headcount: Math.max(1, Number(r.headcount) || 1),
-          }))
-          .filter((r) => r.role)
-        await api.put(`/sprint-targets/package-roles/${p.key}`, { roles })
-      }
-
       refreshSprintSettings().catch(() => {})
-      toast.success('Pakete, Leistungen & Rollen gespeichert')
+      toast.success('Pakete & Leistungen gespeichert')
       await load()
       if (currentKey) setSelectedId(currentKey)
     } catch (err) {
@@ -237,11 +190,11 @@ export default function PackagesServicesPage() {
   const selected = packages.find((p) => p._id === selectedId) || packages[0] || null
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-4">
+    <div className="p-6 max-w-5xl mx-auto space-y-4 group-data-[collapsed=true]/sidebar:max-w-none">
       <div className="mb-2">
         <h1 className="text-2xl font-bold text-gray-900">Pakete &amp; Leistungen</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Dienstkatalog verwalten und Pakete aus Leistungen &amp; Rollen konfigurieren
+          Dienstkatalog verwalten und Pakete aus Leistungen konfigurieren
         </p>
       </div>
 
@@ -277,7 +230,7 @@ export default function PackagesServicesPage() {
               {/* Paket-Auswahl */}
               <div className="bg-white rounded-xl border border-gray-200 p-2 space-y-1">
                 {packages.map((p) => {
-                  const count = rolesForPackage(p._id).length
+                  const count = (p.services || []).length
                   const active = selected?._id === p._id
                   return (
                     <button
@@ -321,13 +274,10 @@ export default function PackagesServicesPage() {
                         Paket „{selected.label || 'Unbenannt'}“
                       </h2>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        Bezeichnung, Preis, enthaltene Leistungen (mit Umfang) und Rollen.
+                        Bezeichnung, Preis und enthaltene Leistungen (mit Umfang).
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">
-                        {rolesForPackage(selected._id).length} {rolesForPackage(selected._id).length === 1 ? 'Rolle' : 'Rollen'}
-                      </span>
                       <button
                         type="button"
                         onClick={() => removePackage(selected._id)}
@@ -432,73 +382,9 @@ export default function PackagesServicesPage() {
                     )}
                   </div>
 
-                  {/* Rollen */}
-                  <div className="pt-3 border-t border-gray-100">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">Rollen</p>
-                        <p className="text-xs text-gray-500">Beliebig viele Rollen – nicht limitiert.</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => addRole(selected._id)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-700 border border-blue-200 rounded-md hover:bg-blue-50"
-                      >
-                        <Plus className="w-4 h-4" /> Rolle hinzufügen
-                      </button>
-                    </div>
-
-                    {rolesForPackage(selected._id).length === 0 ? (
-                      <div className="rounded-lg border border-dashed border-gray-200 py-8 text-center text-sm text-gray-400">
-                        Noch keine Rollen – füge die erste hinzu.
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="grid grid-cols-[1fr_90px_40px] gap-2 px-1 text-xs font-medium text-gray-500">
-                          <span>Rolle</span>
-                          <span className="text-center">Anzahl</span>
-                          <span />
-                        </div>
-                        {rolesForPackage(selected._id).map((r) => {
-                          const isBase = TEAM_ROLES.some((t) => t.key === r.role)
-                          return (
-                            <div key={r._id} className="grid grid-cols-[1fr_90px_40px] gap-2 items-center">
-                              {isBase ? (
-                                <span className="px-3 py-2 text-sm text-gray-700 bg-gray-50 border border-gray-200 rounded-md">{r.label || r.role}</span>
-                              ) : (
-                                <input
-                                  value={r.label || ''}
-                                  onChange={(e) => updateRole(selected._id, r._id, { label: e.target.value })}
-                                  className={CLS_INPUT}
-                                  placeholder="Rolle (z. B. Projektmanager)"
-                                />
-                              )}
-                              <input
-                                type="number"
-                                min="1"
-                                value={r.headcount}
-                                onChange={(e) => updateRole(selected._id, r._id, { headcount: e.target.value })}
-                                className="w-full border border-gray-300 rounded-md px-2 py-2 text-sm text-center text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                title="Anzahl Mitarbeiter (Umfang)"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => removeRole(selected._id, r._id)}
-                                className="p-1.5 rounded hover:bg-red-50 text-red-600 justify-self-end"
-                                title="Rolle entfernen"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-
                   <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                     <p className="text-xs text-gray-400 flex items-center gap-1.5">
-                      <ShieldAlert className="w-3.5 h-3.5" /> Gilt für alle Kunden mit diesem Paket.
+                      <ShieldAlert className="w-3.5 h-3.5" /> Pakete werden ausschließlich im Angebot gewählt.
                     </p>
                     <button
                       type="submit"

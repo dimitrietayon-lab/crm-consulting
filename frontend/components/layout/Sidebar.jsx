@@ -18,7 +18,6 @@ import {
   FileCheck,
   Star,
   Shuffle,
-  Shield,
   Brain,
   Newspaper,
   GraduationCap,
@@ -42,11 +41,15 @@ import {
   BarChart3,
   MapPin,
   CalendarClock,
+  GitBranch,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { getUser, logout } from '@/lib/auth'
 import { getInitials } from '@/lib/utils'
 import { usePermissions } from '@/lib/permissions'
 import { isPathHidden, CRM_PROFILE_EVENT } from '@/lib/crmProfile'
+import PonturoLogo from './PonturoLogo'
 
 // Feature key → required permission key (matches portal feature keys from seed)
 const FEATURE_GATES = {
@@ -58,11 +61,11 @@ const FEATURE_GATES = {
   '/proposals':        'proposals',
   '/contracts':        'contracts',
   '/projects':         'projects',
+  '/team':             'projects',
   '/tasks':            'tasks',
   '/timesheets':       'timesheets',
   '/key-accounts':     'key_accounts',
   '/cross-selling':    'cross_selling',
-  '/compliance':       'compliance',
   '/ai-opportunities': 'ai_opportunities',
   '/news':             'news_monitoring',
   '/skills':           'skills',
@@ -75,31 +78,37 @@ const FEATURE_GATES = {
   '/lohnverwaltung':   'lohnverwaltung',
   '/leave':            'leave',
   '/workflows':        'workflows',
-  // KI-Readiness Sprint — granulare Schlüssel; Fallback auf 'sprint_targets'
-  '/sprint-targets':   'sprint_targets',
-  '/sprint-targets/dashboard':  'sprint_dashboard',
-  '/sprint-targets/import':     'sprint_import',
-  '/sprint-targets/blocklist':  'sprint_blocklist',
-  '/sprint-targets/activities': 'sprint_activities',
-  '/sprint-targets/offers':     'sprint_offers',
-  '/sprint-targets/outreach':   'sprint_outreach',
-  '/sprint-targets/team':       'sprint_team',
-  '/sprint-targets/reporting':  'sprint_reporting',
-  '/sprint-targets/market':     'sprint_market',
-  '/sprint-targets/capacity':   'sprint_capacity',
-  '/sprint-targets/bafa':       'sprint_bafa',
-  '/sprint-targets/contacts':   'sprint_contacts',
-  '/sprint-targets/settings':   'sprint_settings',
+  // Akquise — granulare Schlüssel; Fallback auf 'acquisition_targets'
+  '/akquise':   'acquisition_targets',
+  '/akquise/dashboard':  'acquisition_dashboard',
+  '/akquise/import':     'acquisition_import',
+  '/akquise/blocklist':  'acquisition_blocklist',
+  '/akquise/activities': 'acquisition_activities',
+  '/akquise/offers':     'acquisition_offers',
+  '/akquise/outreach':   'acquisition_outreach',
+  '/akquise/reporting':  'acquisition_reporting',
+  '/akquise/market':     'acquisition_market',
+  '/akquise/capacity':   'acquisition_capacity',
+  '/akquise/bafa':       'acquisition_bafa',
+  '/akquise/contacts':   'acquisition_contacts',
+  '/akquise/settings':   'acquisition_settings',
 }
 
 // Gemeinsame Seiten (Aktivitäten/Aufgaben/Dokumente) sind jetzt EINE Seite mit
-// Akquise-Filter. Rollen mit reinen Sprint-Rechten sollen sie weiterhin sehen.
+// Akquise-Filter. Rollen mit reinen Akquise-Rechten sollen sie weiterhin sehen.
 const FEATURE_ALT_GATES = {
-  '/activities': 'sprint_activities',
-  '/tasks':      'sprint_targets',
-  '/documents':  'sprint_targets',
-  '/contacts':   'sprint_contacts',
-  '/proposals':  'sprint_offers',
+  '/activities': 'acquisition_activities',
+  '/tasks':      'acquisition_targets',
+  '/documents':  'acquisition_targets',
+  '/contacts':   'acquisition_contacts',
+  '/proposals':  'acquisition_offers',
+}
+
+// Übergangs-Fallback: bis die Portal-Rechte vollständig umgestellt sind, gilt
+// ein altes sprint_*-Recht weiter (verhindert Aussperrung bei halbem Deploy).
+function legacyAcquisitionKey(key) {
+  if (!key) return null
+  return key.startsWith('acquisition_') ? key.replace(/^acquisition_/, 'sprint_') : null
 }
 
 const ROLE_LABELS = {
@@ -111,7 +120,7 @@ const ROLE_LABELS = {
 
 function featureKeyFor(href) {
   if (FEATURE_GATES[href]) return FEATURE_GATES[href]
-  if (href.startsWith('/sprint-targets')) return 'sprint_targets'
+  if (href.startsWith('/akquise')) return 'acquisition_targets'
   return null
 }
 
@@ -130,20 +139,20 @@ const NAV_GROUPS = [
   {
     label: 'Akquise',
     items: [
-      { label: 'Zielkunden',    href: '/sprint-targets',            icon: Crosshair },
-      { label: 'Outreach',      href: '/sprint-targets/outreach',   icon: Send },
-      { label: 'Förderungen',   href: '/sprint-targets/bafa',       icon: Banknote },
-      { label: 'Listen-Import', href: '/sprint-targets/import',     icon: Upload },
-      { label: 'Sperrliste',    href: '/sprint-targets/blocklist',  icon: ShieldAlert },
+      { label: 'Zielkunden',    href: '/akquise',            icon: Crosshair },
+      { label: 'Outreach',      href: '/akquise/outreach',   icon: Send },
+      { label: 'Förderungen',   href: '/akquise/bafa',       icon: Banknote },
+      { label: 'Listen-Import', href: '/akquise/import',     icon: Upload },
+      { label: 'Sperrliste',    href: '/akquise/blocklist',  icon: ShieldAlert },
     ],
   },
   {
     label: 'Akquise-Planung',
     items: [
-      { label: 'Team',         href: '/sprint-targets/team',      icon: UserCog },
-      { label: 'Marktauswahl', href: '/sprint-targets/market',    icon: MapPin },
-      { label: 'Planung',      href: '/sprint-targets/capacity',  icon: CalendarClock },
-      { label: 'Reporting',    href: '/sprint-targets/reporting', icon: BarChart3 },
+      { label: 'Marktauswahl', href: '/akquise/market',    icon: MapPin },
+      { label: 'Planung',      href: '/akquise/capacity',  icon: CalendarClock },
+      { label: 'Reporting',    href: '/akquise/reporting', icon: BarChart3 },
+      { label: 'Akquise-Workflows', href: '/akquise/workflows', icon: GitBranch, adminOnly: true },
     ],
   },
   {
@@ -161,6 +170,7 @@ const NAV_GROUPS = [
     label: 'Mandate',
     items: [
       { label: 'Projekte',      href: '/projects',   icon: Briefcase },
+      { label: 'Team',          href: '/team',       icon: Users },
       { label: 'Aufgaben',      href: '/tasks',      icon: CheckSquare },
       { label: 'Zeiterfassung', href: '/timesheets', icon: Clock },
       { label: 'Dokumente',     href: '/documents',  icon: FolderOpen },
@@ -171,7 +181,6 @@ const NAV_GROUPS = [
     items: [
       { label: 'Key Accounts',  href: '/key-accounts',  icon: Star },
       { label: 'Cross-Selling', href: '/cross-selling', icon: Shuffle },
-      { label: 'Compliance',    href: '/compliance',    icon: Shield },
     ],
   },
   {
@@ -213,7 +222,7 @@ const NAV_GROUPS = [
   },
 ]
 
-export default function Sidebar() {
+export default function Sidebar({ collapsed = false, onToggleCollapsed }) {
   const pathname = usePathname()
   const user = getUser()
   const isAdmin = user?.role === 'admin'
@@ -233,19 +242,19 @@ export default function Sidebar() {
     }
   }, [])
 
-  const SPRINT_SUBPAGES = new Set([
+  const AKQUISE_SUBPAGES = new Set([
     'dashboard', 'me', 'import', 'blocklist', 'activities', 'offers',
     'outreach', 'team', 'reporting', 'market', 'capacity', 'bafa', 'settings', 'contacts',
-    'tasks', 'documents',
+    'tasks', 'documents', 'workflows',
   ])
 
   function isActive(href) {
     if (href === '/') return pathname === '/'
-    if (href === '/sprint-targets') {
+    if (href === '/akquise') {
       if (pathname === href) return true
-      // Detail pages (/sprint-targets/<id>, /sprint-targets/<id>/assessment) belong to Zielkunden
+      // Detailseiten (/akquise/<id>, /akquise/<id>/prozess) gehören zu Zielkunden
       const segment = pathname.split('/')[2]
-      return Boolean(segment) && !SPRINT_SUBPAGES.has(segment)
+      return Boolean(segment) && !AKQUISE_SUBPAGES.has(segment)
     }
     return pathname === href || pathname.startsWith(href + '/')
   }
@@ -255,22 +264,31 @@ export default function Sidebar() {
     // Erst nach dem Mount lesen, damit Server- und Client-Render übereinstimmen.
     if (profileReady && isPathHidden(item.href)) return false
     if (item.alwaysShow) return true
+    if (item.adminOnly && !isAdmin) return false
     if (isAdmin) return true  // legacy admin sees everything
     const featureKey = featureKeyFor(item.href)
     if (!featureKey) return true
     if (permsLoading) return false
     if (can(featureKey)) return true
-    // Gemeinsame Seiten: Sprint-Rollen behalten Zugriff über ihr Sprint-Recht.
+    const legacyKey = legacyAcquisitionKey(featureKey)
+    if (legacyKey && can(legacyKey)) return true
+    // Gemeinsame Seiten: Akquise-Rollen behalten Zugriff über ihr Akquise-Recht.
     const altKey = FEATURE_ALT_GATES[item.href]
     if (altKey && can(altKey)) return true
-    // Fallback: Rollen, die (noch) keine granularen sprint_*-Rechte haben, behalten
-    // den bisherigen Zugriff über das Sammelrecht 'sprint_targets'.
-    if ((featureKey.startsWith('sprint_') || altKey) && !hasGranularSprint && can('sprint_targets')) return true
+    if (altKey && can(legacyAcquisitionKey(altKey))) return true
+    // Fallback: Rollen ohne granulare Rechte behalten den Zugriff über das
+    // Sammelrecht 'acquisition_targets' (bzw. das alte 'sprint_targets').
+    if ((featureKey.startsWith('acquisition_') || altKey) && !hasGranularAcquisition) {
+      if (can('acquisition_targets') || can('sprint_targets')) return true
+    }
     return false
   }
 
-  const hasGranularSprint = Object.keys(perms || {}).some(
-    (key) => key.startsWith('sprint_') && key !== 'sprint_targets' && perms[key]?.canView
+  const hasGranularAcquisition = Object.keys(perms || {}).some(
+    (key) =>
+      (key.startsWith('acquisition_') || key.startsWith('sprint_')) &&
+      key !== 'acquisition_targets' && key !== 'sprint_targets' &&
+      perms[key]?.canView
   )
 
   const systemGroup = {
@@ -289,25 +307,38 @@ export default function Sidebar() {
     .filter((group) => group.items.length > 0)
 
   return (
-    <aside className="flex flex-col w-60 min-w-[240px] h-screen bg-slate-900 border-r border-slate-800 overflow-y-auto">
-      {/* Logo / Brand */}
-      <div className="flex items-center gap-3 px-5 h-14 border-b border-slate-800 shrink-0">
-        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600">
-          <Briefcase className="w-4 h-4 text-white" />
+    <aside className={`flex flex-col ${collapsed ? 'w-[76px]' : 'w-[248px]'} h-screen bg-slate-900 border-r border-slate-800 overflow-y-auto overflow-x-hidden transition-[width] duration-200 shrink-0`}>
+      {/* Logo / Brand + Einklappen */}
+      <div className={`flex items-center h-[62px] border-b border-slate-800 shrink-0 ${collapsed ? 'justify-between gap-1 px-1.5' : 'justify-between gap-3 px-4'}`}>
+        <div className="flex items-center gap-3 min-w-0">
+          <PonturoLogo className="w-8 h-8" />
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="text-white text-sm font-bold leading-tight truncate">CRM</p>
+              <p className="text-slate-400 text-xs truncate">Consulting Business Suite</p>
+            </div>
+          )}
         </div>
-        <div className="min-w-0">
-          <p className="text-white text-sm font-bold leading-tight truncate">CRM</p>
-          <p className="text-slate-400 text-xs truncate">Consulting Business Suite</p>
-        </div>
+        <button
+          type="button"
+          onClick={onToggleCollapsed}
+          title={collapsed ? 'Sidebar ausklappen' : 'Sidebar einklappen'}
+          aria-label={collapsed ? 'Sidebar ausklappen' : 'Sidebar einklappen'}
+          className="flex items-center justify-center p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-700/60 transition-colors shrink-0"
+        >
+          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-4">
+      <nav className={`flex-1 py-4 space-y-3.5 ${collapsed ? 'px-2' : 'px-2.5'}`}>
         {visibleGroups.map((group) => (
           <div key={group.label}>
-            <p className="px-3 mb-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              {group.label}
-            </p>
+            {!collapsed && (
+              <p className="px-2 mb-1 text-[9px] font-bold text-slate-500 uppercase tracking-[0.09em]">
+                {group.label}
+              </p>
+            )}
             <ul className="space-y-0.5">
               {group.items.map((item) => {
                 const Icon = item.icon
@@ -316,14 +347,16 @@ export default function Sidebar() {
                   <li key={item.href}>
                     <Link
                       href={item.href}
+                      title={collapsed ? item.label : undefined}
+                      aria-label={item.label}
                       className={
                         active
-                          ? 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white bg-slate-700'
-                          : 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/60 transition-colors'
+                          ? `flex items-center gap-2.5 rounded-lg text-[12.5px] font-semibold text-white bg-slate-700 ${collapsed ? 'justify-center px-2 py-2' : 'px-2 py-1.5'}`
+                          : `flex items-center gap-2.5 rounded-lg text-[12.5px] font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors ${collapsed ? 'justify-center px-2 py-2' : 'px-2 py-1.5'}`
                       }
                     >
                       <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-blue-400' : 'text-slate-400'}`} />
-                      <span>{item.label}</span>
+                      {!collapsed && <span className="truncate">{item.label}</span>}
                     </Link>
                   </li>
                 )
@@ -335,47 +368,55 @@ export default function Sidebar() {
         {/* Admin link — only for admins */}
         {isAdmin && (
           <div>
-            <p className="px-3 mb-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Admin
-            </p>
-            <ul>
+            {!collapsed && (
+              <p className="px-2 mb-1 text-[9px] font-bold text-slate-500 uppercase tracking-[0.09em]">
+                Admin
+              </p>
+            )}
+            <ul className="space-y-0.5">
               <li>
                 <Link
                   href="/admin"
+                  title={collapsed ? 'Benutzerverwaltung' : undefined}
+                  aria-label="Benutzerverwaltung"
                   className={
                     isActive('/admin')
-                      ? 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white bg-slate-700'
-                      : 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/60 transition-colors'
+                      ? `flex items-center gap-2.5 rounded-lg text-[12.5px] font-semibold text-white bg-slate-700 ${collapsed ? 'justify-center px-2 py-2' : 'px-2 py-1.5'}`
+                      : `flex items-center gap-2.5 rounded-lg text-[12.5px] font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors ${collapsed ? 'justify-center px-2 py-2' : 'px-2 py-1.5'}`
                   }
                 >
                   <UserCog className={`w-4 h-4 shrink-0 ${isActive('/admin') ? 'text-blue-400' : 'text-slate-400'}`} />
-                  <span>Benutzerverwaltung</span>
+                  {!collapsed && <span className="truncate">Benutzerverwaltung</span>}
                 </Link>
               </li>
               <li>
                 <Link
                   href="/crm-profil"
+                  title={collapsed ? 'CRM-Profil' : undefined}
+                  aria-label="CRM-Profil"
                   className={
                     isActive('/crm-profil')
-                      ? 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white bg-slate-700'
-                      : 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/60 transition-colors'
+                      ? `flex items-center gap-2.5 rounded-lg text-[12.5px] font-semibold text-white bg-slate-700 ${collapsed ? 'justify-center px-2 py-2' : 'px-2 py-1.5'}`
+                      : `flex items-center gap-2.5 rounded-lg text-[12.5px] font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors ${collapsed ? 'justify-center px-2 py-2' : 'px-2 py-1.5'}`
                   }
                 >
                   <ShieldCheck className={`w-4 h-4 shrink-0 ${isActive('/crm-profil') ? 'text-blue-400' : 'text-slate-400'}`} />
-                  <span>CRM-Profil</span>
+                  {!collapsed && <span className="truncate">CRM-Profil</span>}
                 </Link>
               </li>
               <li>
                 <Link
                   href="/pakete-leistungen"
+                  title={collapsed ? 'Pakete & Leistungen' : undefined}
+                  aria-label="Pakete & Leistungen"
                   className={
                     isActive('/pakete-leistungen')
-                      ? 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white bg-slate-700'
-                      : 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/60 transition-colors'
+                      ? `flex items-center gap-2.5 rounded-lg text-[12.5px] font-semibold text-white bg-slate-700 ${collapsed ? 'justify-center px-2 py-2' : 'px-2 py-1.5'}`
+                      : `flex items-center gap-2.5 rounded-lg text-[12.5px] font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors ${collapsed ? 'justify-center px-2 py-2' : 'px-2 py-1.5'}`
                   }
                 >
                   <Package className={`w-4 h-4 shrink-0 ${isActive('/pakete-leistungen') ? 'text-blue-400' : 'text-slate-400'}`} />
-                  <span>Pakete &amp; Leistungen</span>
+                  {!collapsed && <span className="truncate">Pakete &amp; Leistungen</span>}
                 </Link>
               </li>
             </ul>
@@ -384,19 +425,21 @@ export default function Sidebar() {
       </nav>
 
       {/* User section — eine Zeile wie Variante A */}
-      <div className="px-3 py-3 border-t border-slate-800 shrink-0">
-        <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">
+      <div className={`py-3 border-t border-slate-800 shrink-0 ${collapsed ? 'px-2' : 'px-3'}`}>
+        <div className={`flex items-center rounded-lg ${collapsed ? 'flex-col gap-2 px-1 py-1.5' : 'gap-2.5 px-2 py-1.5'}`}>
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-xs font-bold shrink-0" title={user?.name || user?.email || 'Benutzer'}>
             {getInitials(user?.name || user?.email || 'U')}
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">
-              {user?.name || 'Benutzer'}
-            </p>
-            <p className="text-xs text-slate-400 truncate">
-              {ROLE_LABELS[user?.role] || 'Benutzer'}
-            </p>
-          </div>
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">
+                {user?.name || 'Benutzer'}
+              </p>
+              <p className="text-xs text-slate-400 truncate">
+                {ROLE_LABELS[user?.role] || 'Benutzer'}
+              </p>
+            </div>
+          )}
           <button
             onClick={logout}
             title="Abmelden"

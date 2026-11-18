@@ -274,7 +274,7 @@ export default function CCDetailPage() {
   const totalMembers = cc.teams?.reduce((sum, t) => sum + (t.members?.length || 0), 0) || 0
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto group-data-[collapsed=true]/sidebar:max-w-none">
       {editCC && (
         <CCEditModal cc={cc} allUsers={allUsers} onClose={() => setEditCC(false)} onSaved={load} />
       )}

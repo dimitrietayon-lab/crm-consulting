@@ -96,7 +96,7 @@ export default function CrmProfilPage() {
   if (!allowed) return null
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 group-data-[collapsed=true]/sidebar:max-w-none">
       {/* Kopf */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>

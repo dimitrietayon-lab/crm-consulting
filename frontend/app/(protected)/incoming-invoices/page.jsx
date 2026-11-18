@@ -32,7 +32,7 @@ export default function IncomingInvoicesPage() {
   const [tab, setTab] = useState('rechnungen')
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto group-data-[collapsed=true]/sidebar:max-w-none">
       <div className="flex items-center gap-3 mb-6">
         <ArrowDownToLine className="w-6 h-6 text-blue-600" />
         <h1 className="text-2xl font-bold text-gray-900">Eingangsrechnungen</h1>

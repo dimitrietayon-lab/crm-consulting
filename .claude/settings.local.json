@@ -41,7 +41,10 @@
       "Bash(npm run:*)",
       "WebFetch(domain:www.ponturo.com)",
       "mcp__claude_ai_Claude_Docs__delete",
-      "Bash(echo exit:$?:*)"
+      "Bash(echo exit:$?:*)",
+      "Bash(grep:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:encrypted-tbn0.gstatic.com)"
     ]
   }
 }

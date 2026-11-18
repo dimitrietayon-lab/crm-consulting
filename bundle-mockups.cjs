@@ -26,6 +26,7 @@ const PAGES = [
   { group: 'Zielkunden', label: 'Kanban', file: 'mockup-sprint-kanban.html' },
   { group: 'Zielkunden', label: 'Neuer Zielkunde', file: 'mockup-sprint-zielkunde-neu.html' },
   { group: 'Zielkunden', label: 'Detail', file: 'mockup-sprint-detail.html' },
+  { group: 'Zielkunden', label: 'Phasen-Flow', file: 'mockup-sprint-phasen-flow.html' },
   { group: 'Zielkunden', label: 'Kontakte', file: 'mockup-sprint-kontakte.html' },
   { group: 'Vertrieb', label: 'Outreach', file: 'mockup-sprint-outreach.html' },
   { group: 'Vertrieb', label: 'Aktivitäten', file: 'mockup-sprint-aktivitaeten.html' },

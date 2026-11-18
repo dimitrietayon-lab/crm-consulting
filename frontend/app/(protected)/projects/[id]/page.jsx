@@ -1505,9 +1505,6 @@ function ComplianceMiniTab({ projectId }) {
             />
           </div>
         </div>
-        <Link href="/compliance" className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
-          Vollständige Ansicht →
-        </Link>
       </div>
       <ul className="space-y-2">
         {checklist.items.map((item) => (

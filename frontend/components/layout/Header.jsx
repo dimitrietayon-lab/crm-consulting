@@ -9,6 +9,8 @@ import {
 import { getUser as getAuthUser } from '@/lib/auth'
 import { getInitials } from '@/lib/utils'
 import { api } from '@/lib/api'
+import { getPipelines } from '@/lib/pipeline'
+import { stepBySlugAnywhere } from '@/lib/pipelineLogic'
 
 const PAGE_TITLES = {
   '/': 'Dashboard',
@@ -17,13 +19,13 @@ const PAGE_TITLES = {
   '/pipeline': 'Deals',
   '/proposals': 'Angebote',
   '/projects': 'Projekte',
+  '/team': 'Team',
   '/activities': 'Aktivitäten',
   '/tasks': 'Aufgaben',
   '/documents': 'Dokumente',
   '/segments': 'Segmente',
   '/key-accounts': 'Key Account Management',
   '/cross-selling': 'Cross-Selling',
-  '/compliance': 'Compliance',
   '/ai-opportunities': 'KI-Opportunities',
   '/news': 'News-Monitoring',
   '/skills': 'Skills',
@@ -40,41 +42,61 @@ const PAGE_TITLES = {
   '/mein-bereich': 'Mein Bereich',
 }
 
-const SPRINT_TITLES = {
-  '/sprint-targets':           'Zielkunden',
-  '/sprint-targets/dashboard': 'Akquise-Übersicht',
-  '/sprint-targets/me':        'Mein Bereich',
-  '/sprint-targets/tasks':     'Aufgaben',
-  '/sprint-targets/documents': 'Dokumente',
-  '/sprint-targets/import':    'Listen-Import',
-  '/sprint-targets/blocklist': 'Sperrliste',
-  '/sprint-targets/activities':'Aktivitäten',
-  '/sprint-targets/offers':    'Angebote',
-  '/sprint-targets/outreach':  'Outreach',
-  '/sprint-targets/contacts':  'Kontakte',
-  '/sprint-targets/team':      'Team & Zuweisung',
-  '/sprint-targets/reporting': 'Reporting',
-  '/sprint-targets/market':    'Marktauswahl',
-  '/sprint-targets/capacity':  'Planung',
-  '/sprint-targets/bafa':      'Förderungen',
-  '/sprint-targets/settings':  'Akquise-Einstellungen',
+const AKQUISE_TITLES = {
+  '/akquise':           'Zielkunden',
+  '/akquise/dashboard': 'Akquise-Übersicht',
+  '/akquise/me':        'Mein Bereich',
+  '/akquise/tasks':     'Aufgaben',
+  '/akquise/documents': 'Dokumente',
+  '/akquise/import':    'Listen-Import',
+  '/akquise/blocklist': 'Sperrliste',
+  '/akquise/activities':'Aktivitäten',
+  '/akquise/offers':    'Angebote',
+  '/akquise/outreach':  'Outreach',
+  '/akquise/contacts':  'Kontakte',
+  '/akquise/reporting': 'Reporting',
+  '/akquise/market':    'Marktauswahl',
+  '/akquise/capacity':  'Planung',
+  '/akquise/bafa':      'Förderungen',
+  '/akquise/workflows': 'Akquise-Workflows',
+  '/akquise/settings':  'Akquise-Einstellungen',
 }
 
 function getPageTitle(pathname) {
   if (pathname === '/workflows/new') return 'Neuer Workflow'
   if (/^\/workflows\/[^/]+\/edit$/.test(pathname)) return 'Workflow bearbeiten'
-  if (SPRINT_TITLES[pathname]) return SPRINT_TITLES[pathname]
-  if (/^\/sprint-targets\/team\/zuweisung\/[^/]+$/.test(pathname)) return 'Kundenzuweisung'
-  if (/^\/sprint-targets\/team\/[^/]+$/.test(pathname)) return 'Teammitglied'
-  if (/^\/sprint-targets\/offers\/new$/.test(pathname)) return 'Neues Angebot'
-  if (/^\/sprint-targets\/offers\/[^/]+$/.test(pathname)) return 'Angebot'
-  if (/^\/sprint-targets\/[^/]+\/handover$/.test(pathname)) return 'Übergabe'
-  if (/^\/sprint-targets\/[^/]+\/assessment$/.test(pathname)) return 'KI-Assessment'
-  if (/^\/sprint-targets\/[^/]+\/proposals$/.test(pathname)) return 'Projektvorschläge'
-  if (pathname.startsWith('/sprint-targets/')) return 'Zielkunde'
+  if (AKQUISE_TITLES[pathname]) return AKQUISE_TITLES[pathname]
+  if (/^\/akquise\/offers\/new$/.test(pathname)) return 'Neues Angebot'
+  if (/^\/akquise\/offers\/[^/]+$/.test(pathname)) return 'Angebot'
+  if (/^\/akquise\/[^/]+\/handover$/.test(pathname)) return 'Übergabe'
+  if (/^\/akquise\/[^/]+\/assessment$/.test(pathname)) return 'KI-Assessment'
+  if (/^\/akquise\/[^/]+\/proposals$/.test(pathname)) return 'Projektvorschläge'
+  if (/^\/akquise\/[^/]+\/edit$/.test(pathname)) return 'Zielkunde bearbeiten'
+  const stepMatch = pathname.match(/^\/akquise\/[^/]+\/prozess\/([^/]+)$/)
+  if (stepMatch) {
+    const step = stepBySlugAnywhere(stepMatch[1], getPipelines())
+    return step?.label || 'Akquise-Schritt'
+  }
+  if (/^\/akquise\/[^/]+\/prozess$/.test(pathname)) return 'Akquise-Prozess'
+  if (pathname.startsWith('/akquise/')) return 'Zielkunde'
   if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname]
   const base = '/' + pathname.split('/').filter(Boolean)[0]
   return PAGE_TITLES[base] || 'CRM'
+}
+
+// Bereichs-Label für die Breadcrumb-Zeile in der Topbar (wie im Mockup).
+function getBreadcrumb(pathname, title) {
+  if (pathname === '/') return ['Portal', 'Dashboard']
+  const seg = '/' + pathname.split('/').filter(Boolean)[0]
+  let group = null
+  if (seg === '/akquise') group = 'Akquise'
+  else if (seg === '/admin' || seg === '/crm-profil' || seg === '/pakete-leistungen') group = 'Admin'
+  else if (seg === '/settings') group = 'System'
+  else if (seg === '/mein-bereich') group = 'Portal'
+  else if (['/accounts', '/contacts', '/activities', '/pipeline', '/proposals', '/contracts'].includes(seg)) group = 'Kunden & Vertrieb'
+  else if (['/projects', '/team', '/tasks', '/documents', '/timesheets'].includes(seg)) group = 'Mandate'
+  if (!group || group === title) return [title]
+  return [group, title]
 }
 
 // Notification type → icon / color
@@ -88,7 +110,7 @@ const NOTIF_CONFIG = {
   expense_approved:    { icon: CheckCircle,  color: 'text-green-600',  bg: 'bg-green-50'  },
   expense_rejected:    { icon: XCircle,      color: 'text-red-600',    bg: 'bg-red-50'    },
   expense_paid:        { icon: DollarSign,   color: 'text-blue-600',   bg: 'bg-blue-50'   },
-  // Sprint-Fälligkeiten (aus /sprint-targets/me/summary, nur im Client erzeugt)
+  // Akquise-Fälligkeiten (aus /acquisition/me/summary, nur im Client erzeugt)
   sprint_followup:     { icon: CalendarClock, color: 'text-amber-600', bg: 'bg-amber-50'  },
   sprint_offer:        { icon: FileText,     color: 'text-blue-600',    bg: 'bg-blue-50'   },
 }
@@ -108,6 +130,7 @@ export default function Header() {
   const router = useRouter()
   const user = getAuthUser()
   const title = getPageTitle(pathname)
+  const crumbs = getBreadcrumb(pathname, title)
 
   const [notifications, setNotifications] = useState([])
   const [sprintReminders, setSprintReminders] = useState([])
@@ -136,7 +159,7 @@ export default function Header() {
   // Sprint-Fälligkeiten (überfällige/heutige nächste Schritte, bald ablaufende Angebote)
   const loadSprintReminders = useCallback(async () => {
     try {
-      const data = await api.get('/sprint-targets/me/summary')
+      const data = await api.get('/acquisition/me/summary')
       const items = []
       const add = (t, kind) => items.push({
         id: `sprint-${kind}-${t.id}`,
@@ -144,7 +167,7 @@ export default function Header() {
         read: false,
         title: kind === 'overdue' ? 'Überfälliger nächster Schritt' : 'Heute fällig',
         message: `${t.companyName}: ${t.nextStep || 'Nächster Schritt'}`,
-        link: `/sprint-targets/${t.id}`,
+        link: `/akquise/${t.id}`,
         createdAt: t.nextStepDue,
       })
       for (const t of data?.followUps?.overdue || []) add(t, 'overdue')
@@ -157,8 +180,8 @@ export default function Header() {
             type: 'sprint_offer',
             read: false,
             title: 'Angebot läuft bald ab',
-            message: `${o.offerNumber} · ${o.sprintTarget?.companyName || 'Zielkunde'}`,
-            link: `/sprint-targets/offers/${o.id}`,
+            message: `${o.offerNumber} · ${o.acquisitionTarget?.companyName || 'Zielkunde'}`,
+            link: `/akquise/offers/${o.id}`,
             createdAt: o.validUntil,
           })
         }
@@ -186,7 +209,7 @@ export default function Header() {
     const timer = setTimeout(async () => {
       setSearchLoading(true)
       try {
-        const data = await api.get(`/sprint-targets?q=${encodeURIComponent(q)}`)
+        const data = await api.get(`/acquisition?q=${encodeURIComponent(q)}`)
         const list = Array.isArray(data) ? data : data?.data || []
         setSearchResults(list.slice(0, 6))
       } catch {
@@ -261,10 +284,18 @@ export default function Header() {
   }
 
   return (
-    <header className="h-14 bg-white border-b border-gray-200 flex items-center px-6 justify-between shrink-0 z-50">
-      {/* Left: Page title */}
-      <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold text-gray-900">{title}</h1>
+    <header className="h-[62px] bg-white border-b border-gray-200 flex items-center px-6 justify-between gap-4 shrink-0 z-50">
+      {/* Left: Breadcrumb + Page title */}
+      <div className="min-w-0">
+        <div className="flex items-center gap-1.5 text-[11.5px] leading-none text-gray-400 mb-1 flex-wrap">
+          {crumbs.map((c, i) => (
+            <span key={i} className="flex items-center gap-1.5">
+              {i > 0 && <span className="text-gray-300">/</span>}
+              <span className={i === crumbs.length - 1 ? 'text-gray-700 font-semibold' : ''}>{c}</span>
+            </span>
+          ))}
+        </div>
+        <h1 className="text-base font-extrabold tracking-tight text-gray-900 leading-tight truncate">{title}</h1>
       </div>
 
       {/* Right: Search + Notifications + User */}
@@ -279,7 +310,7 @@ export default function Header() {
             onFocus={() => setSearchOpen(true)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && searchResults[0]) {
-                router.push(`/sprint-targets/${searchResults[0].id}`)
+                router.push(`/akquise/${searchResults[0].id}`)
                 clearSearch()
               } else if (e.key === 'Escape') {
                 clearSearch()
@@ -299,7 +330,7 @@ export default function Header() {
                   <button
                     key={t.id}
                     onClick={() => {
-                      router.push(`/sprint-targets/${t.id}`)
+                      router.push(`/akquise/${t.id}`)
                       clearSearch()
                     }}
                     className="flex items-center gap-2 w-full px-4 py-2.5 text-left hover:bg-gray-50 border-b border-gray-50 last:border-0"
